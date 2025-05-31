@@ -49,7 +49,7 @@ export interface QAPair {
   created_at: string;
   updated_at: string;
   created_by: string;
-  status: 'draft' | 'review' | 'approved' | 'rejected';
+  status: 'ready_for_review' | 'approved' | 'revision_requested' | 'rejected';
   
   // Extensible metadata - Add custom fields here
   metadata: Record<string, any>;

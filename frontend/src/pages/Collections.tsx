@@ -151,9 +151,9 @@ const StatusBadge = styled.span<{ status: string }>`
         return '#e6f7e6';
       case 'rejected':
         return '#ffebee';
-      case 'pending':
+      case 'revision_requested':
         return '#fff8e1';
-      case 'draft':
+      case 'ready_for_review':
       default:
         return '#e3f2fd';
     }
@@ -165,9 +165,9 @@ const StatusBadge = styled.span<{ status: string }>`
         return '#2e7d32';
       case 'rejected':
         return '#c62828';
-      case 'pending':
+      case 'revision_requested':
         return '#f57c00';
-      case 'draft':
+      case 'ready_for_review':
       default:
         return '#1976d2';
     }
@@ -186,15 +186,29 @@ const StatusBadge = styled.span<{ status: string }>`
           return '#2e7d32';
         case 'rejected':
           return '#c62828';
-        case 'pending':
+        case 'revision_requested':
           return '#f57c00';
-        case 'draft':
+        case 'ready_for_review':
         default:
           return '#1976d2';
       }
     }};
   }
 `;
+
+/**
+ * Helper function to format status labels for display
+ */
+const formatStatusLabel = (status: string): string => {
+  switch (status) {
+    case 'ready_for_review':
+      return 'ready for review';
+    case 'revision_requested':
+      return 'revision requested';
+    default:
+      return status;
+  }
+};
 
 /**
  * Collections page component.
@@ -263,11 +277,11 @@ const Collections: React.FC = () => {
                   <span>{collection.document_count} Q&A Pairs</span>
                   {collection.status_counts && (
                     <StatusBadgesContainer>
-                      {/* Display statuses in order: draft, pending, approved, rejected */}
-                      {['draft', 'pending', 'approved', 'rejected'].map(status => 
+                      {/* Display statuses in order: ready_for_review, revision_requested, approved, rejected */}
+                      {['ready_for_review', 'revision_requested', 'approved', 'rejected'].map(status => 
                         collection.status_counts && collection.status_counts[status] ? (
                           <StatusBadge key={status} status={status}>
-                            {collection.status_counts[status]} {status}
+                            {collection.status_counts[status]} {formatStatusLabel(status)}
                           </StatusBadge>
                         ) : null
                       )}

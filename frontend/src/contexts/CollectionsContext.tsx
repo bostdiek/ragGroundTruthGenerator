@@ -41,7 +41,7 @@ const CollectionsContext = createContext<CollectionsContextType>({
     created_at: '', 
     updated_at: '', 
     created_by: '', 
-    status: 'draft', 
+    status: 'ready_for_review', 
     metadata: {} 
   }),
 });

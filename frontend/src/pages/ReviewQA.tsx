@@ -180,9 +180,9 @@ const StatusBadge = styled.span<{ status: string }>`
         return '#e6f7e6';
       case 'rejected':
         return '#ffebee';
-      case 'pending':
+      case 'revision_requested':
         return '#fff8e1';
-      case 'draft':
+      case 'ready_for_review':
       default:
         return '#e3f2fd';
     }
@@ -194,9 +194,9 @@ const StatusBadge = styled.span<{ status: string }>`
         return '#2e7d32';
       case 'rejected':
         return '#c62828';
-      case 'pending':
+      case 'revision_requested':
         return '#f57c00';
-      case 'draft':
+      case 'ready_for_review':
       default:
         return '#1976d2';
     }
@@ -215,9 +215,9 @@ const StatusBadge = styled.span<{ status: string }>`
           return '#2e7d32';
         case 'rejected':
           return '#c62828';
-        case 'pending':
+        case 'revision_requested':
           return '#f57c00';
-        case 'draft':
+        case 'ready_for_review':
         default:
           return '#1976d2';
       }
@@ -351,8 +351,8 @@ const ReviewQA: React.FC = () => {
   
   const handleApprove = () => updateStatus('approved');
   const handleReject = () => updateStatus('rejected');
-  const handleMarkAsPending = () => updateStatus('pending');
-  const handleMoveToDraft = () => updateStatus('draft');
+  const handleRequestRevision = () => updateStatus('revision_requested');
+  const handleReadyForReview = () => updateStatus('ready_for_review');
   
   const handleEdit = () => {
     setIsEditing(true);
@@ -427,7 +427,11 @@ const ReviewQA: React.FC = () => {
           <QuestionText>{qaPair.question}</QuestionText>
           <MetaInfo>
             <StatusBadge status={qaPair.status}>
-              {qaPair.status.charAt(0).toUpperCase() + qaPair.status.slice(1)}
+              {qaPair.status === 'ready_for_review' 
+                ? 'Ready for Review' 
+                : qaPair.status === 'revision_requested'
+                  ? 'Revision Requested'
+                  : qaPair.status.charAt(0).toUpperCase() + qaPair.status.slice(1)}
             </StatusBadge>
           </MetaInfo>
         </Card>
@@ -516,15 +520,15 @@ const ReviewQA: React.FC = () => {
               Edit Answer
             </SecondaryButton>
             
-            {qaPair.status !== 'draft' && (
-              <SecondaryButton onClick={handleMoveToDraft} disabled={isUpdating}>
-                Move to Draft
+            {qaPair.status !== 'ready_for_review' && (
+              <SecondaryButton onClick={handleReadyForReview} disabled={isUpdating}>
+                Mark as Ready for Review
               </SecondaryButton>
             )}
             
-            {qaPair.status !== 'pending' && (
-              <SecondaryButton onClick={handleMarkAsPending} disabled={isUpdating}>
-                Mark as Pending
+            {qaPair.status !== 'revision_requested' && (
+              <SecondaryButton onClick={handleRequestRevision} disabled={isUpdating}>
+                Request Revision
               </SecondaryButton>
             )}
             

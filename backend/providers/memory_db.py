@@ -74,7 +74,7 @@ _database: Dict[str, List[Dict[str, Any]]] = {
                     "source": "Technical Documentation"
                 }
             ],
-            "status": "pending",
+            "status": "ready_for_review",
             "metadata": {"priority": "medium"},
             "created_at": "2023-06-05T09:45:00Z",
             "updated_at": "2023-06-06T14:20:00Z",
@@ -93,7 +93,7 @@ _database: Dict[str, List[Dict[str, Any]]] = {
                     "source": "SAP Documentation"
                 }
             ],
-            "status": "draft",
+            "status": "ready_for_review",
             "metadata": {"priority": "low"},
             "created_at": "2023-06-10T11:30:00Z",
             "updated_at": "2023-06-10T11:30:00Z",
@@ -150,7 +150,7 @@ _database: Dict[str, List[Dict[str, Any]]] = {
                     "source": "Technical Documentation"
                 }
             ],
-            "status": "draft",
+            "status": "revision_requested",
             "metadata": {"priority": "medium"},
             "created_at": "2023-06-12T09:30:00Z",
             "updated_at": "2023-06-12T09:30:00Z",

@@ -182,7 +182,8 @@ class QAPairBase(BaseModel):
     question: str
     answer: str
     documents: List[Dict[str, Any]] = []
-    status: str = "draft"
+    # Valid status values: ready_for_review, approved, revision_requested, rejected
+    status: str = "ready_for_review"
     metadata: Dict[str, Any] = {}
 
 class QAPairCreate(QAPairBase):
@@ -261,7 +262,7 @@ async def create_qa_pair(collection_id: str, qa_pair: QAPairCreate):
         "question": qa_pair.question,
         "answer": qa_pair.answer,
         "documents": qa_pair.documents,
-        "status": qa_pair.status,
+        "status": qa_pair.status or "ready_for_review",
         "metadata": qa_pair.metadata,
         "created_at": current_time,
         "updated_at": current_time,
@@ -330,6 +331,13 @@ async def update_qa_pair(qa_pair_id: str, qa_pair_update: QAPairUpdate):
     # Prepare the update
     update_data = {}
     if qa_pair_update.status is not None:
+        # Validate status value
+        valid_statuses = ["ready_for_review", "approved", "revision_requested", "rejected"]
+        if qa_pair_update.status not in valid_statuses:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid status value. Must be one of: {', '.join(valid_statuses)}"
+            )
         update_data["status"] = qa_pair_update.status
     if qa_pair_update.answer is not None:
         update_data["answer"] = qa_pair_update.answer

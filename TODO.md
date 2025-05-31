@@ -17,6 +17,12 @@
 - [ ] Add filtering and sorting options for collections and Q&A pairs
 - [ ] Create dashboard with statistics and insights
 - [ ] Add pagination for large collections
+- [ ] **Implement improved Q&A status system**
+  - [ ] Replace current status system (draft/pending/new/approved) with streamlined workflow
+  - [ ] New statuses: Ready for Review, Approved, Needs Review, Rejected
+  - [ ] Add reviewer actions: Approve, Request Changes, Reject, Edit
+  - [ ] Update UI to reflect new status flow
+  - [ ] Implement status transition logic
 
 ## Backend Enhancements
 

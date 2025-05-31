@@ -434,7 +434,7 @@ const CreateQA: React.FC = () => {
         question,
         answer,
         documents: selectedDocs,
-        status: 'draft',
+        status: 'ready_for_review',
         metadata: {
           custom_rules: customRules
         }
