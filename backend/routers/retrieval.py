@@ -8,6 +8,8 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
+from providers.factory import get_all_data_source_providers, get_data_source_provider
+
 # Create router
 router = APIRouter()
 
@@ -16,7 +18,7 @@ class DocumentBase(BaseModel):
     """Base model for document data."""
     title: str
     content: str
-    source: str
+    source: Dict[str, Any]
     url: Optional[str] = None
     metadata: Dict[str, Any] = {}
 
@@ -39,7 +41,7 @@ class RetrievalRequest(BaseModel):
 @router.post("/search", response_model=List[Document])
 async def search_documents(request: RetrievalRequest):
     """
-    Search for documents based on a query. This is a placeholder implementation.
+    Search for documents based on a query.
     
     Args:
         request: The retrieval request containing the query and filters.
@@ -47,62 +49,50 @@ async def search_documents(request: RetrievalRequest):
     Returns:
         List[Document]: A list of retrieved documents.
     """
-    # This is a placeholder - in a real app, this would search actual data sources
-    # Different sources could be implemented with different retrieval techniques
-    sources = request.sources if request.sources else ["manuals", "sap", "wiki"]
+    results = []
     
-    # Sample documents
-    documents = [
-        {
-            "id": "doc1",
-            "title": "Model X Maintenance Manual",
-            "content": "Chapter 5: Air Filter Replacement. To replace the air filter in a Model X, follow these steps:\n\n1. Open the hood\n2. Locate the air filter housing\n3. Remove the cover\n4. Replace the filter\n5. Replace the cover\n6. Close the hood",
-            "source": "manuals",
-            "url": "https://example.com/docs/model-x-manual.pdf",
-            "metadata": {"type": "maintenance", "equipment": "Model X"},
-            "relevance_score": 0.95
-        },
-        {
-            "id": "doc2",
-            "title": "SAP Notification #12345",
-            "content": "Issue reported with air filter system in Model X. Customer complaint: unusual smell when AC is running. Technician report: air filter was heavily clogged and needed replacement.",
-            "source": "sap",
-            "url": "https://sap.example.com/notifications/12345",
-            "metadata": {"type": "notification", "equipment": "Model X", "component": "air filter"},
-            "relevance_score": 0.85
-        },
-        {
-            "id": "doc3",
-            "title": "Wiki: Common Maintenance Procedures",
-            "content": "Air filters should be replaced every 12 months or 12,000 miles, whichever comes first. Signs of a clogged air filter include reduced fuel efficiency and unusual smells from the ventilation system.",
-            "source": "wiki",
-            "url": "https://wiki.example.com/maintenance/common-procedures",
-            "metadata": {"type": "wiki", "tags": ["maintenance", "air filter"]},
-            "relevance_score": 0.75
-        }
-    ]
-    
-    # Filter by requested sources
+    # If specific sources are requested, only use those
     if request.sources:
-        documents = [doc for doc in documents if doc["source"] in request.sources]
+        for source_id in request.sources:
+            try:
+                provider = get_data_source_provider(source_id)
+                source_results = await provider.retrieve_documents(request.query)
+                results.extend(source_results)
+            except ValueError:
+                # Skip invalid sources
+                continue
+    else:
+        # Otherwise use all available sources
+        providers = get_all_data_source_providers()
+        for provider_id, provider in providers.items():
+            source_results = await provider.retrieve_documents(request.query)
+            results.extend(source_results)
     
-    # Limit results
-    documents = documents[:request.max_results]
+    # Sort by relevance if available, otherwise preserve order
+    results.sort(key=lambda x: x.get("relevance_score", 0), reverse=True)
     
-    return documents
+    # Limit results if requested
+    if request.max_results:
+        results = results[:request.max_results]
+    
+    return results
 
-@router.get("/sources", response_model=List[Dict[str, Any]])
+@router.get("/sources", response_model=List[Dict[str, str]])
 async def get_sources():
     """
-    Get a list of available data sources. This is a placeholder implementation.
+    Get all available data sources.
     
     Returns:
-        List[Dict[str, Any]]: A list of available data sources.
+        List of data sources with id, name, and description.
     """
-    # This is a placeholder - in a real app, this would list actual data sources
-    return [
-        {"id": "manuals", "name": "Maintenance Manuals", "description": "Technical documentation and maintenance procedures"},
-        {"id": "sap", "name": "SAP Notifications", "description": "Customer complaints and technician reports from SAP"},
-        {"id": "wiki", "name": "Internal Wiki", "description": "Knowledge base articles from the company wiki"},
-        {"id": "sharepoint", "name": "SharePoint Documents", "description": "Documents stored in SharePoint libraries"}
-    ]
+    providers = get_all_data_source_providers()
+    sources = []
+    
+    for provider_id, provider in providers.items():
+        sources.append({
+            "id": provider.get_id(),
+            "name": provider.get_name(),
+            "description": provider.get_description()
+        })
+    
+    return sources

@@ -5,11 +5,12 @@ This module provides factory functions to get the appropriate provider
 implementations based on the environment configuration.
 """
 import os
-from typing import Any
+from typing import Any, Dict
 
 # Get provider configuration from environment variables
 generation_provider = os.getenv("GENERATION_PROVIDER", "template")
 retrieval_provider = os.getenv("RETRIEVAL_PROVIDER", "template")
+enabled_data_sources = os.getenv("ENABLED_DATA_SOURCES", "memory").split(",")
 
 def get_generator() -> Any:
     """
@@ -50,3 +51,43 @@ def get_retriever() -> Any:
     #     return get_elasticsearch()
     else:
         raise ValueError(f"Unsupported RETRIEVAL_PROVIDER: {retrieval_provider}")
+
+def get_data_source_provider(provider_id: str) -> Any:
+    """
+    Get a data source provider instance by ID.
+    
+    Args:
+        provider_id: The ID of the provider
+        
+    Returns:
+        A data source provider instance
+    """
+    if provider_id == "memory":
+        from providers.memory_data_source_provider import get_provider as get_memory_provider
+        return get_memory_provider()
+    # TODO: Add other data source providers
+    # elif provider_id == "azure_search":
+    #     from providers.azure_search_provider import get_provider as get_azure_search_provider
+    #     return get_azure_search_provider()
+    # elif provider_id == "database":
+    #     from providers.database_provider import get_provider as get_database_provider
+    #     return get_database_provider()
+    else:
+        raise ValueError(f"Unknown data source provider: {provider_id}")
+
+def get_all_data_source_providers() -> Dict[str, Any]:
+    """
+    Get all enabled data source providers.
+    
+    Returns:
+        A dictionary of provider IDs to provider instances
+    """
+    providers = {}
+    for provider_id in enabled_data_sources:
+        try:
+            providers[provider_id] = get_data_source_provider(provider_id)
+        except ValueError:
+            # Skip unavailable providers
+            continue
+    
+    return providers
