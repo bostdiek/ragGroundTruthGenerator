@@ -279,6 +279,7 @@ const CreateQA: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRetrieving, setIsRetrieving] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [collectionName, setCollectionName] = useState('');
   
   // Fetch available sources on component mount
   useEffect(() => {
@@ -294,6 +295,22 @@ const CreateQA: React.FC = () => {
     
     fetchSources();
   }, []);
+  
+  // Fetch collection details
+  useEffect(() => {
+    const fetchCollection = async () => {
+      if (!collectionId) return;
+      
+      try {
+        const collection = await CollectionsService.getCollection(collectionId);
+        setCollectionName(collection.name);
+      } catch (err) {
+        console.error('Error fetching collection:', err);
+      }
+    };
+    
+    fetchCollection();
+  }, [collectionId]);
   
   // Handle retrieving documents
   const handleRetrieve = async () => {
@@ -454,7 +471,7 @@ const CreateQA: React.FC = () => {
     <CreateQAContainer>
       <Header>
         <Title>Create New Question & Answer</Title>
-        <Subtitle>Collection: {collectionId}</Subtitle>
+        <Subtitle>Collection: {collectionName || collectionId}</Subtitle>
       </Header>
       
       <Section>

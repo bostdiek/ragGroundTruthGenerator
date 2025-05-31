@@ -33,3 +33,11 @@ This is a full-stack application for generating ground truth data for AI trainin
 - Infrastructure: Bicep, Azure CLI
 
 When suggesting code changes or generating new files, ensure they align with these guidelines and the overall architecture of the project.
+
+## Code Generation Guidelines
+
+- **Only generate code when explicitly requested** by the user. Otherwise, provide explanations, architectural advice, or implementation suggestions without writing the actual code.
+- When asked to generate code, ensure it follows the project's coding standards and architectural principles.
+- Prefer generating modular, reusable code components that align with the project's extensibility goals.
+- Include thorough comments in generated code, especially at extension points where other developers might need to customize functionality.
+- When suggesting architectural changes, focus on explaining the design rationale first before providing code samples.
