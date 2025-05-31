@@ -30,7 +30,7 @@ interface QAPair {
 }
 
 // Status constants
-const STATUSES = ['all', 'draft', 'pending', 'approved', 'rejected'];
+const STATUSES = ['all', 'ready_for_review', 'revision_requested', 'approved', 'rejected'];
 
 // Styled Components
 const DetailContainer = styled.div`
@@ -131,9 +131,9 @@ const StatusBadge = styled.span<{ status: string; clickable?: boolean }>`
         return '#e6f7e6';
       case 'rejected':
         return '#ffebee';
-      case 'pending':
+      case 'revision_requested':
         return '#fff8e1';
-      case 'draft':
+      case 'ready_for_review':
       default:
         return '#e3f2fd';
     }
@@ -145,9 +145,9 @@ const StatusBadge = styled.span<{ status: string; clickable?: boolean }>`
         return '#2e7d32';
       case 'rejected':
         return '#c62828';
-      case 'pending':
+      case 'revision_requested':
         return '#f57c00';
-      case 'draft':
+      case 'ready_for_review':
       default:
         return '#1976d2';
     }
@@ -278,13 +278,23 @@ const LoadingOrError = styled.div`
 const CollectionDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   
+  // Format status label for display
+  const formatStatusLabel = (status: string): string => {
+    switch (status) {
+      case 'ready_for_review': return 'ready for review';
+      case 'revision_requested': return 'revision requested';
+      default: return status;
+    }
+  };
+  
+  // State
   const [collection, setCollection] = useState<Collection | null>(null);
   const [qaPairs, setQAPairs] = useState<QAPair[]>([]);
   const [filteredQAPairs, setFilteredQAPairs] = useState<QAPair[]>([]);
-  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [activeFilter, setActiveFilter] = useState('all');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
+  const [error, setError] = useState('');
+
   useEffect(() => {
     const fetchCollectionData = async () => {
       try {
@@ -376,7 +386,7 @@ const CollectionDetail: React.FC = () => {
           
           {collection.status_counts && Object.keys(collection.status_counts).length > 0 && (
             <StatusBadgesContainer>
-              {['draft', 'pending', 'approved', 'rejected'].map(status => 
+              {['ready_for_review', 'revision_requested', 'approved', 'rejected'].map(status => 
                 collection.status_counts && collection.status_counts[status] ? (
                   <StatusBadge 
                     key={status} 
@@ -384,7 +394,7 @@ const CollectionDetail: React.FC = () => {
                     clickable
                     onClick={() => setActiveFilter(status)}
                   >
-                    {collection.status_counts[status]} {status}
+                    {collection.status_counts[status]} {formatStatusLabel(status)}
                   </StatusBadge>
                 ) : null
               )}
@@ -445,7 +455,7 @@ const CollectionDetail: React.FC = () => {
                 <AnswerPreview>{qa.answer}</AnswerPreview>
                 <QAMeta>
                   <StatusBadge status={qa.status}>
-                    {qa.status.charAt(0).toUpperCase() + qa.status.slice(1)}
+                    {formatStatusLabel(qa.status).charAt(0).toUpperCase() + formatStatusLabel(qa.status).slice(1)}
                   </StatusBadge>
                   <span>Created: {new Date(qa.created_at).toLocaleDateString()}</span>
                 </QAMeta>
@@ -468,18 +478,18 @@ const CollectionDetail: React.FC = () => {
                     Reject
                   </ActionButton>
                 )}
-                {qa.status !== 'pending' && (
+                {qa.status !== 'revision_requested' && (
                   <ActionButton 
-                    onClick={() => updateQAStatus(qa.id, 'pending')}
+                    onClick={() => updateQAStatus(qa.id, 'revision_requested')}
                   >
-                    Mark as Pending
+                    Request Revision
                   </ActionButton>
                 )}
-                {qa.status !== 'draft' && (
+                {qa.status !== 'ready_for_review' && (
                   <ActionButton 
-                    onClick={() => updateQAStatus(qa.id, 'draft')}
+                    onClick={() => updateQAStatus(qa.id, 'ready_for_review')}
                   >
-                    Move to Draft
+                    Mark Ready for Review
                   </ActionButton>
                 )}
               </QAActions>
