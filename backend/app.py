@@ -5,9 +5,10 @@ This module sets up the FastAPI application with its routers and middleware.
 You can customize this template to fit your specific implementation requirements.
 """
 import os
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+
 from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 # Load environment variables from .env file
 # TODO: Customize environment variable loading based on your deployment strategy
@@ -45,7 +46,7 @@ async def health_check():
 
 # Import and include routers
 # These imports are placed here to avoid circular imports
-from routers import auth, collections, retrieval, generation
+from routers import auth, collections, generation, retrieval
 
 # Add routers to the application
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
@@ -55,7 +56,7 @@ app.include_router(generation.router, prefix="/api/generation", tags=["Generatio
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     # Run the application with uvicorn
     uvicorn.run(
         "app:app",

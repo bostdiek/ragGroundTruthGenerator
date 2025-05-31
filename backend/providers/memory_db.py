@@ -4,17 +4,193 @@ Simple in-memory database provider for development.
 This module provides a simple in-memory database implementation for development.
 In production, replace this with your actual database implementation (MongoDB, CosmosDB, etc.).
 """
-from typing import Dict, List, Any, Optional
 import json
 import os
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 # Simple in-memory database for development
 # This will be reset when the application restarts
 _database: Dict[str, List[Dict[str, Any]]] = {
-    "collections": [],
-    "qa_pairs": [],
-    "documents": []
+    "collections": [
+        {
+            "id": "col1",
+            "name": "Equipment Manuals",
+            "description": "Technical manuals for equipment maintenance",
+            "tags": ["manuals", "maintenance", "technical"],
+            "document_count": 45,
+            "created_at": "2023-05-15T10:30:00Z",
+            "updated_at": "2023-06-20T15:45:00Z"
+        },
+        {
+            "id": "col2",
+            "name": "SAP Notifications",
+            "description": "Historical customer issues and resolutions",
+            "tags": ["sap", "notifications", "issues"],
+            "document_count": 128,
+            "created_at": "2023-04-10T09:15:00Z",
+            "updated_at": "2023-06-22T11:20:00Z"
+        },
+        {
+            "id": "col3",
+            "name": "Internal Wiki",
+            "description": "Knowledge base for common procedures",
+            "tags": ["wiki", "knowledge", "procedures"],
+            "document_count": 73,
+            "created_at": "2023-01-05T14:20:00Z",
+            "updated_at": "2023-06-15T08:30:00Z"
+        }
+    ],
+    "qa_pairs": [
+        {
+            "id": "qa1",
+            "collection_id": "col1",
+            "question": "How do I reset the equipment?",
+            "answer": "To reset the equipment, power cycle the device and wait for 30 seconds before turning it back on.",
+            "documents": [
+                {
+                    "id": "doc1",
+                    "title": "Equipment Manual",
+                    "content": "Section on troubleshooting",
+                    "source": "Technical Documentation"
+                }
+            ],
+            "status": "approved",
+            "metadata": {"priority": "high"},
+            "created_at": "2023-06-01T10:00:00Z",
+            "updated_at": "2023-06-02T15:30:00Z",
+            "created_by": "demo_user"
+        },
+        {
+            "id": "qa2",
+            "collection_id": "col1",
+            "question": "What are the maintenance intervals?",
+            "answer": "Regular maintenance should be performed every 3 months, with a major service annually.",
+            "documents": [
+                {
+                    "id": "doc2",
+                    "title": "Maintenance Schedule",
+                    "content": "Section on service intervals",
+                    "source": "Technical Documentation"
+                }
+            ],
+            "status": "pending",
+            "metadata": {"priority": "medium"},
+            "created_at": "2023-06-05T09:45:00Z",
+            "updated_at": "2023-06-06T14:20:00Z",
+            "created_by": "demo_user"
+        },
+        {
+            "id": "qa3",
+            "collection_id": "col2",
+            "question": "How do I create a new SAP notification?",
+            "answer": "Navigate to the Notifications module, click 'Create New', fill in the required fields, and submit the form.",
+            "documents": [
+                {
+                    "id": "doc3",
+                    "title": "SAP User Guide",
+                    "content": "Chapter on notifications",
+                    "source": "SAP Documentation"
+                }
+            ],
+            "status": "draft",
+            "metadata": {"priority": "low"},
+            "created_at": "2023-06-10T11:30:00Z",
+            "updated_at": "2023-06-10T11:30:00Z",
+            "created_by": "demo_user"
+        },
+        {
+            "id": "qa4",
+            "collection_id": "col3",
+            "question": "Where can I find the company holiday schedule?",
+            "answer": "The company holiday schedule is available on the HR page of the internal wiki, under 'Benefits and Time Off'.",
+            "documents": [
+                {
+                    "id": "doc4",
+                    "title": "HR Policies",
+                    "content": "Section on time off",
+                    "source": "Internal Wiki"
+                }
+            ],
+            "status": "approved",
+            "metadata": {"priority": "medium"},
+            "created_at": "2023-05-20T13:15:00Z",
+            "updated_at": "2023-05-21T09:10:00Z",
+            "created_by": "demo_user"
+        },
+        {
+            "id": "qa5",
+            "collection_id": "col1",
+            "question": "How do I troubleshoot error code E-45?",
+            "answer": "Error code E-45 indicates a power supply issue. Check the power connections and voltage levels.",
+            "documents": [
+                {
+                    "id": "doc1",
+                    "title": "Equipment Manual",
+                    "content": "Section on error codes",
+                    "source": "Technical Documentation"
+                }
+            ],
+            "status": "rejected",
+            "metadata": {"priority": "high"},
+            "created_at": "2023-06-08T14:20:00Z",
+            "updated_at": "2023-06-09T10:15:00Z",
+            "created_by": "demo_user"
+        },
+        {
+            "id": "qa6",
+            "collection_id": "col1",
+            "question": "What is the warranty period for replacement parts?",
+            "answer": "All replacement parts come with a 90-day warranty from the date of installation.",
+            "documents": [
+                {
+                    "id": "doc2",
+                    "title": "Warranty Information",
+                    "content": "Section on replacement parts",
+                    "source": "Technical Documentation"
+                }
+            ],
+            "status": "draft",
+            "metadata": {"priority": "medium"},
+            "created_at": "2023-06-12T09:30:00Z",
+            "updated_at": "2023-06-12T09:30:00Z",
+            "created_by": "demo_user"
+        }
+    ],
+    "documents": [
+        {
+            "id": "doc1",
+            "title": "Equipment Manual",
+            "content": "Section on troubleshooting",
+            "source": "Technical Documentation",
+            "created_at": "2023-05-10T08:00:00Z",
+            "updated_at": "2023-05-10T08:00:00Z"
+        },
+        {
+            "id": "doc2",
+            "title": "Maintenance Schedule",
+            "content": "Section on service intervals",
+            "source": "Technical Documentation",
+            "created_at": "2023-05-12T10:30:00Z",
+            "updated_at": "2023-05-12T10:30:00Z"
+        },
+        {
+            "id": "doc3",
+            "title": "SAP User Guide",
+            "content": "Chapter on notifications",
+            "source": "SAP Documentation",
+            "created_at": "2023-04-05T14:45:00Z",
+            "updated_at": "2023-04-05T14:45:00Z"
+        },
+        {
+            "id": "doc4",
+            "title": "HR Policies",
+            "content": "Section on time off",
+            "source": "Internal Wiki",
+            "created_at": "2023-01-15T09:20:00Z",
+            "updated_at": "2023-01-15T09:20:00Z"
+        }
+    ]
 }
 
 class MemoryDB:

@@ -284,17 +284,9 @@ const CreateQA: React.FC = () => {
   useEffect(() => {
     const fetchSources = async () => {
       try {
-        // In a real app, this would fetch from the API
-        // For demo purposes, we'll use a mock response
-        setTimeout(() => {
-          const mockSources: SourceSimple[] = [
-            { id: 'manuals', name: 'Maintenance Manuals', description: 'Technical documentation and maintenance procedures' },
-            { id: 'sap', name: 'SAP Notifications', description: 'Customer complaints and technician reports from SAP' },
-            { id: 'wiki', name: 'Internal Wiki', description: 'Knowledge base articles from the company wiki' },
-            { id: 'sharepoint', name: 'SharePoint Documents', description: 'Documents stored in SharePoint libraries' }
-          ];
-          setSources(mockSources);
-        }, 300);
+        // Fetch sources from the API
+        const response = await RetrievalService.getSources();
+        setSources(response);
       } catch (err) {
         console.error('Error fetching sources:', err);
       }

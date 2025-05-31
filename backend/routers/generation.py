@@ -3,9 +3,10 @@ Generation router for the AI Ground Truth Generator backend.
 
 This module handles answer generation operations using Azure OpenAI.
 """
+from typing import Any, Dict, List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
 
 # Create router
 router = APIRouter()

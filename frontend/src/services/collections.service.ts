@@ -9,6 +9,7 @@ export interface QAPair extends CoreQAPair {}
 export interface CollectionCreateRequest {
   name: string;
   description: string;
+  tags?: string[];
 }
 
 /**
@@ -20,7 +21,7 @@ const CollectionsService = {
    * @returns Promise with array of collections
    */
   getCollections: async (): Promise<Collection[]> => {
-    const response = await api.get<Collection[]>('/collections');
+    const response = await api.get<Collection[]>('/api/collections');
     return response.data;
   },
   
@@ -30,7 +31,7 @@ const CollectionsService = {
    * @returns Promise with collection details
    */
   getCollection: async (id: string): Promise<Collection> => {
-    const response = await api.get<Collection>(`/collections/${id}`);
+    const response = await api.get<Collection>(`/api/collections/${id}`);
     return response.data;
   },
   
@@ -40,7 +41,7 @@ const CollectionsService = {
    * @returns Promise with created collection
    */
   createCollection: async (collection: CollectionCreateRequest): Promise<Collection> => {
-    const response = await api.post<Collection>('/collections', collection);
+    const response = await api.post<Collection>('/api/collections', collection);
     return response.data;
   },
   
@@ -51,7 +52,7 @@ const CollectionsService = {
    * @returns Promise with updated collection
    */
   updateCollection: async (id: string, collection: Partial<CollectionCreateRequest>): Promise<Collection> => {
-    const response = await api.put<Collection>(`/collections/${id}`, collection);
+    const response = await api.put<Collection>(`/api/collections/${id}`, collection);
     return response.data;
   },
   
@@ -61,7 +62,7 @@ const CollectionsService = {
    * @returns Promise with deletion confirmation
    */
   deleteCollection: async (id: string): Promise<void> => {
-    await api.delete(`/collections/${id}`);
+    await api.delete(`/api/collections/${id}`);
   },
   
   /**
@@ -70,7 +71,7 @@ const CollectionsService = {
    * @returns Promise with array of Q&A pairs
    */
   getQAPairs: async (collectionId: string): Promise<QAPair[]> => {
-    const response = await api.get<QAPair[]>(`/collections/${collectionId}/qa-pairs`);
+    const response = await api.get<QAPair[]>(`/api/collections/${collectionId}/qa-pairs`);
     return response.data;
   },
   
@@ -80,7 +81,7 @@ const CollectionsService = {
    * @returns Promise with Q&A pair details
    */
   getQAPair: async (id: string): Promise<QAPair> => {
-    const response = await api.get<QAPair>(`/qa-pairs/${id}`);
+    const response = await api.get<QAPair>(`/api/qa-pairs/${id}`);
     return response.data;
   },
   
@@ -91,7 +92,7 @@ const CollectionsService = {
    * @returns Promise with created Q&A pair
    */
   createQAPair: async (collectionId: string, qaPair: Partial<QAPair>): Promise<QAPair> => {
-    const response = await api.post<QAPair>(`/collections/${collectionId}/qa-pairs`, qaPair);
+    const response = await api.post<QAPair>(`/api/collections/${collectionId}/qa-pairs`, qaPair);
     return response.data;
   },
   
@@ -102,7 +103,18 @@ const CollectionsService = {
    * @returns Promise with updated Q&A pair
    */
   updateQAPair: async (id: string, qaPair: Partial<QAPair>): Promise<QAPair> => {
-    const response = await api.put<QAPair>(`/qa-pairs/${id}`, qaPair);
+    const response = await api.put<QAPair>(`/api/qa-pairs/${id}`, qaPair);
+    return response.data;
+  },
+  
+  /**
+   * Update the status of a Q&A pair
+   * @param id - Q&A pair ID
+   * @param status - New status
+   * @returns Promise with updated Q&A pair
+   */
+  updateQAPairStatus: async (id: string, status: string): Promise<QAPair> => {
+    const response = await api.patch<QAPair>(`/api/qa-pairs/${id}`, { status });
     return response.data;
   },
   
@@ -112,7 +124,7 @@ const CollectionsService = {
    * @returns Promise with deletion confirmation
    */
   deleteQAPair: async (id: string): Promise<void> => {
-    await api.delete(`/qa-pairs/${id}`);
+    await api.delete(`/api/qa-pairs/${id}`);
   }
 };
 

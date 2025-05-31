@@ -3,24 +3,21 @@ import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import MDEditor from '@uiw/react-md-editor';
 import rehypeSanitize from 'rehype-sanitize';
-import axios from 'axios';
-
-// API endpoint (would be configured from environment in real app)
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+import CollectionsService from '../services/collections.service';
 
 // Types
 interface QAPair {
   id: string;
   question: string;
   answer: string;
-  custom_rules: string[];
+  custom_rules?: string[];
   documents: any[];
   collection_id: string;
   created_at: string;
   updated_at: string;
   created_by: string;
   reviewed_by?: string;
-  review_status: string;
+  status: string;
 }
 
 interface Document {
@@ -40,7 +37,12 @@ const ReviewContainer = styled.div`
 
 const Header = styled.div`
   margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 `;
+
+const HeaderContent = styled.div``;
 
 const Title = styled.h1`
   color: #333;
@@ -49,6 +51,20 @@ const Title = styled.h1`
 
 const Subtitle = styled.p`
   color: #666;
+`;
+
+const BackButton = styled.button`
+  background-color: #f3f3f3;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  
+  &:hover {
+    background-color: #e6e6e6;
+  }
 `;
 
 const Section = styled.section`
@@ -150,6 +166,65 @@ const MetaInfo = styled.div`
   margin-top: 1rem;
 `;
 
+const StatusBadge = styled.span<{ status: string }>`
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  
+  background-color: ${props => {
+    switch (props.status) {
+      case 'approved':
+        return '#e6f7e6';
+      case 'rejected':
+        return '#ffebee';
+      case 'pending':
+        return '#fff8e1';
+      case 'draft':
+      default:
+        return '#e3f2fd';
+    }
+  }};
+  
+  color: ${props => {
+    switch (props.status) {
+      case 'approved':
+        return '#2e7d32';
+      case 'rejected':
+        return '#c62828';
+      case 'pending':
+        return '#f57c00';
+      case 'draft':
+      default:
+        return '#1976d2';
+    }
+  }};
+  
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+    background-color: ${props => {
+      switch (props.status) {
+        case 'approved':
+          return '#2e7d32';
+        case 'rejected':
+          return '#c62828';
+        case 'pending':
+          return '#f57c00';
+        case 'draft':
+        default:
+          return '#1976d2';
+      }
+    }};
+  }
+`;
+
 const ButtonContainer = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -203,6 +278,12 @@ const SecondaryButton = styled(Button)`
   }
 `;
 
+const LoadingOrError = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+`;
+
 /**
  * Review QA page component.
  * Allows reviewing and approving/rejecting a Q&A pair.
@@ -212,6 +293,7 @@ const ReviewQA: React.FC = () => {
   const navigate = useNavigate();
   
   const [qaPair, setQAPair] = useState<QAPair | null>(null);
+  const [collectionName, setCollectionName] = useState<string>('');
   const [editedAnswer, setEditedAnswer] = useState('');
   const [activeTab, setActiveTab] = useState<'markdown' | 'preview'>('preview');
   const [isEditing, setIsEditing] = useState(false);
@@ -221,42 +303,21 @@ const ReviewQA: React.FC = () => {
   
   useEffect(() => {
     const fetchQAPair = async () => {
+      if (!qaId) return;
+      
       try {
-        // In a real app, this would fetch from the API
-        // For demo purposes, we'll use mock data
-        setTimeout(() => {
-          const mockQAPair: QAPair = {
-            id: qaId || '1',
-            question: 'How do I replace the air filter in a Model X?',
-            answer: '# Air Filter Replacement in Model X\n\nTo replace the air filter in a Model X, follow these steps:\n\n1. Open the hood of the vehicle\n2. Locate the air filter housing on the passenger side\n3. Remove the cover (may require releasing clips)\n4. Take out the old filter\n5. Insert the new filter with the same orientation\n6. Replace the cover securely\n7. Close the hood\n\n**Maintenance Schedule:** Air filters should be replaced every 12 months or 12,000 miles, whichever comes first.\n\n**Warning Signs:** If you notice unusual smells from the ventilation system or reduced fuel efficiency, your air filter may need replacement before the scheduled maintenance.',
-            custom_rules: ['Use numbered lists for step-by-step instructions', 'Include maintenance schedule information'],
-            documents: [
-              {
-                id: 'doc1',
-                title: 'Model X Maintenance Manual',
-                content: 'Chapter 5: Air Filter Replacement. To replace the air filter in a Model X, follow these steps:\n\n1. Open the hood\n2. Locate the air filter housing\n3. Remove the cover\n4. Replace the filter\n5. Replace the cover\n6. Close the hood',
-                source: 'manuals',
-                url: 'https://example.com/docs/model-x-manual.pdf'
-              },
-              {
-                id: 'doc3',
-                title: 'Wiki: Common Maintenance Procedures',
-                content: 'Air filters should be replaced every 12 months or 12,000 miles, whichever comes first. Signs of a clogged air filter include reduced fuel efficiency and unusual smells from the ventilation system.',
-                source: 'wiki',
-                url: 'https://wiki.example.com/maintenance/common-procedures'
-              }
-            ],
-            collection_id: '1',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            created_by: 'demo_user_id',
-            review_status: 'pending'
-          };
-          
-          setQAPair(mockQAPair);
-          setEditedAnswer(mockQAPair.answer);
-          setLoading(false);
-        }, 500);
+        // Fetch QA pair from API
+        const qa = await CollectionsService.getQAPair(qaId);
+        setQAPair(qa);
+        setEditedAnswer(qa.answer);
+        
+        // Fetch collection name
+        if (qa.collection_id) {
+          const collection = await CollectionsService.getCollection(qa.collection_id);
+          setCollectionName(collection.name);
+        }
+        
+        setLoading(false);
       } catch (err) {
         console.error('Error fetching Q&A pair:', err);
         setError('Failed to load Q&A pair. Please try again later.');
@@ -267,45 +328,31 @@ const ReviewQA: React.FC = () => {
     fetchQAPair();
   }, [qaId]);
   
-  const handleApprove = async () => {
-    if (!qaPair) return;
+  const updateStatus = async (newStatus: string) => {
+    if (!qaPair || !qaId) return;
     
     setIsUpdating(true);
     try {
-      // In a real app, this would call the API
-      // For demo purposes, we'll simulate an update
-      setTimeout(() => {
-        console.log('Approving Q&A pair:', qaPair.id);
-        
-        // Navigate back to the collection
-        navigate(`/collections/${qaPair.collection_id}`);
-        setIsUpdating(false);
-      }, 1000);
+      // Call API to update status
+      await CollectionsService.updateQAPairStatus(qaId, newStatus);
+      
+      // Update local state
+      setQAPair({
+        ...qaPair,
+        status: newStatus
+      });
+      
+      setIsUpdating(false);
     } catch (err) {
-      console.error('Error approving Q&A pair:', err);
+      console.error(`Error ${newStatus} Q&A pair:`, err);
       setIsUpdating(false);
     }
   };
   
-  const handleReject = async () => {
-    if (!qaPair) return;
-    
-    setIsUpdating(true);
-    try {
-      // In a real app, this would call the API
-      // For demo purposes, we'll simulate an update
-      setTimeout(() => {
-        console.log('Rejecting Q&A pair:', qaPair.id);
-        
-        // Navigate back to the collection
-        navigate(`/collections/${qaPair.collection_id}`);
-        setIsUpdating(false);
-      }, 1000);
-    } catch (err) {
-      console.error('Error rejecting Q&A pair:', err);
-      setIsUpdating(false);
-    }
-  };
+  const handleApprove = () => updateStatus('approved');
+  const handleReject = () => updateStatus('rejected');
+  const handleMarkAsPending = () => updateStatus('pending');
+  const handleMoveToDraft = () => updateStatus('draft');
   
   const handleEdit = () => {
     setIsEditing(true);
@@ -313,22 +360,18 @@ const ReviewQA: React.FC = () => {
   };
   
   const handleSaveEdit = async () => {
-    if (!qaPair) return;
+    if (!qaPair || !qaId) return;
     
     setIsUpdating(true);
     try {
       // In a real app, this would call the API
-      // For demo purposes, we'll simulate an update
+      // For this demo, we'll simulate an update
       setTimeout(() => {
-        console.log('Saving edited Q&A pair:', {
-          ...qaPair,
-          answer: editedAnswer
-        });
-        
         // Update the local state
         setQAPair({
           ...qaPair,
-          answer: editedAnswer
+          answer: editedAnswer,
+          updated_at: new Date().toISOString()
         });
         
         setIsEditing(false);
@@ -347,46 +390,65 @@ const ReviewQA: React.FC = () => {
     setActiveTab('preview');
   };
   
+  const handleBackToCollection = () => {
+    if (qaPair?.collection_id) {
+      navigate(`/collections/${qaPair.collection_id}`);
+    }
+  };
+  
   if (loading) {
-    return <ReviewContainer>Loading Q&A pair...</ReviewContainer>;
+    return <LoadingOrError>Loading Q&A pair...</LoadingOrError>;
   }
   
   if (error) {
-    return <ReviewContainer>{error}</ReviewContainer>;
+    return <LoadingOrError>{error}</LoadingOrError>;
   }
   
   if (!qaPair) {
-    return <ReviewContainer>Q&A pair not found</ReviewContainer>;
+    return <LoadingOrError>Q&A pair not found</LoadingOrError>;
   }
   
   return (
     <ReviewContainer>
       <Header>
-        <Title>Review Question & Answer</Title>
-        <Subtitle>Collection: Maintenance Manuals</Subtitle>
+        <HeaderContent>
+          <Title>Review Question & Answer</Title>
+          <Subtitle>Collection: {collectionName || 'Unknown'}</Subtitle>
+        </HeaderContent>
+        
+        <BackButton onClick={handleBackToCollection}>
+          Back to Collection
+        </BackButton>
       </Header>
       
       <Section>
         <SectionTitle>Question</SectionTitle>
         <Card>
           <QuestionText>{qaPair.question}</QuestionText>
+          <MetaInfo>
+            <StatusBadge status={qaPair.status}>
+              {qaPair.status.charAt(0).toUpperCase() + qaPair.status.slice(1)}
+            </StatusBadge>
+          </MetaInfo>
         </Card>
       </Section>
       
-      <Section>
-        <SectionTitle>Referenced Documents</SectionTitle>
-        <DocumentsList>
-          {qaPair.documents.map((doc: Document, index) => (
-            <DocumentItem key={index}>
-              <DocumentTitle>{doc.title}</DocumentTitle>
-              <DocumentContent>{doc.content}</DocumentContent>
-              <DocumentSource>Source: {doc.source}</DocumentSource>
-            </DocumentItem>
-          ))}
-        </DocumentsList>
-      </Section>
+      {qaPair.documents && qaPair.documents.length > 0 && (
+        <Section>
+          <SectionTitle>Referenced Documents</SectionTitle>
+          <DocumentsList>
+            {qaPair.documents.map((doc: Document, index) => (
+              <DocumentItem key={index}>
+                <DocumentTitle>{doc.title}</DocumentTitle>
+                <DocumentContent>{doc.content}</DocumentContent>
+                <DocumentSource>Source: {doc.source}</DocumentSource>
+              </DocumentItem>
+            ))}
+          </DocumentsList>
+        </Section>
+      )}
       
-      {qaPair.custom_rules.length > 0 && (
+      {qaPair.custom_rules && qaPair.custom_rules.length > 0 && (
         <Section>
           <SectionTitle>Custom Rules Applied</SectionTitle>
           <RulesList>
@@ -432,8 +494,8 @@ const ReviewQA: React.FC = () => {
           </TabContainer>
           
           <MetaInfo>
-            <span>Created by: User ID {qaPair.created_by}</span>
-            <span>Created: {new Date(qaPair.created_at).toLocaleDateString()}</span>
+            <span>Created by: {qaPair.created_by}</span>
+            <span>Last updated: {new Date(qaPair.updated_at).toLocaleDateString()}</span>
           </MetaInfo>
         </Card>
       </Section>
@@ -453,12 +515,30 @@ const ReviewQA: React.FC = () => {
             <SecondaryButton onClick={handleEdit} disabled={isUpdating}>
               Edit Answer
             </SecondaryButton>
-            <RejectButton onClick={handleReject} disabled={isUpdating}>
-              {isUpdating ? 'Rejecting...' : 'Reject'}
-            </RejectButton>
-            <ApproveButton onClick={handleApprove} disabled={isUpdating}>
-              {isUpdating ? 'Approving...' : 'Approve'}
-            </ApproveButton>
+            
+            {qaPair.status !== 'draft' && (
+              <SecondaryButton onClick={handleMoveToDraft} disabled={isUpdating}>
+                Move to Draft
+              </SecondaryButton>
+            )}
+            
+            {qaPair.status !== 'pending' && (
+              <SecondaryButton onClick={handleMarkAsPending} disabled={isUpdating}>
+                Mark as Pending
+              </SecondaryButton>
+            )}
+            
+            {qaPair.status !== 'rejected' && (
+              <RejectButton onClick={handleReject} disabled={isUpdating}>
+                {isUpdating ? 'Rejecting...' : 'Reject'}
+              </RejectButton>
+            )}
+            
+            {qaPair.status !== 'approved' && (
+              <ApproveButton onClick={handleApprove} disabled={isUpdating}>
+                {isUpdating ? 'Approving...' : 'Approve'}
+              </ApproveButton>
+            )}
           </>
         )}
       </ButtonContainer>

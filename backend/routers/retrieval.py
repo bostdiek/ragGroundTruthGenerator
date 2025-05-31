@@ -3,9 +3,10 @@ Retrieval router for the AI Ground Truth Generator backend.
 
 This module handles document retrieval operations.
 """
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
 
 # Create router
 router = APIRouter()

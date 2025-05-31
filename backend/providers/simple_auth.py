@@ -5,12 +5,13 @@ This module provides a simple pass-through authentication mechanism for developm
 In production, replace this with your actual authentication implementation.
 """
 import os
-import jwt
 import time
 from datetime import datetime, timedelta
-from typing import Dict, Optional, List, Any
+from typing import Any, Dict, List, Optional
+
+import jwt
+from fastapi import Depends, Header, HTTPException, status
 from pydantic import BaseModel
-from fastapi import Depends, HTTPException, status, Header
 
 # Simple in-memory user database for development
 # In production, replace with your actual user database

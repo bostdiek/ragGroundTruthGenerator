@@ -3,10 +3,11 @@ Authentication router for the AI Ground Truth Generator backend.
 
 This module handles user authentication operations.
 """
+import os
+from typing import Any, Dict, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from typing import Optional, Dict, Any
-import os
 
 # Create router
 router = APIRouter()

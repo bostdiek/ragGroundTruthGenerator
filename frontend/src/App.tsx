@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import Collections from './pages/Collections';
 import CollectionDetail from './pages/CollectionDetail';
+import CreateCollection from './pages/CreateCollection';
 import CreateQA from './pages/CreateQA';
 import ReviewQA from './pages/ReviewQA';
 
@@ -33,6 +34,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
                 <Route path="/collections" element={<PrivateRoute><Collections /></PrivateRoute>} />
+                <Route path="/collections/new" element={<PrivateRoute><CreateCollection /></PrivateRoute>} />
                 <Route path="/collections/:id" element={<PrivateRoute><CollectionDetail /></PrivateRoute>} />
                 <Route path="/create-qa/:collectionId" element={<PrivateRoute><CreateQA /></PrivateRoute>} />
                 <Route path="/review-qa/:qaId" element={<PrivateRoute><ReviewQA /></PrivateRoute>} />

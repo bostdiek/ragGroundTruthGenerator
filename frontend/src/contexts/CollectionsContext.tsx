@@ -28,8 +28,8 @@ const CollectionsContext = createContext<CollectionsContextType>({
   fetchCollections: async () => {},
   fetchCollection: async () => {},
   fetchQAPairs: async () => {},
-  createCollection: async () => ({ id: '', name: '', description: '', created_at: '', updated_at: '', created_by: '', qa_count: 0 }),
-  updateCollection: async () => ({ id: '', name: '', description: '', created_at: '', updated_at: '', created_by: '', qa_count: 0 }),
+  createCollection: async () => ({ id: '', name: '', description: '', tags: [], created_at: '', updated_at: '', document_count: 0 }),
+  updateCollection: async () => ({ id: '', name: '', description: '', tags: [], created_at: '', updated_at: '', document_count: 0 }),
   deleteCollection: async () => {},
   clearCurrentCollection: () => {},
   createQAPair: async () => ({ 
@@ -200,7 +200,7 @@ export const CollectionsProvider: React.FC<{ children: ReactNode }> = ({ childre
       setCollections(prev => 
         prev.map(collection => 
           collection.id === collectionId 
-            ? { ...collection, qa_count: (collection.qa_count || 0) + 1 } 
+            ? { ...collection, document_count: (collection.document_count || 0) + 1 } 
             : collection
         )
       );
@@ -208,7 +208,7 @@ export const CollectionsProvider: React.FC<{ children: ReactNode }> = ({ childre
       // Update current collection if it's the one we're adding to
       if (currentCollection?.id === collectionId) {
         setCurrentCollection(prev => 
-          prev ? { ...prev, qa_count: (prev.qa_count || 0) + 1 } : null
+          prev ? { ...prev, document_count: (prev.document_count || 0) + 1 } : null
         );
       }
       

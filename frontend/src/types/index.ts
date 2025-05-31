@@ -17,10 +17,10 @@ export interface Collection {
   id: string;
   name: string;
   description: string;
+  tags: string[];
   created_at: string;
   updated_at: string;
-  created_by: string;
-  qa_count: number;
+  document_count: number;
   
   // Extensible metadata - Add custom fields here
   metadata?: Record<string, any>;

@@ -3,10 +3,13 @@ Collections router for the AI Ground Truth Generator backend.
 
 This module handles collection management operations.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
 import uuid
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, HTTPException, status
+from providers.database import get_database
+from pydantic import BaseModel
 
 # Create router
 router = APIRouter()
@@ -26,6 +29,7 @@ class Collection(CollectionBase):
     """Model for collection response data."""
     id: str
     document_count: int = 0
+    status_counts: Dict[str, int] = {}
     created_at: str
     updated_at: str
 
@@ -37,49 +41,39 @@ class Collection(CollectionBase):
 @router.get("/", response_model=List[Collection])
 async def get_collections():
     """
-    Get a list of collections. This is a placeholder implementation.
+    Get a list of collections with their QA pair statistics.
     
     Returns:
-        List[Collection]: A list of collections.
+        List[Collection]: A list of collections with statistics.
     """
-    # This is a placeholder - in a real app, this would fetch from a database
+    # Get collections from the database
+    collections_db = get_database("collections")
+    collections = await collections_db.find_all()
     
-    collections = [
-        {
-            "id": "col1",
-            "name": "Equipment Manuals",
-            "description": "Technical manuals for equipment maintenance",
-            "tags": ["manuals", "maintenance", "technical"],
-            "document_count": 45,
-            "created_at": "2023-05-15T10:30:00Z",
-            "updated_at": "2023-06-20T15:45:00Z"
-        },
-        {
-            "id": "col2",
-            "name": "SAP Notifications",
-            "description": "Historical customer issues and resolutions",
-            "tags": ["sap", "notifications", "issues"],
-            "document_count": 128,
-            "created_at": "2023-04-10T09:15:00Z",
-            "updated_at": "2023-06-22T11:20:00Z"
-        },
-        {
-            "id": "col3",
-            "name": "Internal Wiki",
-            "description": "Knowledge base for common procedures",
-            "tags": ["wiki", "knowledge", "procedures"],
-            "document_count": 73,
-            "created_at": "2023-01-05T14:20:00Z",
-            "updated_at": "2023-06-15T08:30:00Z"
-        }
-    ]
+    # For each collection, get QA pair statistics
+    qa_pairs_db = get_database("qa_pairs")
+    for collection in collections:
+        # Get count of QA pairs for this collection
+        qa_pairs = await qa_pairs_db.find_all({"collection_id": collection["id"]})
+        collection["document_count"] = len(qa_pairs)
+        
+        # Get counts by status
+        status_counts = {}
+        for qa_pair in qa_pairs:
+            status = qa_pair.get("status", "draft")
+            status_counts[status] = status_counts.get(status, 0) + 1
+        collection["status_counts"] = status_counts
+        
+        # Get sample questions (limit to 3)
+        sample_questions = [qa_pair["question"] for qa_pair in qa_pairs[:3]]
+        collection["sample_questions"] = sample_questions
     
     return collections
 
 @router.post("/", response_model=Collection, status_code=status.HTTP_201_CREATED)
 async def create_collection(collection: CollectionCreate):
     """
-    Create a new collection. This is a placeholder implementation.
+    Create a new collection.
     
     Args:
         collection: The collection data.
@@ -87,27 +81,31 @@ async def create_collection(collection: CollectionCreate):
     Returns:
         Collection: The created collection.
     """
-    # This is a placeholder - in a real app, this would save to a database
-    
+    # Generate a new ID and timestamps
     collection_id = str(uuid.uuid4())
-    current_time = "2023-06-23T12:00:00Z"  # In a real app, use datetime.now()
+    current_time = datetime.utcnow().isoformat()
     
+    # Create the collection object
     new_collection = {
         "id": collection_id,
         "name": collection.name,
         "description": collection.description,
         "tags": collection.tags,
-        "document_count": 0,
+        "document_count": 0,  # New collections have 0 QA pairs
         "created_at": current_time,
         "updated_at": current_time
     }
+    
+    # Insert the collection into the database
+    collections_db = get_database("collections")
+    await collections_db.insert_one(new_collection)
     
     return new_collection
 
 @router.get("/{collection_id}", response_model=Collection)
 async def get_collection(collection_id: str):
     """
-    Get a specific collection by ID. This is a placeholder implementation.
+    Get a specific collection by ID. This implementation uses the database provider.
     
     Args:
         collection_id: The ID of the collection to retrieve.
@@ -115,39 +113,65 @@ async def get_collection(collection_id: str):
     Returns:
         Collection: The requested collection.
     """
-    # This is a placeholder - in a real app, this would fetch from a database
+    # Get the collection from the database
+    collections_db = get_database("collections")
+    collection = await collections_db.find_one({"id": collection_id})
     
-    if collection_id == "col1":
-        return {
-            "id": "col1",
-            "name": "Equipment Manuals",
-            "description": "Technical manuals for equipment maintenance",
-            "tags": ["manuals", "maintenance", "technical"],
-            "document_count": 45,
-            "created_at": "2023-05-15T10:30:00Z",
-            "updated_at": "2023-06-20T15:45:00Z"
-        }
-    
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Collection with ID {collection_id} not found"
-    )
-
-@router.delete("/{collection_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_collection(collection_id: str):
-    """
-    Delete a specific collection by ID. This is a placeholder implementation.
-    
-    Args:
-        collection_id: The ID of the collection to delete.
-    """
-    # This is a placeholder - in a real app, this would delete from a database
-    
-    if collection_id != "col1":
+    if not collection:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Collection with ID {collection_id} not found"
         )
+    
+    # Get QA pair statistics
+    qa_pairs_db = get_database("qa_pairs")
+    qa_pairs = await qa_pairs_db.find_all({"collection_id": collection_id})
+    
+    # Calculate document count
+    collection["document_count"] = len(qa_pairs)
+    
+    # Calculate counts by status
+    status_counts = {}
+    for qa_pair in qa_pairs:
+        status = qa_pair.get("status", "draft")
+        status_counts[status] = status_counts.get(status, 0) + 1
+    collection["status_counts"] = status_counts
+    
+    return collection
+
+@router.delete("/{collection_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_collection(collection_id: str):
+    """
+    Delete a specific collection by ID and all associated QA pairs.
+    
+    Args:
+        collection_id: The ID of the collection to delete.
+    """
+    # Check if the collection exists
+    collections_db = get_database("collections")
+    collection = await collections_db.find_one({"id": collection_id})
+    
+    if not collection:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Collection with ID {collection_id} not found"
+        )
+    
+    # Delete the collection
+    deleted = await collections_db.delete_one({"id": collection_id})
+    
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete collection"
+        )
+    
+    # Delete all QA pairs for this collection
+    qa_pairs_db = get_database("qa_pairs")
+    qa_pairs = await qa_pairs_db.find_all({"collection_id": collection_id})
+    
+    for qa_pair in qa_pairs:
+        await qa_pairs_db.delete_one({"id": qa_pair["id"]})
     
     # Return nothing for successful deletion (204 No Content)
     return None
@@ -189,36 +213,19 @@ async def get_qa_pairs(collection_id: str):
     Returns:
         List[QAPair]: A list of QA pairs for the collection.
     """
-    # This is a placeholder - in a real app, this would fetch from a database
+    # Check if the collection exists
+    collections_db = get_database("collections")
+    collection = await collections_db.find_one({"id": collection_id})
     
-    if collection_id not in ["col1", "col2", "col3"]:
+    if not collection:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Collection with ID {collection_id} not found"
         )
     
-    # Return some sample QA pairs
-    qa_pairs = [
-        {
-            "id": "qa1",
-            "collection_id": collection_id,
-            "question": "How do I reset the equipment?",
-            "answer": "To reset the equipment, power cycle the device and wait for 30 seconds before turning it back on.",
-            "documents": [
-                {
-                    "id": "doc1",
-                    "title": "Equipment Manual",
-                    "content": "Section on troubleshooting",
-                    "source": "Technical Documentation"
-                }
-            ],
-            "status": "approved",
-            "metadata": {"priority": "high"},
-            "created_at": "2023-06-01T10:00:00Z",
-            "updated_at": "2023-06-02T15:30:00Z",
-            "created_by": "demo_user"
-        }
-    ]
+    # Get QA pairs for the collection
+    qa_pairs_db = get_database("qa_pairs")
+    qa_pairs = await qa_pairs_db.find_all({"collection_id": collection_id})
     
     return qa_pairs
 
@@ -234,9 +241,11 @@ async def create_qa_pair(collection_id: str, qa_pair: QAPairCreate):
     Returns:
         QAPair: The created QA pair.
     """
-    # This is a placeholder - in a real app, this would save to a database
+    # Check if the collection exists
+    collections_db = get_database("collections")
+    collection = await collections_db.find_one({"id": collection_id})
     
-    if collection_id not in ["col1", "col2", "col3"]:
+    if not collection:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Collection with ID {collection_id} not found"
@@ -244,7 +253,7 @@ async def create_qa_pair(collection_id: str, qa_pair: QAPairCreate):
     
     # Create a new QA pair
     qa_pair_id = str(uuid.uuid4())
-    current_time = "2023-06-23T12:00:00Z"  # In a real app, use datetime.now()
+    current_time = datetime.utcnow().isoformat()
     
     new_qa_pair = {
         "id": qa_pair_id,
@@ -259,4 +268,88 @@ async def create_qa_pair(collection_id: str, qa_pair: QAPairCreate):
         "created_by": "demo_user"
     }
     
+    # Insert the QA pair into the database
+    qa_pairs_db = get_database("qa_pairs")
+    await qa_pairs_db.insert_one(new_qa_pair)
+    
     return new_qa_pair
+
+@router.get("/qa-pairs/{qa_pair_id}", response_model=QAPair)
+async def get_qa_pair(qa_pair_id: str):
+    """
+    Get a specific QA pair by ID.
+    
+    Args:
+        qa_pair_id: The ID of the QA pair to retrieve.
+        
+    Returns:
+        QAPair: The requested QA pair.
+    """
+    # Get the QA pair from the database
+    qa_pairs_db = get_database("qa_pairs")
+    qa_pair = await qa_pairs_db.find_one({"id": qa_pair_id})
+    
+    if not qa_pair:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"QA pair with ID {qa_pair_id} not found"
+        )
+    
+    return qa_pair
+
+class QAPairUpdate(BaseModel):
+    """Model for updating a QA pair."""
+    status: Optional[str] = None
+    answer: Optional[str] = None
+    question: Optional[str] = None
+    documents: Optional[List[Dict[str, Any]]] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+@router.patch("/qa-pairs/{qa_pair_id}", response_model=QAPair)
+async def update_qa_pair(qa_pair_id: str, qa_pair_update: QAPairUpdate):
+    """
+    Update a QA pair.
+    
+    Args:
+        qa_pair_id: The ID of the QA pair to update.
+        qa_pair_update: The QA pair update data.
+        
+    Returns:
+        QAPair: The updated QA pair.
+    """
+    # Check if the QA pair exists
+    qa_pairs_db = get_database("qa_pairs")
+    qa_pair = await qa_pairs_db.find_one({"id": qa_pair_id})
+    
+    if not qa_pair:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"QA pair with ID {qa_pair_id} not found"
+        )
+    
+    # Prepare the update
+    update_data = {}
+    if qa_pair_update.status is not None:
+        update_data["status"] = qa_pair_update.status
+    if qa_pair_update.answer is not None:
+        update_data["answer"] = qa_pair_update.answer
+    if qa_pair_update.question is not None:
+        update_data["question"] = qa_pair_update.question
+    if qa_pair_update.documents is not None:
+        update_data["documents"] = qa_pair_update.documents
+    if qa_pair_update.metadata is not None:
+        update_data["metadata"] = qa_pair_update.metadata
+    
+    # Update the timestamp
+    update_data["updated_at"] = datetime.utcnow().isoformat()
+    
+    # Update the QA pair
+    updated_qa_pair = await qa_pairs_db.update_one({"id": qa_pair_id}, update_data)
+    
+    if not updated_qa_pair:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update QA pair"
+        )
+    
+    return updated_qa_pair

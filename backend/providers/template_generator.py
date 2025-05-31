@@ -4,7 +4,8 @@ Simple template generation provider for development.
 This module provides a simple template-based generation provider for development.
 In production, replace this with your actual generation implementation.
 """
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
+
 
 class TemplateGenerator:
     """
