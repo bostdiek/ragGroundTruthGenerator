@@ -8,8 +8,9 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, status
-from providers.database import get_database
 from pydantic import BaseModel
+
+from providers.database import get_database
 
 # Create router
 router = APIRouter()

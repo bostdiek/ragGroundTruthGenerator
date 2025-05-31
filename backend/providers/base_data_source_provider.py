@@ -6,6 +6,7 @@ This module defines the interface that all data source providers must implement.
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
+
 class BaseDataSourceProvider(ABC):
     """
     Base interface for all data source providers.

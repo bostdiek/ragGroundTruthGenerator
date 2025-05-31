@@ -22,6 +22,7 @@ from typing import Any, Dict, List, Optional
 
 from providers.base_data_source_provider import BaseDataSourceProvider
 
+
 class MemoryDataSourceProvider(BaseDataSourceProvider):
     """
     A provider that searches through in-memory documents.

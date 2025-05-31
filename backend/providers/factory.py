@@ -70,7 +70,9 @@ def get_data_source_provider(provider_id: str) -> Any:
         ValueError: If the specified provider ID is not supported
     """
     if provider_id == "memory":
-        from providers.memory_data_source_provider import get_provider as get_memory_provider
+        from providers.memory_data_source_provider import (
+            get_provider as get_memory_provider,
+        )
         return get_memory_provider()
     # TODO: Add other data source providers
     # elif provider_id == "azure_search":
