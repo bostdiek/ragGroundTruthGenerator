@@ -2,6 +2,21 @@
 Memory-based data source provider for the AI Ground Truth Generator.
 
 This module provides a simple in-memory data source provider for development and demonstration.
+It serves as a reference implementation for creating new data source providers.
+
+To create your own data source provider:
+1. Create a new Python file in the providers directory
+2. Import BaseDataSourceProvider from base_data_source_provider
+3. Create a class that inherits from BaseDataSourceProvider
+4. Implement all required methods (get_name, get_description, get_id, retrieve_documents)
+5. Add a get_provider function that returns an instance of your provider
+6. Update factory.py to include your new provider
+
+Example use cases for custom data source providers:
+- Searching documents in a database
+- Retrieving content from an API
+- Querying a search engine like Elasticsearch or Azure Cognitive Search
+- Accessing files in cloud storage (S3, Azure Blob Storage, etc.)
 """
 from typing import Any, Dict, List, Optional
 
@@ -17,7 +32,19 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
     """
     
     def __init__(self):
-        """Initialize the memory provider with sample documents."""
+        """
+        Initialize the memory provider with sample documents.
+        
+        This is a simple in-memory document store that demonstrates
+        how to implement a data source provider. In a real-world scenario,
+        you would likely replace this with a provider that connects to
+        a database, API, or other external data source.
+        
+        To extend this example:
+        1. Add more documents to the self.documents list
+        2. Enhance the search algorithm in retrieve_documents
+        3. Add support for more advanced filters
+        """
         self.documents = [
             {
                 "id": "doc1",
@@ -73,6 +100,20 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "model": "Model X",
                     "created_date": "2023-02-07"
                 }
+            },
+            {
+                "id": "doc5",
+                "title": "AI Ground Truth Generation Best Practices",
+                "content": "Creating high-quality ground truth data is essential for training effective " +
+                          "AI models. This document covers best practices for data annotation, quality " +
+                          "control, and dataset management to ensure optimal model performance.",
+                "url": "https://example.com/docs/ai-ground-truth-best-practices.pdf",
+                "metadata": {
+                    "type": "guide",
+                    "topic": "ai",
+                    "subtopic": "data preparation",
+                    "created_date": "2023-06-15"
+                }
             }
         ]
     
@@ -92,19 +133,37 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
         """
         Retrieve documents matching the query.
         
-        Performs a simple substring search in both title and content.
+        This method demonstrates a simple search algorithm that looks for
+        the query string in both the title and content of each document.
+        In a real-world implementation, you would replace this with a more
+        sophisticated search algorithm, potentially using:
+        
+        - Full-text search
+        - Vector embeddings for semantic search
+        - Query parsing for complex filters
+        - Relevance scoring based on multiple factors
         
         Args:
             query: The search query
-            filters: Optional filters to apply (not used in this implementation)
+            filters: Optional filters to apply (example: {"type": "manual"})
             
         Returns:
-            A list of matching documents
+            A list of matching documents with source attribution and relevance scores
         """
         query = query.lower()
         results = []
         
         for doc in self.documents:
+            # Apply filters if specified
+            if filters:
+                skip = False
+                for key, value in filters.items():
+                    if key in doc.get("metadata", {}) and doc["metadata"][key] != value:
+                        skip = True
+                        break
+                if skip:
+                    continue
+            
             # Simple substring matching for demonstration purposes
             if (query in doc["title"].lower() or 
                 query in doc["content"].lower()):

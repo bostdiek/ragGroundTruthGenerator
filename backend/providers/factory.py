@@ -56,11 +56,18 @@ def get_data_source_provider(provider_id: str) -> Any:
     """
     Get a data source provider instance by ID.
     
+    A data source provider is responsible for retrieving documents from
+    a specific data source, such as a memory store, file system, database,
+    or external API. Each provider implements the BaseDataSourceProvider interface.
+    
     Args:
-        provider_id: The ID of the provider
+        provider_id: The ID of the provider to retrieve
         
     Returns:
         A data source provider instance
+        
+    Raises:
+        ValueError: If the specified provider ID is not supported
     """
     if provider_id == "memory":
         from providers.memory_data_source_provider import get_provider as get_memory_provider
@@ -78,6 +85,13 @@ def get_data_source_provider(provider_id: str) -> Any:
 def get_all_data_source_providers() -> Dict[str, Any]:
     """
     Get all enabled data source providers.
+    
+    This function returns a dictionary of all enabled data source providers,
+    as specified by the ENABLED_DATA_SOURCES environment variable. Each provider
+    is instantiated and added to the dictionary with its ID as the key.
+    
+    Providers that cannot be instantiated (e.g., due to missing dependencies)
+    are skipped with a warning.
     
     Returns:
         A dictionary of provider IDs to provider instances
