@@ -1,29 +1,28 @@
 import api from './api';
-import { Document } from './retrieval.service';
+import { Document } from '../types';
 
 // Types
 export interface GenerationRequest {
   question: string;
-  documents: string[]; // Array of document IDs
+  documents: Document[]; // Array of document objects
   model?: string;
   temperature?: number;
   max_tokens?: number;
-  rules?: string[];
+  rules?: Rule[];
 }
 
 export interface GenerationResponse {
   answer: string;
-  model_used: string;
-  tokens_used: number;
-  processing_time: number;
-  document_references: Document[];
+  model_used?: string;
+  tokens_used?: number;
+  processing_time?: number;
+  document_references?: Document[];
 }
 
 export interface Rule {
   id: string;
-  name: string;
   description: string;
-  prompt_addition: string;
+  type: string;
 }
 
 /**

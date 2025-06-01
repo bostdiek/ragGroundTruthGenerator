@@ -120,7 +120,7 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
     
     def get_name(self) -> str:
         """Return the name of this data source."""
-        return "Sample Documents"
+        return "In Memory Documents"
     
     def get_description(self) -> str:
         """Return a description of this data source."""
@@ -128,6 +128,7 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
     
     def get_id(self) -> str:
         """Return the unique identifier for this data source."""
+        # This ID must match what's expected by the frontend
         return "memory"
     
     async def retrieve_documents(self, query: str, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
@@ -152,46 +153,75 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
             A list of matching documents with source attribution and relevance scores
         """
         query = query.lower()
-        results = []
+        # Split the query into words for better matching
+        query_terms = [term for term in query.split() if len(term) > 2]  # Only use terms with >2 chars
+        all_results = []
         
         for doc in self.documents:
+            # Create a copy of the document to avoid modifying the original
+            result = doc.copy()
+            
+            # Add source attribution
+            result["source"] = {
+                "id": self.get_id(),
+                "name": self.get_name(),
+                "type": "sample"
+            }
+            
             # Apply filters if specified
             if filters:
                 skip = False
                 for key, value in filters.items():
-                    if key in doc.get("metadata", {}) and doc["metadata"][key] != value:
+                    metadata_value = doc.get("metadata", {}).get(key)
+                    if metadata_value is not None and metadata_value != value:
                         skip = True
                         break
                 if skip:
                     continue
             
-            # Simple substring matching for demonstration purposes
-            if (query in doc["title"].lower() or 
-                query in doc["content"].lower()):
+            # Count matches for each term in the title and content
+            title_lower = doc["title"].lower()
+            content_lower = doc["content"].lower()
+            
+            # Check for exact query match first (highest relevance)
+            exact_title_match = query in title_lower
+            exact_content_match = query in content_lower
+            
+            # Count term matches and occurrences
+            title_term_count = sum(title_lower.count(term) for term in query_terms)
+            content_term_count = sum(content_lower.count(term) for term in query_terms)
+            
+            # Calculate a relevance score
+            if exact_title_match:
+                relevance_score = 0.95  # Exact match in title is highest
+            elif exact_content_match:
+                relevance_score = 0.85  # Exact match in content is next highest
+            elif title_term_count > 0 or content_term_count > 0:
+                # If we have some term matches, use the counts to determine score
+                # Weight title matches more heavily (3x)
+                weighted_count = (title_term_count * 3) + content_term_count
                 
-                # Create a copy of the document to avoid modifying the original
-                result = doc.copy()
-                
-                # Add source attribution
-                result["source"] = {
-                    "id": self.get_id(),
-                    "name": self.get_name(),
-                    "type": "sample"
-                }
-                
-                # Calculate a simple "relevance score" for demonstration
-                title_match = query in doc["title"].lower()
-                content_match = query in doc["content"].lower()
-                
-                # Assign higher score if match is in title
-                result["relevance_score"] = 0.9 if title_match else 0.6
-                
-                results.append(result)
+                # Scale the score based on the weighted count
+                # More occurrences = higher score
+                relevance_score = min(0.8, 0.3 + (weighted_count * 0.05))
+            else:
+                # Even with no matches, assign a varied low baseline score based on document ID
+                # This ensures variety in results even with low/no relevance
+                # Using hash of document ID to ensure consistent but varied scores
+                doc_id_hash = hash(doc["id"]) % 100  # Get last 2 digits of hash
+                relevance_score = 0.1 + (doc_id_hash / 1000)  # Range from 0.1 to 0.199
+            
+            # Assign the relevance score
+            result["relevance_score"] = relevance_score
+            
+            # Always add to results, even with low scores
+            all_results.append(result)
         
         # Sort by relevance score
-        results.sort(key=lambda x: x["relevance_score"], reverse=True)
+        all_results.sort(key=lambda x: x["relevance_score"], reverse=True)
         
-        return results
+        # Always return at least 5 documents, if available
+        return all_results[:max(5, len(all_results))]
 
 def get_provider():
     """Get an instance of the memory data source provider."""

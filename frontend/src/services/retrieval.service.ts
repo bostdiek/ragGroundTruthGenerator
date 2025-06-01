@@ -5,7 +5,11 @@ export interface Document {
   id: string;
   title: string;
   content: string;
-  source: string;
+  source: {
+    id: string;
+    name: string;
+    type?: string;
+  };
   url?: string;
   metadata: Record<string, any>;
   relevance_score?: number;
@@ -33,7 +37,7 @@ const RetrievalService = {
    * @returns Promise with array of sources
    */
   getSources: async (): Promise<Source[]> => {
-    const response = await api.get<Source[]>('/retrieval/sources');
+    const response = await api.get<Source[]>('/api/retrieval/sources');
     return response.data;
   },
   
@@ -43,7 +47,7 @@ const RetrievalService = {
    * @returns Promise with array of documents
    */
   searchDocuments: async (searchQuery: SearchQuery): Promise<Document[]> => {
-    const response = await api.post<Document[]>('/retrieval/search', searchQuery);
+    const response = await api.post<Document[]>('/api/retrieval/search', searchQuery);
     return response.data;
   },
   
@@ -53,7 +57,7 @@ const RetrievalService = {
    * @returns Promise with document details
    */
   getDocument: async (id: string): Promise<Document> => {
-    const response = await api.get<Document>(`/retrieval/documents/${id}`);
+    const response = await api.get<Document>(`/api/retrieval/documents/${id}`);
     return response.data;
   },
   
@@ -61,14 +65,35 @@ const RetrievalService = {
    * Get recommended documents based on a question
    * @param question - The question text
    * @param sources - Optional array of source IDs to filter by
+   * @param filters - Optional metadata filters to apply
+   * @param limit - Optional maximum number of results to return
    * @returns Promise with array of recommended documents
    */
-  getRecommendedDocuments: async (question: string, sources?: string[]): Promise<Document[]> => {
-    const response = await api.post<Document[]>('/retrieval/recommend', {
-      question,
-      sources
+  getRecommendedDocuments: async (
+    question: string, 
+    sources?: string[], 
+    filters?: Record<string, any>,
+    limit?: number
+  ): Promise<Document[]> => {
+    console.log('Retrieving documents with params:', {
+      query: question,
+      sources,
+      filters,
+      max_results: limit || 10
     });
-    return response.data;
+    try {
+      const response = await api.post<Document[]>('/api/retrieval/search', {
+        query: question,
+        sources,
+        filters,
+        max_results: limit || 10
+      });
+      console.log('Retrieved documents:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error in getRecommendedDocuments:', error);
+      throw error;
+    }
   }
 };
 

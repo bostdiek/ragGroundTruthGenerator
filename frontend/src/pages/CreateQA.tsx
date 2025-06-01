@@ -8,20 +8,11 @@ import RetrievalService from '../services/retrieval.service';
 import GenerationService from '../services/generation.service';
 import { Document, Source } from '../types';
 
-// API endpoint (would be configured from environment in real app)
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
-
 // Types
-interface SourceSimple {
-  id: string;
-  name: string;
-  description: string;
-}
-
 interface GenerationResponse {
   answer: string;
-  model_used: string;
-  token_usage: Record<string, number>;
+  model_used?: string;
+  token_usage?: Record<string, number>;
 }
 
 // Styled Components
@@ -158,6 +149,13 @@ const DocumentPreview = styled.p`
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
+  
+  mark {
+    background-color: #fffacd;
+    padding: 0 2px;
+    border-radius: 2px;
+    font-weight: 500;
+  }
 `;
 
 const DocumentSource = styled.div`
@@ -268,7 +266,7 @@ const CreateQA: React.FC = () => {
   
   // State
   const [question, setQuestion] = useState('');
-  const [sources, setSources] = useState<SourceSimple[]>([]);
+  const [sources, setSources] = useState<Source[]>([]);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
@@ -285,8 +283,10 @@ const CreateQA: React.FC = () => {
   useEffect(() => {
     const fetchSources = async () => {
       try {
+        console.log('Fetching data sources...');
         // Fetch sources from the API
         const response = await RetrievalService.getSources();
+        console.log('Received sources:', response);
         setSources(response);
       } catch (err) {
         console.error('Error fetching sources:', err);
@@ -316,58 +316,20 @@ const CreateQA: React.FC = () => {
   const handleRetrieve = async () => {
     if (!question) return;
     
+    console.log('Retrieving documents with question:', question);
+    console.log('Selected sources:', selectedSources);
+    
     setIsRetrieving(true);
     try {
-      // In a real app, this would call the API
-      // For demo purposes, we'll use a mock response
-      setTimeout(() => {
-        const mockDocuments: Document[] = [
-          {
-            id: 'doc1',
-            title: 'Model X Maintenance Manual',
-            content: 'Chapter 5: Air Filter Replacement. To replace the air filter in a Model X, follow these steps:\n\n1. Open the hood\n2. Locate the air filter housing\n3. Remove the cover\n4. Replace the filter\n5. Replace the cover\n6. Close the hood',
-            source: {
-              id: 'manuals',
-              name: 'Maintenance Manuals',
-              type: 'technical_document'
-            },
-            url: 'https://example.com/docs/model-x-manual.pdf',
-            metadata: { type: 'maintenance', equipment: 'Model X' }
-          },
-          {
-            id: 'doc2',
-            title: 'SAP Notification #12345',
-            content: 'Issue reported with air filter system in Model X. Customer complaint: unusual smell when AC is running. Technician report: air filter was heavily clogged and needed replacement.',
-            source: {
-              id: 'sap',
-              name: 'SAP Notifications',
-              type: 'notification'
-            },
-            url: 'https://sap.example.com/notifications/12345',
-            metadata: { type: 'notification', equipment: 'Model X', component: 'air filter' }
-          },
-          {
-            id: 'doc3',
-            title: 'Wiki: Common Maintenance Procedures',
-            content: 'Air filters should be replaced every 12 months or 12,000 miles, whichever comes first. Signs of a clogged air filter include reduced fuel efficiency and unusual smells from the ventilation system.',
-            source: {
-              id: 'wiki',
-              name: 'Internal Wiki',
-              type: 'knowledge_base'
-            },
-            url: 'https://wiki.example.com/maintenance/common-procedures',
-            metadata: { type: 'wiki', tags: ['maintenance', 'air filter'] }
-          }
-        ];
-        
-        // Filter by selected sources if any are selected
-        const filteredDocuments = selectedSources.length > 0
-          ? mockDocuments.filter(doc => selectedSources.includes(doc.source.id))
-          : mockDocuments;
-        
-        setDocuments(filteredDocuments);
-        setIsRetrieving(false);
-      }, 1000);
+      // Call the API to retrieve documents based on the question and selected sources
+      const retrievedDocuments = await RetrievalService.getRecommendedDocuments(
+        question,
+        selectedSources.length > 0 ? selectedSources : undefined
+      );
+      
+      console.log('Retrieved documents in handleRetrieve:', retrievedDocuments);
+      setDocuments(retrievedDocuments);
+      setIsRetrieving(false);
     } catch (err) {
       console.error('Error retrieving documents:', err);
       setIsRetrieving(false);
@@ -411,26 +373,22 @@ const CreateQA: React.FC = () => {
     
     setIsGenerating(true);
     try {
-      // In a real app, this would call the API
-      // For demo purposes, we'll use a mock response
-      setTimeout(() => {
-        // Get the selected documents
-        const selectedDocs = documents.filter(doc => selectedDocuments.includes(doc.id));
-        
-        // Generate a mock answer
-        const mockResponse: GenerationResponse = {
-          answer: `# Answer to: "${question}"\n\n## Air Filter Replacement in Model X\n\nTo replace the air filter in a Model X, follow these steps:\n\n1. Open the hood of the vehicle\n2. Locate the air filter housing on the passenger side\n3. Remove the cover (may require releasing clips)\n4. Take out the old filter\n5. Insert the new filter with the same orientation\n6. Replace the cover securely\n7. Close the hood\n\n**Maintenance Schedule:** Air filters should be replaced every 12 months or 12,000 miles, whichever comes first.\n\n**Warning Signs:** If you notice unusual smells from the ventilation system or reduced fuel efficiency, your air filter may need replacement before the scheduled maintenance.`,
-          model_used: 'gpt-4',
-          token_usage: {
-            prompt_tokens: 350,
-            completion_tokens: 200,
-            total_tokens: 550
-          }
-        };
-        
-        setAnswer(mockResponse.answer);
-        setIsGenerating(false);
-      }, 1500);
+      // Get the selected documents
+      const selectedDocs = documents.filter(doc => selectedDocuments.includes(doc.id));
+      
+      // Call the GenerationService to generate an answer
+      const response = await GenerationService.generateAnswer({
+        question,
+        documents: selectedDocs,
+        rules: customRules.map((rule, index) => ({
+          id: `rule-${index}`,
+          description: rule,
+          type: 'custom'
+        }))
+      });
+      
+      setAnswer(response.answer);
+      setIsGenerating(false);
     } catch (err) {
       console.error('Error generating answer:', err);
       setIsGenerating(false);
@@ -453,7 +411,8 @@ const CreateQA: React.FC = () => {
         documents: selectedDocs,
         status: 'ready_for_review',
         metadata: {
-          custom_rules: customRules
+          custom_rules: customRules,
+          sources: selectedSources
         }
       });
       
@@ -486,19 +445,26 @@ const CreateQA: React.FC = () => {
       <Section>
         <SectionTitle>2. Select Data Sources</SectionTitle>
         <SourcesContainer>
-          {sources.map(source => (
+          {/* Debug sources */}
+          {sources && sources.length > 0 ? sources.map(source => (
             <SourceChip
               key={source.id}
               active={selectedSources.includes(source.id)}
               onClick={() => toggleSourceSelection(source.id)}
+              title={source.description}
             >
               {source.name}
             </SourceChip>
-          ))}
+          )) : <div>No data sources available. Please check your backend connection.</div>}
         </SourcesContainer>
         <Button onClick={handleRetrieve} disabled={isRetrieving}>
           {isRetrieving ? 'Retrieving...' : 'Retrieve Documents'}
         </Button>
+        {documents.length === 0 && !isRetrieving && question.trim() !== '' && (
+          <div style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: '#fff8e6', border: '1px solid #ffe8a1', borderRadius: '4px' }}>
+            No documents found for this query. Try a different question or select different data sources.
+          </div>
+        )}
       </Section>
       
       {documents.length > 0 && (
@@ -514,7 +480,12 @@ const CreateQA: React.FC = () => {
                 <DocumentTitle>{document.title}</DocumentTitle>
                 <DocumentPreview>{document.content}</DocumentPreview>
                 <DocumentSource>
-                  Source: {sources.find(s => s.id === document.source.id)?.name || document.source.name}
+                  Source: {document.source.name}
+                  {document.relevance_score !== undefined && (
+                    <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', color: document.relevance_score > 0.7 ? '#2a8000' : document.relevance_score > 0.4 ? '#8a6d00' : '#aa3300' }}>
+                      (Relevance: {Math.round(document.relevance_score * 100)}%)
+                    </span>
+                  )}
                 </DocumentSource>
               </DocumentCard>
             ))}

@@ -35,6 +35,7 @@ class RetrievalRequest(BaseModel):
     """Model for retrieval request data."""
     query: str
     sources: List[str] = []
+    filters: Optional[Dict[str, Any]] = None
     max_results: int = 10
 
 # Define retrieval endpoints
@@ -56,7 +57,7 @@ async def search_documents(request: RetrievalRequest):
         for source_id in request.sources:
             try:
                 provider = get_data_source_provider(source_id)
-                source_results = await provider.retrieve_documents(request.query)
+                source_results = await provider.retrieve_documents(request.query, request.filters)
                 results.extend(source_results)
             except ValueError:
                 # Skip invalid sources
@@ -65,7 +66,7 @@ async def search_documents(request: RetrievalRequest):
         # Otherwise use all available sources
         providers = get_all_data_source_providers()
         for provider_id, provider in providers.items():
-            source_results = await provider.retrieve_documents(request.query)
+            source_results = await provider.retrieve_documents(request.query, request.filters)
             results.extend(source_results)
     
     # Sort by relevance if available, otherwise preserve order

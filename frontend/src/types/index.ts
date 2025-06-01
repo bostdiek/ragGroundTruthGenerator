@@ -74,13 +74,18 @@ export interface Document {
   title: string;
   content: string;
   url?: string;
-  source: Source;
+  source: {
+    id: string;
+    name: string;
+    type?: string;
+  };
   
   // Extensible metadata - Add custom fields here
   metadata?: Record<string, any>;
   
   // Optional fields for advanced use cases
-  // relevance_score?: number;
+  relevance_score?: number;
+  query_terms?: string[]; // Terms used for matching/highlighting
   // document_type?: string;
   // last_modified?: string;
   // file_type?: string;
@@ -96,7 +101,7 @@ export interface Document {
 export interface Source {
   id: string;
   name: string;
-  type: string;
+  description: string;
   
   // Extensible metadata - Add custom fields here
   metadata?: Record<string, any>;
@@ -112,6 +117,7 @@ export interface Source {
 export interface SearchQuery {
   query: string;
   filters?: Record<string, any>;
+  sources?: string[];
   limit?: number;
 }
 
