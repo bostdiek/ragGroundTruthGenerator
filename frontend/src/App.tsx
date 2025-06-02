@@ -37,6 +37,7 @@ function App() {
                 <Route path="/collections/new" element={<PrivateRoute><CreateCollection /></PrivateRoute>} />
                 <Route path="/collections/:id" element={<PrivateRoute><CollectionDetail /></PrivateRoute>} />
                 <Route path="/create-qa/:collectionId" element={<PrivateRoute><CreateQA /></PrivateRoute>} />
+                <Route path="/edit-qa/:qaId" element={<PrivateRoute><CreateQA isEditMode={true} /></PrivateRoute>} />
                 <Route path="/review-qa/:qaId" element={<PrivateRoute><ReviewQA /></PrivateRoute>} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

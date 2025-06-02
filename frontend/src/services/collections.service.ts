@@ -103,8 +103,28 @@ const CollectionsService = {
    * @returns Promise with updated Q&A pair
    */
   updateQAPair: async (id: string, qaPair: Partial<QAPair>): Promise<QAPair> => {
-    const response = await api.put<QAPair>(`/api/collections/qa-pairs/${id}`, qaPair);
-    return response.data;
+    console.log("CollectionsService.updateQAPair called with id:", id, "and data:", qaPair);
+    try {
+      // Add timeout to prevent request hanging indefinitely
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await api.put<QAPair>(
+        `/api/collections/qa-pairs/${id}`, 
+        qaPair,
+        { signal: controller.signal }
+      );
+      
+      clearTimeout(timeoutId);
+      console.log("CollectionsService.updateQAPair response:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("CollectionsService.updateQAPair error:", error);
+      if (error instanceof Error) {
+        console.error("Error details:", error.message);
+      }
+      throw error;
+    }
   },
   
   /**
@@ -118,6 +138,38 @@ const CollectionsService = {
     return response.data;
   },
   
+  /**
+   * Update the status of a Q&A pair with revision comments
+   * @param id - Q&A pair ID
+   * @param status - New status
+   * @param revisionComments - Comments explaining the revision request
+   * @returns Promise with updated Q&A pair
+   */
+  updateQAPairStatusWithComments: async (id: string, status: string, revisionComments: string): Promise<QAPair> => {
+    console.log(`Updating QA pair ${id} status to ${status} with comments: ${revisionComments}`);
+    
+    try {
+      // First get the current QA pair to preserve existing metadata
+      const currentQA = await api.get<QAPair>(`/api/collections/qa-pairs/${id}`);
+      const currentMetadata = currentQA.data.metadata || {};
+      
+      // Merge existing metadata with new revision comments
+      const response = await api.patch<QAPair>(`/api/collections/qa-pairs/${id}`, { 
+        status,
+        metadata: {
+          ...currentMetadata,
+          revision_comments: revisionComments
+        }
+      });
+      
+      console.log("Update with comments response:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error updating QA pair with comments:", error);
+      throw error;
+    }
+  },
+
   /**
    * Delete a Q&A pair
    * @param id - Q&A pair ID

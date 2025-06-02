@@ -15,6 +15,10 @@ interface GenerationResponse {
   token_usage?: Record<string, number>;
 }
 
+interface CreateQAProps {
+  isEditMode?: boolean;
+}
+
 // Styled Components
 const CreateQAContainer = styled.div`
   padding: 2rem;
@@ -260,8 +264,8 @@ const ButtonContainer = styled.div`
  * CreateQA page component.
  * Allows creating a new question-answer pair with document selection and answer generation.
  */
-const CreateQA: React.FC = () => {
-  const { collectionId } = useParams<{ collectionId: string }>();
+const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
+  const { collectionId, qaId } = useParams<{ collectionId?: string; qaId?: string }>();
   const navigate = useNavigate();
   
   // State
@@ -277,7 +281,10 @@ const CreateQA: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRetrieving, setIsRetrieving] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [collectionName, setCollectionName] = useState('');
+  const [originalQaPair, setOriginalQaPair] = useState<any>(null);
+  const [targetCollectionId, setTargetCollectionId] = useState<string | null>(null);
   
   // Fetch available sources on component mount
   useEffect(() => {
@@ -296,13 +303,59 @@ const CreateQA: React.FC = () => {
     fetchSources();
   }, []);
   
+  // Fetch QA pair in edit mode
+  useEffect(() => {
+    if (!isEditMode || !qaId) return;
+    
+    const fetchQAPair = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch the QA pair
+        const qaPair = await CollectionsService.getQAPair(qaId);
+        setOriginalQaPair(qaPair);
+        
+        // Set state from existing QA pair
+        setQuestion(qaPair.question);
+        setAnswer(qaPair.answer);
+        setCustomRules(qaPair.metadata?.custom_rules || []);
+        setSelectedDocuments(qaPair.documents.map(doc => doc.id));
+        setDocuments(qaPair.documents);
+        
+        // Set collection info
+        if (qaPair.collection_id) {
+          setTargetCollectionId(qaPair.collection_id);
+          try {
+            const collection = await CollectionsService.getCollection(qaPair.collection_id);
+            setCollectionName(collection.name);
+          } catch (err) {
+            console.error('Error fetching collection:', err);
+          }
+        }
+        
+        // Set selected sources if available in metadata
+        if (qaPair.metadata?.sources) {
+          setSelectedSources(qaPair.metadata.sources);
+        }
+        
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Error fetching QA pair:', err);
+        setIsLoading(false);
+      }
+    };
+    
+    fetchQAPair();
+  }, [isEditMode, qaId]);
+
   // Fetch collection details
   useEffect(() => {
     const fetchCollection = async () => {
-      if (!collectionId) return;
+      // Use target collection ID from QA pair if in edit mode, otherwise use the URL param
+      const id = targetCollectionId || collectionId;
+      if (!id) return;
       
       try {
-        const collection = await CollectionsService.getCollection(collectionId);
+        const collection = await CollectionsService.getCollection(id);
         setCollectionName(collection.name);
       } catch (err) {
         console.error('Error fetching collection:', err);
@@ -310,7 +363,7 @@ const CreateQA: React.FC = () => {
     };
     
     fetchCollection();
-  }, [collectionId]);
+  }, [collectionId, targetCollectionId]);
   
   // Handle retrieving documents
   const handleRetrieve = async () => {
@@ -393,30 +446,80 @@ const CreateQA: React.FC = () => {
   
   // Handle saving the Q&A pair
   const handleSave = async () => {
-    if (!question || !answer || !collectionId) return;
+    if (!question || !answer) return;
+    
+    console.log("Save button clicked, isEditMode:", isEditMode, "qaId:", qaId);
+    
+    // Determine the collection ID to use
+    const targetId = targetCollectionId || collectionId;
+    if (!targetId) {
+      console.error('No collection ID available');
+      return;
+    }
     
     setIsSaving(true);
     try {
       // Get the selected documents
       const selectedDocs = documents.filter(doc => selectedDocuments.includes(doc.id));
       
-      // Use the collections service to create the QA pair
-      await CollectionsService.createQAPair(collectionId, {
-        question,
-        answer,
-        documents: selectedDocs,
-        status: 'ready_for_review',
-        metadata: {
-          custom_rules: customRules,
-          sources: selectedSources
+      if (isEditMode && qaId && originalQaPair) {
+        console.log("Updating existing QA pair with ID:", qaId);
+        try {
+          // Update existing QA pair
+          const updatedQA = await CollectionsService.updateQAPair(qaId, {
+            question,
+            answer,
+            documents: selectedDocs,
+            status: 'ready_for_review', // Reset to ready for review when edited
+            metadata: {
+              ...originalQaPair.metadata,
+              custom_rules: customRules,
+              sources: selectedSources,
+              last_edited: new Date().toISOString()
+            }
+          });
+          
+          console.log("QA pair updated successfully:", updatedQA);
+          
+          // Add a small delay before navigation to ensure state updates are processed
+          setTimeout(() => {
+            // Navigate back to the review page
+            console.log("Navigating to review page:", `/review-qa/${qaId}`);
+            navigate(`/review-qa/${qaId}`);
+          }, 100);
+        } catch (error) {
+          console.error("Error updating QA pair:", error);
+          alert("Failed to update the Q&A pair. Please try again.");
         }
-      });
-      
-      // Navigate back to the collection
-      navigate(`/collections/${collectionId}`);
-      
+      } else {
+        // Create new QA pair
+        try {
+          const newQA = await CollectionsService.createQAPair(targetId, {
+            question,
+            answer,
+            documents: selectedDocs,
+            status: 'ready_for_review',
+            metadata: {
+              custom_rules: customRules,
+              sources: selectedSources
+            }
+          });
+          
+          console.log("New QA pair created successfully:", newQA);
+          
+          // Add a small delay before navigation
+          setTimeout(() => {
+            // Navigate back to the collection
+            navigate(`/collections/${targetId}`);
+          }, 100);
+        } catch (error) {
+          console.error("Error creating QA pair:", error);
+          alert("Failed to create the Q&A pair. Please try again.");
+        }
+      }
     } catch (err) {
       console.error('Error saving Q&A pair:', err);
+      alert("An unexpected error occurred. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -425,20 +528,26 @@ const CreateQA: React.FC = () => {
   return (
     <CreateQAContainer>
       <Header>
-        <Title>Create New Question & Answer</Title>
-        <Subtitle>Collection: {collectionName || collectionId}</Subtitle>
+        <Title>{isEditMode ? 'Edit Question & Answer' : 'Create New Question & Answer'}</Title>
+        <Subtitle>Collection: {collectionName || targetCollectionId || collectionId}</Subtitle>
       </Header>
       
-      <Section>
-        <SectionTitle>1. Enter Your Question</SectionTitle>
-        <QuestionInput
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          placeholder="Enter your question here..."
-        />
-      </Section>
-      
-      <Section>
+      {isLoading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+          <p>Loading Q&A data...</p>
+        </div>
+      ) : (
+        <>
+          <Section>
+            <SectionTitle>1. Enter Your Question</SectionTitle>
+            <QuestionInput
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              placeholder="Enter your question here..."
+            />
+          </Section>
+          
+          <Section>
         <SectionTitle>2. Select Data Sources</SectionTitle>
         <SourcesContainer>
           {/* Debug sources */}
@@ -557,10 +666,17 @@ const CreateQA: React.FC = () => {
               {isGenerating ? 'Regenerating...' : 'Regenerate'}
             </SecondaryButton>
             <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Save Q&A Pair'}
+              {isSaving ? 'Saving...' : isEditMode ? 'Save & Mark Ready for Review' : 'Save Q&A Pair'}
             </Button>
+            {isEditMode && (
+              <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem', textAlign: 'right' }}>
+                Note: Saving changes will mark this Q&A pair as "Ready for Review"
+              </div>
+            )}
           </ButtonContainer>
         </Section>
+      )}
+        </>
       )}
     </CreateQAContainer>
   );

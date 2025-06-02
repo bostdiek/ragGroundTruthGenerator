@@ -5,18 +5,19 @@ import MDEditor from '@uiw/react-md-editor';
 import rehypeSanitize from 'rehype-sanitize';
 import CollectionsService from '../services/collections.service';
 import DocumentCard from '../components/DocumentCard';
+import RevisionModal from '../components/RevisionModal';
 
 // Types
 interface QAPair {
   id: string;
   question: string;
   answer: string;
-  custom_rules?: string[];
   documents: Document[];
   status?: string;
   collection_id?: string;
   created_by?: string;
   updated_at?: string;
+  metadata?: Record<string, any>;
 }
 
 interface Document {
@@ -270,6 +271,29 @@ const SecondaryButton = styled(Button)`
   }
 `;
 
+const RevisionCommentsBox = styled.div`
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #fff8e1;
+  border-left: 4px solid #f57c00;
+  border-radius: 4px;
+`;
+
+const RevisionCommentsTitle = styled.h3`
+  font-size: 1.1rem;
+  color: #f57c00;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+`;
+
+const RevisionCommentsText = styled.p`
+  margin: 0;
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.5;
+  white-space: pre-line;
+`;
+
 /**
  * Review QA page component.
  * Allows reviewing and approving/rejecting a Q&A pair.
@@ -286,6 +310,7 @@ const ReviewQA: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isRevisionModalOpen, setIsRevisionModalOpen] = useState(false);
   
   useEffect(() => {
     const fetchQAPair = async () => {
@@ -294,6 +319,15 @@ const ReviewQA: React.FC = () => {
       try {
         // Fetch QA pair from API
         const qa = await CollectionsService.getQAPair(qaId);
+        console.log("Fetched QA pair:", qa);
+        console.log("QA pair status:", qa.status);
+        console.log("QA pair metadata:", qa.metadata);
+        if (qa.metadata?.revision_comments) {
+          console.log("Revision comments found:", qa.metadata.revision_comments);
+        } else {
+          console.log("No revision comments in metadata");
+        }
+        
         setQAPair(qa);
         setEditedAnswer(qa.answer);
         
@@ -337,8 +371,38 @@ const ReviewQA: React.FC = () => {
   
   const handleApprove = () => updateStatus('approved');
   const handleReject = () => updateStatus('rejected');
-  const handleRequestRevision = () => updateStatus('revision_requested');
+  const handleRequestRevision = () => setIsRevisionModalOpen(true);
   const handleReadyForReview = () => updateStatus('ready_for_review');
+  
+  const submitRevisionRequest = async (comments: string) => {
+    if (!qaPair || !qaId) return;
+    
+    console.log("Submitting revision request with comments:", comments);
+    
+    setIsUpdating(true);
+    try {
+      // Call API to update status with revision comments
+      const updated = await CollectionsService.updateQAPairStatusWithComments(qaId, 'revision_requested', comments);
+      console.log("QA pair updated with revision comments:", updated);
+      
+      // Update local state
+      setQAPair({
+        ...qaPair,
+        status: 'revision_requested',
+        metadata: {
+          ...qaPair.metadata,
+          revision_comments: comments
+        }
+      });
+      
+      setIsRevisionModalOpen(false);
+      setIsUpdating(false);
+    } catch (err) {
+      console.error('Error requesting revision for Q&A pair:', err);
+      setIsUpdating(false);
+      alert('Failed to submit revision request. Please try again.');
+    }
+  };
   
   const handleEdit = () => {
     setIsEditing(true);
@@ -436,11 +500,11 @@ const ReviewQA: React.FC = () => {
         </Section>
       )}
       
-      {qaPair.custom_rules && qaPair.custom_rules.length > 0 && (
+      {qaPair.metadata?.custom_rules && qaPair.metadata.custom_rules.length > 0 && (
         <Section>
           <SectionTitle>Custom Rules Applied</SectionTitle>
           <RulesList>
-            {qaPair.custom_rules.map((rule, index) => (
+            {qaPair.metadata.custom_rules.map((rule: string, index: number) => (
               <RuleItem key={index}>{rule}</RuleItem>
             ))}
           </RulesList>
@@ -486,6 +550,21 @@ const ReviewQA: React.FC = () => {
             {qaPair.updated_at && <span>Last updated: {new Date(qaPair.updated_at).toLocaleDateString()}</span>}
           </MetaInfo>
         </Card>
+        
+        {/* Display revision comments if status is revision_requested and we have comments */}
+        {/* Debug info */}
+        {qaPair.status === 'revision_requested' ? (
+          qaPair.metadata?.revision_comments ? (
+            <RevisionCommentsBox>
+              <RevisionCommentsTitle>Revision Instructions</RevisionCommentsTitle>
+              <RevisionCommentsText>{qaPair.metadata.revision_comments}</RevisionCommentsText>
+            </RevisionCommentsBox>
+          ) : (
+            <div style={{ marginTop: '1rem', color: '#666' }}>
+              No revision comments provided.
+            </div>
+          )
+        ) : null}
       </Section>
       
       <ButtonContainer>
@@ -502,6 +581,10 @@ const ReviewQA: React.FC = () => {
           <>
             <SecondaryButton onClick={handleEdit} disabled={isUpdating}>
               Edit Answer
+            </SecondaryButton>
+            
+            <SecondaryButton onClick={() => navigate(`/edit-qa/${qaId}`)} disabled={isUpdating}>
+              Edit Question & Documents
             </SecondaryButton>
             
             {qaPair.status !== 'ready_for_review' && (
@@ -530,6 +613,14 @@ const ReviewQA: React.FC = () => {
           </>
         )}
       </ButtonContainer>
+      
+      {/* Revision Request Modal */}
+      <RevisionModal
+        isOpen={isRevisionModalOpen}
+        onClose={() => setIsRevisionModalOpen(false)}
+        onSubmit={submitRevisionRequest}
+        isSubmitting={isUpdating}
+      />
     </PageContainer>
   );
 };

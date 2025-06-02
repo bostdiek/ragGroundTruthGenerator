@@ -224,9 +224,80 @@ _database: Dict[str, List[Dict[str, Any]]] = {
                 }
             ],
             "status": "revision_requested",
-            "metadata": {"priority": "medium"},
+            "metadata": {
+                "priority": "medium",
+                "revision_comments": "Please provide more details about the extended warranty options, including pricing and terms for the 1-year and 2-year options."
+            },
             "created_at": "2023-06-12T09:30:00Z",
             "updated_at": "2023-06-12T09:30:00Z",
+            "created_by": "demo_user"
+        },
+        {
+            "id": "qa7",
+            "collection_id": "col2",
+            "question": "What information should be included in an SAP notification?",
+            "answer": "An SAP notification should include the equipment ID, problem description, and priority level.",
+            "documents": [
+                {
+                    "id": "doc3",
+                    "title": "SAP User Guide",
+                    "content": "When creating a notification in SAP, certain information is required to ensure proper handling and resolution. The notification form includes fields for equipment identification, problem categorization, and priority assignment. Additional information can be added in the notes section and through file attachments.",
+                    "source": {
+                        "id": "sap_docs",
+                        "name": "SAP Documentation",
+                        "type": "user_guide"
+                    },
+                    "url": "https://example.com/docs/sap-guide.pdf",
+                    "metadata": {
+                        "document_id": "SAP-UG-2023-034",
+                        "last_updated": "2023-01-05",
+                        "version": "3.1",
+                        "department": "IT",
+                        "module": "Notifications"
+                    }
+                }
+            ],
+            "status": "revision_requested",
+            "metadata": {
+                "priority": "high",
+                "revision_comments": "The answer is incomplete. Please include information about required vs. optional fields, and mention the attachment capabilities for photos and supporting documents."
+            },
+            "created_at": "2023-05-30T14:15:00Z",
+            "updated_at": "2023-06-01T09:25:00Z",
+            "created_by": "demo_user"
+        },
+        {
+            "id": "qa8",
+            "collection_id": "col3",
+            "question": "How do I request access to restricted wiki sections?",
+            "answer": "To request access to restricted wiki sections, contact your department manager.",
+            "documents": [
+                {
+                    "id": "doc4",
+                    "title": "HR Policies",
+                    "content": "Access to restricted sections of the internal wiki is managed by department managers. Employees needing access to additional content should submit a request through their direct supervisor.",
+                    "source": {
+                        "id": "internal_wiki",
+                        "name": "Internal Wiki",
+                        "type": "policy"
+                    },
+                    "url": "https://internal-wiki.example.com/hr/policies/access",
+                    "metadata": {
+                        "document_id": "HR-POL-2023-012",
+                        "last_updated": "2023-02-10",
+                        "version": "2023.1",
+                        "department": "Human Resources",
+                        "category": "Access Control"
+                    }
+                }
+            ],
+            "status": "revision_requested",
+            "metadata": {
+                "priority": "low",
+                "revision_comments": "This answer needs to be expanded to include the formal process. Please specify that requests must be submitted through the IT portal with manager approval, and include the typical approval timeline."
+            },
+            "created_at": "2023-06-05T11:30:00Z",
+            "updated_at": "2023-06-07T14:20:00Z",
             "created_by": "demo_user"
         }
     ],

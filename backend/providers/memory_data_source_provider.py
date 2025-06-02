@@ -57,7 +57,8 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "type": "manual",
                     "topic": "maintenance",
                     "equipment_type": "general",
-                    "created_date": "2023-01-15"
+                    "created_date": "2023-01-15",
+                    "status": "approved"
                 }
             },
             {
@@ -71,7 +72,9 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "type": "guide",
                     "topic": "troubleshooting",
                     "component": "air filter",
-                    "created_date": "2023-03-22"
+                    "created_date": "2023-03-22",
+                    "status": "revision_requested",
+                    "revision_comments": "Please add more details about HEPA filters and their maintenance requirements."
                 }
             },
             {
@@ -85,7 +88,8 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "type": "protocol",
                     "topic": "safety",
                     "importance": "critical",
-                    "created_date": "2023-05-10"
+                    "created_date": "2023-05-10",
+                    "status": "ready_for_review"
                 }
             },
             {
@@ -99,7 +103,9 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "type": "specifications",
                     "topic": "technical",
                     "model": "Model X",
-                    "created_date": "2023-02-07"
+                    "created_date": "2023-02-07",
+                    "status": "revision_requested",
+                    "revision_comments": "The voltage specifications need to be updated to match the latest model revisions. Please verify all electrical requirements."
                 }
             },
             {
@@ -113,7 +119,25 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "type": "guide",
                     "topic": "ai",
                     "subtopic": "data preparation",
-                    "created_date": "2023-06-15"
+                    "created_date": "2023-06-15",
+                    "status": "rejected",
+                    "revision_comments": "This guide needs a complete rewrite. It doesn't address the latest annotation techniques and quality control measures."
+                }
+            },
+            {
+                "id": "doc6",
+                "title": "Data Annotation Guidelines for Machine Learning",
+                "content": "Proper data annotation is crucial for developing accurate machine learning models. " +
+                          "This document provides guidelines for consistent, high-quality annotations across " +
+                          "different data types including text, images, and audio.",
+                "url": "https://example.com/docs/data-annotation-guidelines.pdf",
+                "metadata": {
+                    "type": "guidelines",
+                    "topic": "data annotation",
+                    "subtopic": "machine learning",
+                    "created_date": "2023-07-20",
+                    "status": "revision_requested",
+                    "revision_comments": "Please expand the section on text annotation with more examples of entity recognition and sentiment analysis."
                 }
             }
         ]

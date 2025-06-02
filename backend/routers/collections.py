@@ -347,7 +347,9 @@ async def update_qa_pair(qa_pair_id: str, qa_pair_update: QAPairUpdate):
     if qa_pair_update.documents is not None:
         update_data["documents"] = qa_pair_update.documents
     if qa_pair_update.metadata is not None:
-        update_data["metadata"] = qa_pair_update.metadata
+        # Merge existing metadata with updates instead of replacing
+        existing_metadata = qa_pair.get("metadata", {})
+        update_data["metadata"] = {**existing_metadata, **qa_pair_update.metadata}
     
     # Update the timestamp
     update_data["updated_at"] = datetime.utcnow().isoformat()
