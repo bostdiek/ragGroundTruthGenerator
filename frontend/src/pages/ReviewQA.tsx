@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import MDEditor from '@uiw/react-md-editor';
 import rehypeSanitize from 'rehype-sanitize';
 import CollectionsService from '../services/collections.service';
+import DocumentCard from '../components/DocumentCard';
 
 // Types
 interface QAPair {
@@ -11,113 +12,180 @@ interface QAPair {
   question: string;
   answer: string;
   custom_rules?: string[];
-  documents: any[];
-  collection_id: string;
-  created_at: string;
-  updated_at: string;
-  created_by: string;
-  reviewed_by?: string;
-  status: string;
+  documents: Document[];
+  status?: string;
+  collection_id?: string;
+  created_by?: string;
+  updated_at?: string;
 }
 
 interface Document {
   id: string;
   title: string;
   content: string;
-  source: string;
+  source: {
+    id: string;
+    name: string;
+    type?: string;
+  };
   url?: string;
+  metadata?: Record<string, unknown>;
 }
 
-// Styled Components
-const ReviewContainer = styled.div`
-  padding: 2rem;
+interface Collection {
+  id: string;
+  name: string;
+  description: string;
+  qa_pairs: QAPair[];
+}
+
+// Styled components
+const PageContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
+  padding: 2rem;
 `;
 
 const Header = styled.div`
-  margin-bottom: 2rem;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  margin-bottom: 2rem;
 `;
 
-const HeaderContent = styled.div``;
-
-const Title = styled.h1`
-  color: #333;
-  margin-bottom: 0.5rem;
+const HeaderContent = styled.div`
+  flex: 1;
 `;
 
-const Subtitle = styled.p`
+const Subtitle = styled.div`
+  font-size: 1rem;
   color: #666;
+  margin-top: 0.5rem;
 `;
 
 const BackButton = styled.button`
-  background-color: #f3f3f3;
-  color: #333;
+  background-color: transparent;
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 0.5rem 1rem;
-  cursor: pointer;
+  color: #333;
   font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
   
   &:hover {
-    background-color: #e6e6e6;
+    background-color: #f5f5f5;
+  }
+  
+  &:before {
+    content: "←";
+    margin-right: 0.5rem;
   }
 `;
 
-const Section = styled.section`
-  margin-bottom: 2rem;
-`;
-
-const SectionTitle = styled.h2`
-  margin-bottom: 1rem;
+const Title = styled.h1`
+  font-size: 1.8rem;
   color: #333;
-  font-size: 1.3rem;
+  margin-bottom: 0;
 `;
 
 const Card = styled.div`
   background-color: white;
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1.5rem;
+  position: relative;
+  border: 1px solid #e0e0e0;
 `;
 
 const QuestionText = styled.p`
   font-size: 1.1rem;
+  line-height: 1.5;
   color: #333;
-  line-height: 1.6;
+  margin-bottom: 1rem;
+`;
+
+const MetaInfo = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  color: #666;
+  font-size: 0.9rem;
 `;
 
 const DocumentsList = styled.div`
-  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
 `;
 
-const DocumentItem = styled.div`
-  background-color: #f9f9f9;
-  border-radius: 6px;
-  padding: 1rem;
-  margin-bottom: 0.5rem;
+const TabContainer = styled.div`
+  display: flex;
+  flex-direction: column;
 `;
 
-const DocumentTitle = styled.h3`
+const TabButtons = styled.div`
+  display: flex;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+`;
+
+const TabButton = styled.button<{ active: boolean }>`
+  background-color: ${props => props.active ? '#0078d4' : 'transparent'};
+  color: ${props => props.active ? 'white' : '#333'};
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
   font-size: 1rem;
-  color: #333;
-  margin-bottom: 0.5rem;
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
 
-const DocumentContent = styled.p`
-  color: #666;
-  font-size: 0.9rem;
-  white-space: pre-line;
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  gap: 1rem;
 `;
 
-const DocumentSource = styled.div`
-  margin-top: 0.5rem;
+const StatusBadge = styled.span<{ status?: string }>`
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
   font-size: 0.8rem;
-  color: #888;
+  font-weight: 500;
+  margin-left: 1rem;
+  color: white;
+  background-color: ${({ status }) => {
+    switch (status) {
+      case 'approved':
+        return '#107c10';
+      case 'rejected':
+        return '#d83b01';
+      case 'pending':
+      default:
+        return '#0078d4';
+    }
+  }};
+`;
+
+const Section = styled.div`
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 1.4rem;
+  color: #333;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
 `;
 
 const RulesList = styled.ul`
@@ -127,109 +195,33 @@ const RulesList = styled.ul`
 `;
 
 const RuleItem = styled.li`
-  padding: 0.5rem;
+  padding: 0.75rem 1rem;
   background-color: #f9f9f9;
   border-radius: 4px;
   margin-bottom: 0.5rem;
+  color: #333;
+  font-size: 1rem;
+  
+  &:before {
+    content: "📏 ";
+  }
+`;
+
+const LoadingMessage = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.2rem;
   color: #666;
 `;
 
-const TabContainer = styled.div`
-  margin-bottom: 1rem;
-`;
-
-const TabButtons = styled.div`
-  display: flex;
-  border-bottom: 1px solid #ddd;
-  margin-bottom: 1rem;
-`;
-
-const TabButton = styled.button<{ active: boolean }>`
-  padding: 0.75rem 1.5rem;
-  background-color: ${props => props.active ? '#fff' : '#f5f5f5'};
-  border: none;
-  border-bottom: 2px solid ${props => props.active ? '#0078d4' : 'transparent'};
-  color: ${props => props.active ? '#0078d4' : '#666'};
-  font-weight: ${props => props.active ? '500' : 'normal'};
-  cursor: pointer;
-  
-  &:hover {
-    background-color: ${props => props.active ? '#fff' : '#eee'};
-  }
-`;
-
-const MetaInfo = styled.div`
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem;
-  color: #888;
-  margin-top: 1rem;
-`;
-
-const StatusBadge = styled.span<{ status: string }>`
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  
-  background-color: ${props => {
-    switch (props.status) {
-      case 'approved':
-        return '#e6f7e6';
-      case 'rejected':
-        return '#ffebee';
-      case 'revision_requested':
-        return '#fff8e1';
-      case 'ready_for_review':
-      default:
-        return '#e3f2fd';
-    }
-  }};
-  
-  color: ${props => {
-    switch (props.status) {
-      case 'approved':
-        return '#2e7d32';
-      case 'rejected':
-        return '#c62828';
-      case 'revision_requested':
-        return '#f57c00';
-      case 'ready_for_review':
-      default:
-        return '#1976d2';
-    }
-  }};
-  
-  &::before {
-    content: '';
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-right: 5px;
-    background-color: ${props => {
-      switch (props.status) {
-        case 'approved':
-          return '#2e7d32';
-        case 'rejected':
-          return '#c62828';
-        case 'revision_requested':
-          return '#f57c00';
-        case 'ready_for_review':
-        default:
-          return '#1976d2';
-      }
-    }};
-  }
-`;
-
-const ButtonContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 2rem;
-  gap: 1rem;
+const ErrorMessage = styled.div`
+  background-color: #fde7e9;
+  color: #d83b01;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
 `;
 
 const Button = styled.button`
@@ -276,12 +268,6 @@ const SecondaryButton = styled(Button)`
   &:hover {
     background-color: #e6e6e6;
   }
-`;
-
-const LoadingOrError = styled.div`
-  text-align: center;
-  padding: 2rem;
-  color: #666;
 `;
 
 /**
@@ -397,19 +383,19 @@ const ReviewQA: React.FC = () => {
   };
   
   if (loading) {
-    return <LoadingOrError>Loading Q&A pair...</LoadingOrError>;
+    return <LoadingMessage>Loading Q&A pair...</LoadingMessage>;
   }
   
   if (error) {
-    return <LoadingOrError>{error}</LoadingOrError>;
+    return <ErrorMessage>{error}</ErrorMessage>;
   }
   
   if (!qaPair) {
-    return <LoadingOrError>Q&A pair not found</LoadingOrError>;
+    return <ErrorMessage>Q&A pair not found</ErrorMessage>;
   }
   
   return (
-    <ReviewContainer>
+    <PageContainer>
       <Header>
         <HeaderContent>
           <Title>Review Question & Answer</Title>
@@ -431,7 +417,9 @@ const ReviewQA: React.FC = () => {
                 ? 'Ready for Review' 
                 : qaPair.status === 'revision_requested'
                   ? 'Revision Requested'
-                  : qaPair.status.charAt(0).toUpperCase() + qaPair.status.slice(1)}
+                  : qaPair.status 
+                    ? qaPair.status.charAt(0).toUpperCase() + qaPair.status.slice(1)
+                    : 'Pending'}
             </StatusBadge>
           </MetaInfo>
         </Card>
@@ -441,12 +429,8 @@ const ReviewQA: React.FC = () => {
         <Section>
           <SectionTitle>Referenced Documents</SectionTitle>
           <DocumentsList>
-            {qaPair.documents.map((doc: Document, index) => (
-              <DocumentItem key={index}>
-                <DocumentTitle>{doc.title}</DocumentTitle>
-                <DocumentContent>{doc.content}</DocumentContent>
-                <DocumentSource>Source: {doc.source}</DocumentSource>
-              </DocumentItem>
+            {qaPair.documents.map((doc, index) => (
+              <DocumentCard key={index} doc={doc} />
             ))}
           </DocumentsList>
         </Section>
@@ -498,8 +482,8 @@ const ReviewQA: React.FC = () => {
           </TabContainer>
           
           <MetaInfo>
-            <span>Created by: {qaPair.created_by}</span>
-            <span>Last updated: {new Date(qaPair.updated_at).toLocaleDateString()}</span>
+            {qaPair.created_by && <span>Created by: {qaPair.created_by}</span>}
+            {qaPair.updated_at && <span>Last updated: {new Date(qaPair.updated_at).toLocaleDateString()}</span>}
           </MetaInfo>
         </Card>
       </Section>
@@ -546,7 +530,7 @@ const ReviewQA: React.FC = () => {
           </>
         )}
       </ButtonContainer>
-    </ReviewContainer>
+    </PageContainer>
   );
 };
 

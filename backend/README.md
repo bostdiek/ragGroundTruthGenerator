@@ -89,8 +89,8 @@ backend/
 │   ├── database.py        # Database provider factory
 │   ├── factory.py         # General provider factory functions
 │   ├── memory_db.py       # In-memory database implementation
+│   ├── demo_generator.py  # Demo answer generator implementation
 │   ├── simple_auth.py     # Simple authentication implementation
-│   ├── template_generator.py  # Template generation implementation
 │   └── template_retriever.py  # Template retrieval implementation
 └── data/                  # Local data storage
     └── storage/           # Local file storage directory

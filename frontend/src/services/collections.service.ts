@@ -81,7 +81,7 @@ const CollectionsService = {
    * @returns Promise with Q&A pair details
    */
   getQAPair: async (id: string): Promise<QAPair> => {
-    const response = await api.get<QAPair>(`/api/qa-pairs/${id}`);
+    const response = await api.get<QAPair>(`/api/collections/qa-pairs/${id}`);
     return response.data;
   },
   
@@ -103,7 +103,7 @@ const CollectionsService = {
    * @returns Promise with updated Q&A pair
    */
   updateQAPair: async (id: string, qaPair: Partial<QAPair>): Promise<QAPair> => {
-    const response = await api.put<QAPair>(`/api/qa-pairs/${id}`, qaPair);
+    const response = await api.put<QAPair>(`/api/collections/qa-pairs/${id}`, qaPair);
     return response.data;
   },
   
@@ -114,7 +114,7 @@ const CollectionsService = {
    * @returns Promise with updated Q&A pair
    */
   updateQAPairStatus: async (id: string, status: string): Promise<QAPair> => {
-    const response = await api.patch<QAPair>(`/api/qa-pairs/${id}`, { status });
+    const response = await api.patch<QAPair>(`/api/collections/qa-pairs/${id}`, { status });
     return response.data;
   },
   
@@ -124,7 +124,7 @@ const CollectionsService = {
    * @returns Promise with deletion confirmation
    */
   deleteQAPair: async (id: string): Promise<void> => {
-    await api.delete(`/api/qa-pairs/${id}`);
+    await api.delete(`/api/collections/qa-pairs/${id}`);
   }
 };
 

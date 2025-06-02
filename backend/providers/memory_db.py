@@ -51,8 +51,20 @@ _database: Dict[str, List[Dict[str, Any]]] = {
                 {
                     "id": "doc1",
                     "title": "Equipment Manual",
-                    "content": "Section on troubleshooting",
-                    "source": "Technical Documentation"
+                    "content": "Section on troubleshooting steps for common issues. Power cycle procedures are outlined on page 42.",
+                    "source": {
+                        "id": "tech_docs",
+                        "name": "Technical Documentation",
+                        "type": "manual"
+                    },
+                    "url": "https://example.com/docs/equipment-manual.pdf",
+                    "metadata": {
+                        "document_id": "EM-2023-042",
+                        "last_updated": "2023-03-15",
+                        "version": "2.4",
+                        "department": "Engineering",
+                        "page_number": 42
+                    }
                 }
             ],
             "status": "approved",
@@ -70,8 +82,20 @@ _database: Dict[str, List[Dict[str, Any]]] = {
                 {
                     "id": "doc2",
                     "title": "Maintenance Schedule",
-                    "content": "Section on service intervals",
-                    "source": "Technical Documentation"
+                    "content": "Regular maintenance intervals are specified as quarterly (every 3 months) for basic service, with an annual comprehensive service that includes component replacement and calibration.",
+                    "source": {
+                        "id": "tech_docs",
+                        "name": "Technical Documentation",
+                        "type": "schedule"
+                    },
+                    "url": "https://example.com/docs/maintenance-schedule.pdf",
+                    "metadata": {
+                        "document_id": "MS-2023-015",
+                        "last_updated": "2023-02-10",
+                        "version": "1.2",
+                        "department": "Maintenance",
+                        "priority": "high"
+                    }
                 }
             ],
             "status": "ready_for_review",
@@ -89,8 +113,20 @@ _database: Dict[str, List[Dict[str, Any]]] = {
                 {
                     "id": "doc3",
                     "title": "SAP User Guide",
-                    "content": "Chapter on notifications",
-                    "source": "SAP Documentation"
+                    "content": "To create a new notification in SAP, navigate to the Notifications module using the main menu. Click on the 'Create New' button in the top toolbar. Fill in all required fields marked with an asterisk (*), including notification type, priority, and description. Attach any relevant documents using the attachment feature. Review the information and click 'Submit' to create the notification.",
+                    "source": {
+                        "id": "sap_docs",
+                        "name": "SAP Documentation",
+                        "type": "user_guide"
+                    },
+                    "url": "https://example.com/docs/sap-guide.pdf",
+                    "metadata": {
+                        "document_id": "SAP-UG-2023-034",
+                        "last_updated": "2023-01-05",
+                        "version": "3.1",
+                        "department": "IT",
+                        "module": "Notifications"
+                    }
                 }
             ],
             "status": "ready_for_review",
@@ -108,8 +144,20 @@ _database: Dict[str, List[Dict[str, Any]]] = {
                 {
                     "id": "doc4",
                     "title": "HR Policies",
-                    "content": "Section on time off",
-                    "source": "Internal Wiki"
+                    "content": "The company holiday schedule is published annually on the HR page of the internal wiki. Navigate to the 'Benefits and Time Off' section to find the current year's holiday calendar. This calendar includes all company-wide holidays, floating holidays, and early closure days. Employees should refer to this schedule when planning time off to avoid scheduling conflicts with company closures.",
+                    "source": {
+                        "id": "internal_wiki",
+                        "name": "Internal Wiki",
+                        "type": "policy"
+                    },
+                    "url": "https://internal-wiki.example.com/hr/benefits/holidays",
+                    "metadata": {
+                        "document_id": "HR-POL-2023-007",
+                        "last_updated": "2023-01-15",
+                        "version": "2023.1",
+                        "department": "Human Resources",
+                        "category": "Benefits"
+                    }
                 }
             ],
             "status": "approved",
@@ -127,8 +175,21 @@ _database: Dict[str, List[Dict[str, Any]]] = {
                 {
                     "id": "doc1",
                     "title": "Equipment Manual",
-                    "content": "Section on error codes",
-                    "source": "Technical Documentation"
+                    "content": "Error code E-45 indicates a power supply issue. This is typically caused by voltage fluctuations, loose connections, or faulty power supply units. Check all power connections for secure fitting, verify the input voltage matches specifications (110-120V or 220-240V depending on your region), and inspect the power supply unit for visible damage. If the issue persists after checking connections, the power supply unit may need replacement.",
+                    "source": {
+                        "id": "tech_docs",
+                        "name": "Technical Documentation",
+                        "type": "manual"
+                    },
+                    "url": "https://example.com/docs/equipment-manual.pdf",
+                    "metadata": {
+                        "document_id": "EM-2023-042",
+                        "last_updated": "2023-03-15",
+                        "version": "2.4",
+                        "department": "Engineering",
+                        "page_number": 87,
+                        "section": "Error Codes"
+                    }
                 }
             ],
             "status": "rejected",
@@ -144,10 +205,22 @@ _database: Dict[str, List[Dict[str, Any]]] = {
             "answer": "All replacement parts come with a 90-day warranty from the date of installation.",
             "documents": [
                 {
-                    "id": "doc2",
+                    "id": "doc5",
                     "title": "Warranty Information",
-                    "content": "Section on replacement parts",
-                    "source": "Technical Documentation"
+                    "content": "All replacement parts provided by the manufacturer come with a standard 90-day warranty from the date of installation. This warranty covers defects in materials and workmanship under normal use conditions. To claim warranty service, customers must provide proof of installation date and the original work order number. Extended warranty options are available for purchase at an additional cost, extending coverage to 1 year or 2 years from installation date.",
+                    "source": {
+                        "id": "tech_docs",
+                        "name": "Technical Documentation",
+                        "type": "warranty"
+                    },
+                    "url": "https://example.com/docs/warranty-information.pdf",
+                    "metadata": {
+                        "document_id": "WI-2023-018",
+                        "last_updated": "2023-02-28",
+                        "version": "1.3",
+                        "department": "Customer Service",
+                        "legal_approval": "Approved"
+                    }
                 }
             ],
             "status": "revision_requested",
@@ -161,34 +234,97 @@ _database: Dict[str, List[Dict[str, Any]]] = {
         {
             "id": "doc1",
             "title": "Equipment Manual",
-            "content": "Section on troubleshooting",
-            "source": "Technical Documentation",
+            "content": "Comprehensive guide for equipment operation, maintenance, and troubleshooting.",
+            "source": {
+                "id": "tech_docs",
+                "name": "Technical Documentation",
+                "type": "manual"
+            },
+            "url": "https://example.com/docs/equipment-manual.pdf",
+            "metadata": {
+                "document_id": "EM-2023-042",
+                "last_updated": "2023-03-15",
+                "version": "2.4",
+                "department": "Engineering"
+            },
             "created_at": "2023-05-10T08:00:00Z",
             "updated_at": "2023-05-10T08:00:00Z"
         },
         {
             "id": "doc2",
             "title": "Maintenance Schedule",
-            "content": "Section on service intervals",
-            "source": "Technical Documentation",
+            "content": "Detailed maintenance intervals and procedures for all equipment types.",
+            "source": {
+                "id": "tech_docs",
+                "name": "Technical Documentation",
+                "type": "schedule"
+            },
+            "url": "https://example.com/docs/maintenance-schedule.pdf",
+            "metadata": {
+                "document_id": "MS-2023-015",
+                "last_updated": "2023-02-10",
+                "version": "1.2",
+                "department": "Maintenance"
+            },
             "created_at": "2023-05-12T10:30:00Z",
             "updated_at": "2023-05-12T10:30:00Z"
         },
         {
             "id": "doc3",
             "title": "SAP User Guide",
-            "content": "Chapter on notifications",
-            "source": "SAP Documentation",
+            "content": "Comprehensive guide for using the SAP system, including creating and managing notifications.",
+            "source": {
+                "id": "sap_docs",
+                "name": "SAP Documentation",
+                "type": "user_guide"
+            },
+            "url": "https://example.com/docs/sap-guide.pdf",
+            "metadata": {
+                "document_id": "SAP-UG-2023-034",
+                "last_updated": "2023-01-05",
+                "version": "3.1",
+                "department": "IT"
+            },
             "created_at": "2023-04-05T14:45:00Z",
             "updated_at": "2023-04-05T14:45:00Z"
         },
         {
             "id": "doc4",
             "title": "HR Policies",
-            "content": "Section on time off",
-            "source": "Internal Wiki",
+            "content": "Official company policies related to human resources, benefits, and workplace conduct.",
+            "source": {
+                "id": "internal_wiki",
+                "name": "Internal Wiki",
+                "type": "policy"
+            },
+            "url": "https://internal-wiki.example.com/hr/policies",
+            "metadata": {
+                "document_id": "HR-POL-2023-007",
+                "last_updated": "2023-01-15",
+                "version": "2023.1",
+                "department": "Human Resources"
+            },
             "created_at": "2023-01-15T09:20:00Z",
             "updated_at": "2023-01-15T09:20:00Z"
+        },
+        {
+            "id": "doc5",
+            "title": "Warranty Information",
+            "content": "Detailed warranty terms and conditions for all products and replacement parts.",
+            "source": {
+                "id": "tech_docs",
+                "name": "Technical Documentation",
+                "type": "warranty"
+            },
+            "url": "https://example.com/docs/warranty-information.pdf",
+            "metadata": {
+                "document_id": "WI-2023-018",
+                "last_updated": "2023-02-28",
+                "version": "1.3",
+                "department": "Customer Service"
+            },
+            "created_at": "2023-02-28T11:15:00Z",
+            "updated_at": "2023-02-28T11:15:00Z"
         }
     ]
 }
