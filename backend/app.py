@@ -51,10 +51,10 @@ async def health_check():
 from routers import auth, collections, generation, retrieval
 
 # Add routers to the application
-app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
-app.include_router(collections.router, prefix="/api/collections", tags=["Collections"])
-app.include_router(retrieval.router, prefix="/api/retrieval", tags=["Retrieval"])
-app.include_router(generation.router, prefix="/api/generation", tags=["Generation"])
+app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+app.include_router(collections.router, prefix="/collections", tags=["Collections"])
+app.include_router(retrieval.router, prefix="/retrieval", tags=["Retrieval"])
+app.include_router(generation.router, prefix="/generation", tags=["Generation"])
 
 if __name__ == "__main__":
     import uvicorn

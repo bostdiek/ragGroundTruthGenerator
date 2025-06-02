@@ -6,7 +6,7 @@ In production, replace this with your actual database implementation (MongoDB, C
 """
 import json
 import os
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Any, Dict, List, Optional
 
 # Simple in-memory database for development
@@ -421,6 +421,19 @@ class MemoryDB:
         if collection_name not in _database:
             _database[collection_name] = []
     
+    # Add aliases for method names to match test expectations
+    async def list_collections(self, query: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+        """Alias for find_all() to maintain compatibility."""
+        return await self.find_all(query)
+        
+    async def get_collection(self, query: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Alias for find_one() to maintain compatibility."""
+        return await self.find_one(query)
+        
+    async def create_collection(self, document: Dict[str, Any]) -> Dict[str, Any]:
+        """Alias for insert_one() to maintain compatibility."""
+        return await self.insert_one(document)
+    
     async def find_all(self, query: Dict[str, Any] = None) -> List[Dict[str, Any]]:
         """
         Find all documents in the collection that match the query.
@@ -475,7 +488,7 @@ class MemoryDB:
             document["_id"] = f"{len(_database[self.collection_name]) + 1}"
         
         # Add created_at and updated_at timestamps
-        document["created_at"] = datetime.utcnow().isoformat()
+        document["created_at"] = datetime.now(UTC).isoformat()
         document["updated_at"] = document["created_at"]
         
         _database[self.collection_name].append(document)
@@ -500,7 +513,7 @@ class MemoryDB:
         document.update(update)
         
         # Update the updated_at timestamp
-        document["updated_at"] = datetime.utcnow().isoformat()
+        document["updated_at"] = datetime.now(UTC).isoformat()
         
         return document
     

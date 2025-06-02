@@ -155,7 +155,7 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
         # This ID must match what's expected by the frontend
         return "memory"
     
-    async def retrieve_documents(self, query: str, filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    async def retrieve_documents(self, query: str, filters: Optional[Dict[str, Any]] = None, limit: int = 5) -> List[Dict[str, Any]]:
         """
         Retrieve documents matching the query.
         
@@ -172,10 +172,13 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
         Args:
             query: The search query
             filters: Optional filters to apply (example: {"type": "manual"})
+            limit: Maximum number of results to return
             
         Returns:
             A list of matching documents with source attribution and relevance scores
         """
+        if self.documents is None:
+            self.documents = self._load_documents()
         query = query.lower()
         # Split the query into words for better matching
         query_terms = [term for term in query.split() if len(term) > 2]  # Only use terms with >2 chars
@@ -244,8 +247,42 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
         # Sort by relevance score
         all_results.sort(key=lambda x: x["relevance_score"], reverse=True)
         
-        # Always return at least 5 documents, if available
-        return all_results[:max(5, len(all_results))]
+        # Return up to the specified limit
+        return all_results[:limit]
+    
+    async def get_document(self, document_id: str) -> Dict[str, Any]:
+        """
+        Get a document by ID.
+        
+        Args:
+            document_id: The ID of the document to retrieve
+            
+        Returns:
+            Dict[str, Any]: The document data
+            
+        Raises:
+            HTTPException: If the document is not found
+        """
+        for doc in self.documents:
+            if doc["id"] == document_id:
+                # Create a copy of the document to avoid modifying the original
+                result = doc.copy()
+                
+                # Add source attribution
+                result["source"] = {
+                    "id": self.get_id(),
+                    "name": self.get_name(),
+                    "type": "sample"
+                }
+                
+                return result
+                
+        # If document not found, raise an exception
+        from fastapi import HTTPException, status
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Document with ID {document_id} not found"
+        )
 
 def get_provider():
     """Get an instance of the memory data source provider."""

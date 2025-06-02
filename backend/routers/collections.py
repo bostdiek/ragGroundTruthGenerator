@@ -4,7 +4,7 @@ Collections router for the AI Ground Truth Generator backend.
 This module handles collection management operations.
 """
 import uuid
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, status
@@ -21,6 +21,7 @@ class CollectionBase(BaseModel):
     name: str
     description: Optional[str] = None
     tags: List[str] = []
+    metadata: Optional[Dict[str, Any]] = None
 
 class CollectionCreate(CollectionBase):
     """Model for collection creation data."""
@@ -34,9 +35,7 @@ class Collection(CollectionBase):
     created_at: str
     updated_at: str
 
-    class Config:
-        """Pydantic configuration."""
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 # Define collection endpoints
 @router.get("/", response_model=List[Collection])
@@ -49,13 +48,13 @@ async def get_collections():
     """
     # Get collections from the database
     collections_db = get_database("collections")
-    collections = await collections_db.find_all()
+    collections = await collections_db.list_collections()
     
     # For each collection, get QA pair statistics
     qa_pairs_db = get_database("qa_pairs")
     for collection in collections:
         # Get count of QA pairs for this collection
-        qa_pairs = await qa_pairs_db.find_all({"collection_id": collection["id"]})
+        qa_pairs = await qa_pairs_db.list_collections({"collection_id": collection["id"]})
         collection["document_count"] = len(qa_pairs)
         
         # Get counts by status
@@ -84,7 +83,7 @@ async def create_collection(collection: CollectionCreate):
     """
     # Generate a new ID and timestamps
     collection_id = str(uuid.uuid4())
-    current_time = datetime.utcnow().isoformat()
+    current_time = datetime.now(UTC).isoformat()
     
     # Create the collection object
     new_collection = {
@@ -92,6 +91,7 @@ async def create_collection(collection: CollectionCreate):
         "name": collection.name,
         "description": collection.description,
         "tags": collection.tags,
+        "metadata": collection.metadata or {},
         "document_count": 0,  # New collections have 0 QA pairs
         "created_at": current_time,
         "updated_at": current_time
@@ -99,9 +99,66 @@ async def create_collection(collection: CollectionCreate):
     
     # Insert the collection into the database
     collections_db = get_database("collections")
-    await collections_db.insert_one(new_collection)
+    await collections_db.create_collection(new_collection)
     
     return new_collection
+
+
+# Add PUT endpoint for updating a collection
+@router.put("/{collection_id}", response_model=Collection)
+async def update_collection(collection_id: str, collection: CollectionBase):
+    """
+    Update a specific collection by ID.
+    
+    Args:
+        collection_id: The ID of the collection to update.
+        collection: The updated collection data.
+        
+    Returns:
+        Collection: The updated collection.
+    """
+    # Check if the collection exists
+    collections_db = get_database("collections")
+    existing_collection = await collections_db.find_one({"id": collection_id})
+    
+    if not existing_collection:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Collection with ID {collection_id} not found"
+        )
+    
+    # Update the collection
+    update_data = {
+        "name": collection.name,
+        "description": collection.description,
+        "tags": collection.tags,
+        "metadata": collection.metadata or {},
+        "updated_at": datetime.now(UTC).isoformat()
+    }
+    
+    updated_collection = await collections_db.update_one({"id": collection_id}, update_data)
+    
+    if not updated_collection:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update collection"
+        )
+    
+    # Get updated QA pair statistics
+    qa_pairs_db = get_database("qa_pairs")
+    qa_pairs = await qa_pairs_db.find_all({"collection_id": collection_id})
+    
+    # Calculate document count
+    updated_collection["document_count"] = len(qa_pairs)
+    
+    # Calculate counts by status
+    status_counts = {}
+    for qa_pair in qa_pairs:
+        status = qa_pair.get("status", "draft")
+        status_counts[status] = status_counts.get(status, 0) + 1
+    updated_collection["status_counts"] = status_counts
+    
+    return updated_collection
 
 @router.get("/{collection_id}", response_model=Collection)
 async def get_collection(collection_id: str):
@@ -139,6 +196,60 @@ async def get_collection(collection_id: str):
     collection["status_counts"] = status_counts
     
     return collection
+
+@router.put("/{collection_id}", response_model=Collection)
+async def update_collection(collection_id: str, collection: CollectionBase):
+    """
+    Update a specific collection by ID.
+    
+    Args:
+        collection_id: The ID of the collection to update.
+        collection: The updated collection data.
+        
+    Returns:
+        Collection: The updated collection.
+    """
+    # Check if the collection exists
+    collections_db = get_database("collections")
+    existing_collection = await collections_db.find_one({"id": collection_id})
+    
+    if not existing_collection:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Collection with ID {collection_id} not found"
+        )
+    
+    # Update the collection
+    update_data = {
+        "name": collection.name,
+        "description": collection.description,
+        "tags": collection.tags,
+        "updated_at": datetime.now(UTC).isoformat()
+    }
+    
+    updated_collection = await collections_db.update_one({"id": collection_id}, update_data)
+    
+    if not updated_collection:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update collection"
+        )
+    
+    # Get updated QA pair statistics
+    qa_pairs_db = get_database("qa_pairs")
+    qa_pairs = await qa_pairs_db.find_all({"collection_id": collection_id})
+    
+    # Calculate document count
+    updated_collection["document_count"] = len(qa_pairs)
+    
+    # Calculate counts by status
+    status_counts = {}
+    for qa_pair in qa_pairs:
+        status = qa_pair.get("status", "draft")
+        status_counts[status] = status_counts.get(status, 0) + 1
+    updated_collection["status_counts"] = status_counts
+    
+    return updated_collection
 
 @router.delete("/{collection_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_collection(collection_id: str):
@@ -199,9 +310,7 @@ class QAPair(QAPairBase):
     updated_at: str
     created_by: str = "demo_user"
 
-    class Config:
-        """Pydantic configuration."""
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 # QA Pair endpoints
 @router.get("/{collection_id}/qa-pairs", response_model=List[QAPair])
@@ -255,7 +364,7 @@ async def create_qa_pair(collection_id: str, qa_pair: QAPairCreate):
     
     # Create a new QA pair
     qa_pair_id = str(uuid.uuid4())
-    current_time = datetime.utcnow().isoformat()
+    current_time = datetime.now(UTC).isoformat()
     
     new_qa_pair = {
         "id": qa_pair_id,
@@ -352,7 +461,7 @@ async def update_qa_pair(qa_pair_id: str, qa_pair_update: QAPairUpdate):
         update_data["metadata"] = {**existing_metadata, **qa_pair_update.metadata}
     
     # Update the timestamp
-    update_data["updated_at"] = datetime.utcnow().isoformat()
+    update_data["updated_at"] = datetime.now(UTC).isoformat()
     
     # Update the QA pair
     updated_qa_pair = await qa_pairs_db.update_one({"id": qa_pair_id}, update_data)

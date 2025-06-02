@@ -9,6 +9,9 @@ from typing import Any, Dict, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
+from providers.auth.simple_auth import DEMO_USERS
+from providers.factory import get_auth_provider
+
 # Create router
 router = APIRouter()
 
@@ -42,7 +45,7 @@ class Token(BaseModel):
 @router.post("/login", response_model=Token)
 async def login(user_data: UserLogin):
     """
-    Authenticate a user. This is a placeholder implementation.
+    Authenticate a user.
     
     Args:
         user_data: The user login data.
@@ -50,30 +53,35 @@ async def login(user_data: UserLogin):
     Returns:
         Token: Authentication token.
     """
-    # This is a placeholder - in a real app, this would authenticate against a real provider
+    # Get the authentication provider
+    auth_provider = get_auth_provider()
     
-    if user_data.username == "demo" and user_data.password == "password":
+    # Authenticate the user
+    try:
+        result = await auth_provider.authenticate(user_data.username, user_data.password)
+        
+        # Format the response
         return {
-            "access_token": "sample_token_12345",
-            "token_type": "bearer",
+            "access_token": result["access_token"],
+            "token_type": result["token_type"],
             "user": {
-                "id": "user1",
-                "username": "demo",
-                "email": "demo@example.com",
-                "full_name": "Demo User"
+                "id": result["user"]["id"],
+                "username": result["user"]["name"],
+                "email": result["user"]["email"],
+                "full_name": result["user"].get("full_name", result["user"]["name"])
             }
         }
-    else:
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials",
+            detail=str(e) or "Invalid credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
 @router.post("/register", response_model=User)
 async def register(user_data: UserRegister):
     """
-    Register a new user. This is a placeholder implementation.
+    Register a new user.
     
     Args:
         user_data: The user registration data.
@@ -81,54 +89,105 @@ async def register(user_data: UserRegister):
     Returns:
         User: The registered user.
     """
-    # This is a placeholder - in a real app, this would register with a real provider
+    # Get the authentication provider
+    auth_provider = get_auth_provider()
     
-    # Simulate checking if username already exists
-    if user_data.username == "demo":
+    # Register the user
+    try:
+        user = await auth_provider.register({
+            "email": user_data.email,
+            "name": user_data.full_name or user_data.username,
+            "password": user_data.password
+        })
+        
+        # Format the response
+        return {
+            "id": user["id"],
+            "username": user["name"],
+            "email": user["email"],
+            "full_name": user.get("full_name", user["name"])
+        }
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already registered",
+            detail=str(e) or "Registration failed",
         )
-    
-    return {
-        "id": "user1",
-        "username": user_data.username,
-        "email": user_data.email,
-        "full_name": user_data.full_name
-    }
 
 @router.get("/me", response_model=User)
-async def get_current_user():
+async def get_current_user(authorization: Optional[str] = None):
     """
-    Get the current authenticated user. This is a placeholder implementation.
+    Get the current authenticated user.
     
+    Args:
+        authorization: The Authorization header.
+        
     Returns:
-        User: The current user.
+        User: The current authenticated user.
     """
-    # This is a placeholder - in a real app, this would verify the token and return the actual user
+    if authorization is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     
-    return {
-        "id": "user1",
-        "username": "demo",
-        "email": "demo@example.com",
-        "full_name": "Demo User"
-    }
+    # Extract token from Authorization header
+    try:
+        scheme, token = authorization.split()
+        if scheme.lower() != "bearer":
+            raise ValueError("Invalid token format")
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Get the authentication provider
+    auth_provider = get_auth_provider()
+    
+    # Validate the token
+    try:
+        token_data = await auth_provider.verify_token(token)
+        
+        # Get user information
+        email = token_data.email
+        user = DEMO_USERS.get(email)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        # Format the response
+        return {
+            "id": user["id"],
+            "username": user["name"],
+            "email": user["email"],
+            "full_name": user.get("full_name", user["name"])
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e) or "Invalid token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 @router.get("/providers", response_model=Dict[str, Any])
 async def get_auth_providers():
     """
-    Get available authentication providers. This is a placeholder implementation.
+    Get available authentication providers.
     
     Returns:
         Dict[str, Any]: A dictionary of available authentication providers.
     """
-    # This is a placeholder - in a real app, this would return actual configured providers
-    
     auth_provider = os.getenv("AUTH_PROVIDER", "simple")
     
     providers = {
         "current": auth_provider,
-        "available": ["simple"]
+        "available": ["simple"]  # This could be dynamically generated in a real app
     }
     
     return providers

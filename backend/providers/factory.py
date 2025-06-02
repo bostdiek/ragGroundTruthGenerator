@@ -20,14 +20,14 @@ def get_generator() -> Any:
         Any: A generator instance.
     """
     if generation_provider == "demo":
-        from providers.demo_generator import get_generator as get_demo_generator
+        from providers.generation.demo import get_generator as get_demo_generator
         return get_demo_generator()
     # TODO: Add other generation providers
     # elif generation_provider == "azure-openai":
-    #     from providers.azure_openai import get_generator as get_azure_generator
+    #     from providers.generation.azure_openai import get_generator as get_azure_generator
     #     return get_azure_generator()
     # elif generation_provider == "openai":
-    #     from providers.openai import get_generator as get_openai_generator
+    #     from providers.generation.openai import get_generator as get_openai_generator
     #     return get_openai_generator()
     else:
         raise ValueError(f"Unsupported GENERATION_PROVIDER: {generation_provider}")
@@ -40,14 +40,14 @@ def get_retriever() -> Any:
         Any: A retriever instance.
     """
     if retrieval_provider == "template":
-        from providers.template_retriever import get_retriever as get_template_retriever
+        from providers.retrieval.template import get_retriever as get_template_retriever
         return get_template_retriever()
     # TODO: Add other retrieval providers
     # elif retrieval_provider == "azure-search":
-    #     from providers.azure_search import get_retriever as get_azure_search
+    #     from providers.retrieval.azure_search import get_retriever as get_azure_search
     #     return get_azure_search()
     # elif retrieval_provider == "elasticsearch":
-    #     from providers.elasticsearch import get_retriever as get_elasticsearch
+    #     from providers.retrieval.elasticsearch import get_retriever as get_elasticsearch
     #     return get_elasticsearch()
     else:
         raise ValueError(f"Unsupported RETRIEVAL_PROVIDER: {retrieval_provider}")
@@ -70,16 +70,14 @@ def get_data_source_provider(provider_id: str) -> Any:
         ValueError: If the specified provider ID is not supported
     """
     if provider_id == "memory":
-        from providers.memory_data_source_provider import (
-            get_provider as get_memory_provider,
-        )
+        from providers.data_sources.memory import get_provider as get_memory_provider
         return get_memory_provider()
     # TODO: Add other data source providers
     # elif provider_id == "azure_search":
-    #     from providers.azure_search_provider import get_provider as get_azure_search_provider
+    #     from providers.data_sources.azure_search import get_provider as get_azure_search_provider
     #     return get_azure_search_provider()
     # elif provider_id == "database":
-    #     from providers.database_provider import get_provider as get_database_provider
+    #     from providers.data_sources.database import get_provider as get_database_provider
     #     return get_database_provider()
     else:
         raise ValueError(f"Unknown data source provider: {provider_id}")
@@ -98,6 +96,38 @@ def get_all_data_source_providers() -> Dict[str, Any]:
     Returns:
         A dictionary of provider IDs to provider instances
     """
+    providers = {}
+    
+    for provider_id in enabled_data_sources:
+        try:
+            provider = get_data_source_provider(provider_id.strip())
+            providers[provider.get_id()] = provider
+        except Exception as e:
+            print(f"Warning: Could not instantiate data source provider '{provider_id}': {e}")
+    
+    return providers
+
+def get_auth_provider() -> Any:
+    """
+    Get an authentication provider instance based on environment configuration.
+    
+    Returns:
+        Any: An authentication provider instance.
+    """
+    auth_provider = os.getenv("AUTH_PROVIDER", "simple")
+    
+    if auth_provider == "simple":
+        from providers.auth.simple_auth import get_provider as get_simple_auth_provider
+        return get_simple_auth_provider()
+    # TODO: Add other authentication providers
+    # elif auth_provider == "azure-ad":
+    #     from providers.auth.azure_ad import get_provider as get_azure_ad_provider
+    #     return get_azure_ad_provider()
+    # elif auth_provider == "oauth":
+    #     from providers.auth.oauth import get_provider as get_oauth_provider
+    #     return get_oauth_provider()
+    else:
+        raise ValueError(f"Unsupported AUTH_PROVIDER: {auth_provider}")
     providers = {}
     for provider_id in enabled_data_sources:
         try:

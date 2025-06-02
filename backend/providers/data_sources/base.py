@@ -82,26 +82,3 @@ class BaseDataSourceProvider(ABC):
             - source: A dictionary with 'id', 'name', and optionally 'type' keys
         """
         pass
-    
-    @abstractmethod
-    async def get_document(self, document_id: str) -> Dict[str, Any]:
-        """
-        Retrieve a specific document by ID.
-        
-        This method should retrieve a document from the data source by its unique ID.
-        
-        Args:
-            document_id: The unique identifier of the document to retrieve
-            
-        Returns:
-            Dict[str, Any]: The document with the specified ID.
-            Each document should have at minimum the following fields:
-            - id: A unique identifier for the document
-            - title: The document title
-            - content: The document content
-            - source: A dictionary with 'id', 'name', and optionally 'type' keys
-            
-        Raises:
-            Exception: If the document is not found
-        """
-        pass
