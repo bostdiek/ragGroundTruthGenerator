@@ -22,9 +22,6 @@ def get_generator() -> Any:
     if generation_provider == "demo":
         from providers.demo_generator import get_generator as get_demo_generator
         return get_demo_generator()
-    elif generation_provider == "template":
-        from providers.template_generator import get_generator as get_template_generator
-        return get_template_generator()
     # TODO: Add other generation providers
     # elif generation_provider == "azure-openai":
     #     from providers.azure_openai import get_generator as get_azure_generator
