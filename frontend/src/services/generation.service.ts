@@ -4,19 +4,21 @@ import { Document } from '../types';
 // Types
 export interface GenerationRequest {
   question: string;
-  documents: Document[]; // Array of document objects
+  documents: Document[]; 
   model?: string;
   temperature?: number;
   max_tokens?: number;
-  rules?: Rule[];
+  custom_rules?: string[];
 }
 
 export interface GenerationResponse {
   answer: string;
-  model_used?: string;
-  tokens_used?: number;
-  processing_time?: number;
-  document_references?: Document[];
+  model_used: string;
+  token_usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
 }
 
 export interface Rule {
@@ -35,7 +37,7 @@ const GenerationService = {
    * @returns Promise with generation response
    */
   generateAnswer: async (request: GenerationRequest): Promise<GenerationResponse> => {
-    const response = await api.post<GenerationResponse>('/generation/answer', request);
+    const response = await api.post<GenerationResponse>('/api/generation/generate', request);
     return response.data;
   },
   
@@ -44,7 +46,7 @@ const GenerationService = {
    * @returns Promise with array of rules
    */
   getRules: async (): Promise<Rule[]> => {
-    const response = await api.get<Rule[]>('/generation/rules');
+    const response = await api.get<Rule[]>('/api/generation/rules');
     return response.data;
   },
   
@@ -54,7 +56,7 @@ const GenerationService = {
    * @returns Promise with rule details
    */
   getRule: async (id: string): Promise<Rule> => {
-    const response = await api.get<Rule>(`/generation/rules/${id}`);
+    const response = await api.get<Rule>(`/api/generation/rules/${id}`);
     return response.data;
   },
   
@@ -64,7 +66,7 @@ const GenerationService = {
    * @returns Promise with created rule
    */
   createRule: async (rule: Omit<Rule, 'id'>): Promise<Rule> => {
-    const response = await api.post<Rule>('/generation/rules', rule);
+    const response = await api.post<Rule>('/api/generation/rules', rule);
     return response.data;
   },
   
@@ -75,7 +77,7 @@ const GenerationService = {
    * @returns Promise with updated rule
    */
   updateRule: async (id: string, rule: Partial<Omit<Rule, 'id'>>): Promise<Rule> => {
-    const response = await api.put<Rule>(`/generation/rules/${id}`, rule);
+    const response = await api.put<Rule>(`/api/generation/rules/${id}`, rule);
     return response.data;
   },
   
@@ -85,17 +87,17 @@ const GenerationService = {
    * @returns Promise with deletion confirmation
    */
   deleteRule: async (id: string): Promise<void> => {
-    await api.delete(`/generation/rules/${id}`);
-  },
+    await api.delete(`/api/generation/rules/${id}`);
+  }
   
-  /**
-   * Get available models for answer generation
-   * @returns Promise with array of model names and details
-   */
+  // We've removed the models endpoint since it's not needed for the demo
+  // The generation will always use the demo model
+  /*
   getModels: async (): Promise<{ id: string; name: string; description: string }[]> => {
-    const response = await api.get<{ id: string; name: string; description: string }[]>('/generation/models');
+    const response = await api.get<{ id: string; name: string; description: string }[]>('/api/generation/models');
     return response.data;
   }
+  */
 };
 
 export default GenerationService;

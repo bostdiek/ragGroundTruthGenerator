@@ -7,16 +7,11 @@ import axios from 'axios';
  */
 
 // Get API base URL from environment variables
-// In Docker environment, backend would be accessed via service name in docker-compose
-// For local development outside of Docker, use localhost
 let defaultUrl = 'http://localhost:8000';
-// Check if we're running in a Docker environment 
-// (We check port 3000 is exposed to detect Docker container)
-if (window.location.port === '3000' && window.location.hostname === 'localhost') {
-  // Use the Docker service name when running in Docker
-  defaultUrl = 'http://localhost:8000';
-} 
+// Always use localhost for browser access, regardless of environment variable
 const API_URL = process.env.REACT_APP_API_URL || defaultUrl;
+
+console.log('Using API URL:', API_URL);
 
 // Create axios instance with common configuration
 const api = axios.create({

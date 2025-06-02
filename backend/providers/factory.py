@@ -8,7 +8,7 @@ import os
 from typing import Any, Dict
 
 # Get provider configuration from environment variables
-generation_provider = os.getenv("GENERATION_PROVIDER", "template")
+generation_provider = os.getenv("GENERATION_PROVIDER", "demo")
 retrieval_provider = os.getenv("RETRIEVAL_PROVIDER", "template")
 enabled_data_sources = os.getenv("ENABLED_DATA_SOURCES", "memory").split(",")
 
@@ -19,7 +19,10 @@ def get_generator() -> Any:
     Returns:
         Any: A generator instance.
     """
-    if generation_provider == "template":
+    if generation_provider == "demo":
+        from providers.demo_generator import get_generator as get_demo_generator
+        return get_demo_generator()
+    elif generation_provider == "template":
         from providers.template_generator import get_generator as get_template_generator
         return get_template_generator()
     # TODO: Add other generation providers

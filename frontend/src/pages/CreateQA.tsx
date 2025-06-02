@@ -380,11 +380,7 @@ const CreateQA: React.FC = () => {
       const response = await GenerationService.generateAnswer({
         question,
         documents: selectedDocs,
-        rules: customRules.map((rule, index) => ({
-          id: `rule-${index}`,
-          description: rule,
-          type: 'custom'
-        }))
+        custom_rules: customRules
       });
       
       setAnswer(response.answer);
