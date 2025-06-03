@@ -1,4 +1,4 @@
-import React, { HTMLAttributes } from 'react';
+import React, { HTMLAttributes, ReactNode, ForwardRefExoticComponent, RefAttributes } from 'react';
 import styled, { css } from 'styled-components';
 import { colors, borderRadius, shadows, spacing } from './theme';
 
@@ -7,6 +7,37 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   padding?: 'none' | 'small' | 'medium' | 'large';
   fullWidth?: boolean;
   elevation?: 'none' | 'low' | 'medium' | 'high';
+  children?: ReactNode;
+}
+
+// Define types for the compound components
+interface CardHeaderProps extends HTMLAttributes<HTMLDivElement> {
+  children?: ReactNode;
+}
+
+interface CardTitleProps extends HTMLAttributes<HTMLHeadingElement> {
+  children?: ReactNode;
+}
+
+interface CardSubtitleProps extends HTMLAttributes<HTMLHeadingElement> {
+  children?: ReactNode;
+}
+
+interface CardContentProps extends HTMLAttributes<HTMLDivElement> {
+  children?: ReactNode;
+}
+
+interface CardActionsProps extends HTMLAttributes<HTMLDivElement> {
+  children?: ReactNode;
+}
+
+// Define the type for the compound component structure
+interface CardComponent extends ForwardRefExoticComponent<CardProps & RefAttributes<HTMLDivElement>> {
+  Header: ForwardRefExoticComponent<CardHeaderProps & RefAttributes<HTMLDivElement>>;
+  Title: ForwardRefExoticComponent<CardTitleProps & RefAttributes<HTMLHeadingElement>>;
+  Subtitle: ForwardRefExoticComponent<CardSubtitleProps & RefAttributes<HTMLHeadingElement>>;
+  Content: ForwardRefExoticComponent<CardContentProps & RefAttributes<HTMLDivElement>>;
+  Actions: ForwardRefExoticComponent<CardActionsProps & RefAttributes<HTMLDivElement>>;
 }
 
 const StyledCard = styled.div<CardProps>`
@@ -73,7 +104,104 @@ const StyledCard = styled.div<CardProps>`
   }}
 `;
 
-export const Card = React.forwardRef<HTMLDivElement, CardProps>(
+// Card Header component
+const StyledCardHeader = styled.div`
+  padding: ${spacing.md};
+  border-bottom: 1px solid ${colors.grey[200]};
+`;
+
+const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
+  ({ children, ...props }, ref) => {
+    return (
+      <StyledCardHeader ref={ref} {...props}>
+        {children}
+      </StyledCardHeader>
+    );
+  }
+);
+
+CardHeader.displayName = 'Card.Header';
+
+// Card Title component
+const StyledCardTitle = styled.h3`
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: ${colors.grey[900]};
+`;
+
+const CardTitle = React.forwardRef<HTMLHeadingElement, CardTitleProps>(
+  ({ children, ...props }, ref) => {
+    return (
+      <StyledCardTitle ref={ref} {...props}>
+        {children}
+      </StyledCardTitle>
+    );
+  }
+);
+
+CardTitle.displayName = 'Card.Title';
+
+// Card Subtitle component
+const StyledCardSubtitle = styled.h4`
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: ${colors.grey[600]};
+`;
+
+const CardSubtitle = React.forwardRef<HTMLHeadingElement, CardSubtitleProps>(
+  ({ children, ...props }, ref) => {
+    return (
+      <StyledCardSubtitle ref={ref} {...props}>
+        {children}
+      </StyledCardSubtitle>
+    );
+  }
+);
+
+CardSubtitle.displayName = 'Card.Subtitle';
+
+// Card Content component
+const StyledCardContent = styled.div`
+  padding: ${spacing.md};
+`;
+
+const CardContent = React.forwardRef<HTMLDivElement, CardContentProps>(
+  ({ children, ...props }, ref) => {
+    return (
+      <StyledCardContent ref={ref} {...props}>
+        {children}
+      </StyledCardContent>
+    );
+  }
+);
+
+CardContent.displayName = 'Card.Content';
+
+// Card Actions component
+const StyledCardActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  padding: ${spacing.sm} ${spacing.md};
+  border-top: 1px solid ${colors.grey[200]};
+  gap: ${spacing.sm};
+`;
+
+const CardActions = React.forwardRef<HTMLDivElement, CardActionsProps>(
+  ({ children, ...props }, ref) => {
+    return (
+      <StyledCardActions ref={ref} {...props}>
+        {children}
+      </StyledCardActions>
+    );
+  }
+);
+
+CardActions.displayName = 'Card.Actions';
+
+// Main Card component
+const CardBase = React.forwardRef<HTMLDivElement, CardProps>(
   (
     { 
       children, 
@@ -100,51 +228,14 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   }
 );
 
-// Card subcomponents
-const CardHeader = styled.div`
-  padding: ${spacing.md};
-  padding-bottom: ${spacing.sm};
-  border-bottom: 1px solid ${colors.grey[200]};
-`;
+CardBase.displayName = 'Card';
 
-const CardTitle = styled.h3`
-  font-size: 1.125rem;
-  margin: 0;
-  color: ${colors.text.primary};
-`;
+// Create the compound component with proper typing
+const Card = CardBase as CardComponent;
+Card.Header = CardHeader;
+Card.Title = CardTitle;
+Card.Subtitle = CardSubtitle;
+Card.Content = CardContent;
+Card.Actions = CardActions;
 
-const CardSubtitle = styled.h4`
-  font-size: 0.875rem;
-  margin: ${spacing.xs} 0 0;
-  color: ${colors.text.secondary};
-  font-weight: 400;
-`;
-
-const CardContent = styled.div`
-  padding: ${spacing.md};
-`;
-
-const CardActions = styled.div`
-  display: flex;
-  padding: ${spacing.sm} ${spacing.md};
-  border-top: 1px solid ${colors.grey[200]};
-  justify-content: flex-end;
-  
-  & > * {
-    margin-left: ${spacing.sm};
-  }
-`;
-
-// Add displayName for all components
-Card.displayName = 'Card';
-
-// Export subcomponents as part of Card
-export const CardComponents = {
-  Header: CardHeader,
-  Title: CardTitle,
-  Subtitle: CardSubtitle,
-  Content: CardContent,
-  Actions: CardActions,
-};
-
-export default Object.assign(Card, CardComponents);
+export default Card;

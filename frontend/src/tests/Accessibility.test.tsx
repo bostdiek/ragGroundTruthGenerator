@@ -7,7 +7,7 @@ import { Select } from '../components/ui/Select';
 import { Checkbox } from '../components/ui/Checkbox';
 import { Modal } from '../components/ui/Modal';
 import { Alert } from '../components/ui/Alert';
-import { Card } from '../components/ui/Card';
+import Card from '../components/ui/Card';
 import { Form, FormField, FormLabel } from '../components/form/Form';
 
 // Mock functions for event handlers

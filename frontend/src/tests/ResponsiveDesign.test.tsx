@@ -2,7 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Card } from '../components/ui/Card';
+import Card from '../components/ui/Card';
 import { Container } from '../components/layout/Container';
 import { Grid } from '../components/layout/Grid';
 import { theme } from '../components/ui/theme';

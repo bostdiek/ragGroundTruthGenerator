@@ -8,7 +8,7 @@ const mockFn = () => jest.fn();
 if (typeof jest === 'undefined') {
   // If using vitest
   global.jest = {
-    fn: () => ({ mockImplementation: (fn) => fn })
+    fn: () => ({ mockImplementation: (fn: any) => fn })
   } as any;
 }
 
