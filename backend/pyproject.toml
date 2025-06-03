@@ -24,8 +24,25 @@ dev = [
     "httpx>=0.28.1",
     "pytest>=8.3.5",
     "pytest-asyncio>=1.0.0",
+    "ruff>=0.11.12",
 ]
 
 [tool.pytest.ini_options]
 asyncio_mode = "strict"
 asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]

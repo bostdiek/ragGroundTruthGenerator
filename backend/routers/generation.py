@@ -3,9 +3,10 @@ Generation router for the AI Ground Truth Generator backend.
 
 This module handles answer generation operations.
 """
-from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Any
+
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from providers.factory import get_generator
@@ -14,21 +15,26 @@ from providers.generation import GenerationManager
 # Create router
 router = APIRouter()
 
+
 # Define models
 class GenerationRequest(BaseModel):
     """Model for generation request data."""
+
     question: str
-    documents: List[Dict[str, Any]]
-    custom_rules: List[str] = []
+    documents: list[dict[str, Any]]
+    custom_rules: list[str] = []
     model: str = "demo-model"
     temperature: float = 0.7
     max_tokens: int = 1000
 
+
 class GenerationResponse(BaseModel):
     """Model for generation response data."""
+
     answer: str
     model_used: str
-    token_usage: Dict[str, int]
+    token_usage: dict[str, int]
+
 
 # Get generation manager instance
 def get_generation_manager():
@@ -39,13 +45,13 @@ def get_generation_manager():
 
 # POST /generation/answer endpoint for answer generation (matches test expectations)
 from fastapi import Header
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
 from providers.factory import get_auth_provider
 
-@router.post("/answer", response_model=Dict[str, Any])
+
+@router.post("/answer", response_model=dict[str, Any])
 async def generate_answer(
-    request: GenerationRequest,
-    authorization: Optional[str] = Header(None)
+    request: GenerationRequest, authorization: str | None = Header(None)
 ):
     """
     Generate an answer based on the provided documents.
@@ -59,7 +65,9 @@ async def generate_answer(
         if scheme.lower() != "bearer":
             raise ValueError("Invalid token format")
     except Exception:
-        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+        raise HTTPException(
+            status_code=401, detail="Invalid authentication credentials"
+        )
     auth_provider = get_auth_provider()
     try:
         await auth_provider.verify_token(token)
@@ -80,8 +88,13 @@ async def generate_answer(
     return {
         "answer": answer,
         "model": request.model,
-        "token_usage": {"prompt_tokens": 10, "completion_tokens": 20, "total_tokens": 30}
+        "token_usage": {
+            "prompt_tokens": 10,
+            "completion_tokens": 20,
+            "total_tokens": 30,
+        },
     }
+
 
 # We don't need a get_available_models endpoint for the demo
 # The generation will always use the demo model, so the frontend doesn't need

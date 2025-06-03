@@ -4,23 +4,26 @@ Provider factory for the AI Ground Truth Generator.
 This module provides factory functions to get the appropriate provider
 implementations based on the environment configuration.
 """
+
 import os
-from typing import Any, Dict
+from typing import Any
 
 # Get provider configuration from environment variables
 generation_provider = os.getenv("GENERATION_PROVIDER", "demo")
 retrieval_provider = os.getenv("RETRIEVAL_PROVIDER", "template")
 enabled_data_sources = os.getenv("ENABLED_DATA_SOURCES", "memory").split(",")
 
+
 def get_generator() -> Any:
     """
     Get a generator instance based on environment configuration.
-    
+
     Returns:
         Any: A generator instance.
     """
     if generation_provider == "demo":
         from providers.generation.demo import get_generator as get_demo_generator
+
         return get_demo_generator()
     # TODO: Add other generation providers
     # elif generation_provider == "azure-openai":
@@ -32,15 +35,17 @@ def get_generator() -> Any:
     else:
         raise ValueError(f"Unsupported GENERATION_PROVIDER: {generation_provider}")
 
+
 def get_retriever() -> Any:
     """
     Get a retriever instance based on environment configuration.
-    
+
     Returns:
         Any: A retriever instance.
     """
     if retrieval_provider == "template":
         from providers.retrieval.template import get_retriever as get_template_retriever
+
         return get_template_retriever()
     # TODO: Add other retrieval providers
     # elif retrieval_provider == "azure-search":
@@ -52,25 +57,27 @@ def get_retriever() -> Any:
     else:
         raise ValueError(f"Unsupported RETRIEVAL_PROVIDER: {retrieval_provider}")
 
+
 def get_data_source_provider(provider_id: str) -> Any:
     """
     Get a data source provider instance by ID.
-    
+
     A data source provider is responsible for retrieving documents from
     a specific data source, such as a memory store, file system, database,
     or external API. Each provider implements the BaseDataSourceProvider interface.
-    
+
     Args:
         provider_id: The ID of the provider to retrieve
-        
+
     Returns:
         A data source provider instance
-        
+
     Raises:
         ValueError: If the specified provider ID is not supported
     """
     if provider_id == "memory":
         from providers.data_sources.memory import get_provider as get_memory_provider
+
         return get_memory_provider()
     # TODO: Add other data source providers
     # elif provider_id == "azure_search":
@@ -82,42 +89,47 @@ def get_data_source_provider(provider_id: str) -> Any:
     else:
         raise ValueError(f"Unknown data source provider: {provider_id}")
 
-def get_all_data_source_providers() -> Dict[str, Any]:
+
+def get_all_data_source_providers() -> dict[str, Any]:
     """
     Get all enabled data source providers.
-    
+
     This function returns a dictionary of all enabled data source providers,
     as specified by the ENABLED_DATA_SOURCES environment variable. Each provider
     is instantiated and added to the dictionary with its ID as the key.
-    
+
     Providers that cannot be instantiated (e.g., due to missing dependencies)
     are skipped with a warning.
-    
+
     Returns:
         A dictionary of provider IDs to provider instances
     """
     providers = {}
-    
+
     for provider_id in enabled_data_sources:
         try:
             provider = get_data_source_provider(provider_id.strip())
             providers[provider.get_id()] = provider
         except Exception as e:
-            print(f"Warning: Could not instantiate data source provider '{provider_id}': {e}")
-    
+            print(
+                f"Warning: Could not instantiate data source provider '{provider_id}': {e}"
+            )
+
     return providers
+
 
 def get_auth_provider() -> Any:
     """
     Get an authentication provider instance based on environment configuration.
-    
+
     Returns:
         Any: An authentication provider instance.
     """
     auth_provider = os.getenv("AUTH_PROVIDER", "simple")
-    
+
     if auth_provider == "simple":
         from providers.auth.simple_auth import get_provider as get_simple_auth_provider
+
         return get_simple_auth_provider()
     # TODO: Add other authentication providers
     # elif auth_provider == "azure-ad":
@@ -135,5 +147,5 @@ def get_auth_provider() -> Any:
         except ValueError:
             # Skip unavailable providers
             continue
-    
+
     return providers

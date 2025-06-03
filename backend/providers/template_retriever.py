@@ -4,17 +4,18 @@ Simple template retrieval provider for development.
 This module provides a simple template-based retrieval provider for development.
 In production, replace this with your actual retrieval implementation.
 """
-from typing import Any, Dict, List, Optional
+
+from typing import Any
 
 
 class TemplateRetriever:
     """
     A simple template-based retriever implementation for development.
-    
+
     This class provides a basic implementation for retrieving documents based on templates.
     In production, replace this with your actual search service implementation.
     """
-    
+
     def __init__(self):
         """Initialize the template retriever."""
         # Create some sample documents for demonstration
@@ -27,8 +28,8 @@ class TemplateRetriever:
                 "metadata": {
                     "type": "maintenance",
                     "equipment": "HVAC",
-                    "difficulty": "easy"
-                }
+                    "difficulty": "easy",
+                },
             },
             {
                 "id": "doc2",
@@ -38,8 +39,8 @@ class TemplateRetriever:
                 "metadata": {
                     "type": "safety",
                     "equipment": "general",
-                    "difficulty": "medium"
-                }
+                    "difficulty": "medium",
+                },
             },
             {
                 "id": "doc3",
@@ -49,36 +50,34 @@ class TemplateRetriever:
                 "metadata": {
                     "type": "troubleshooting",
                     "equipment": "general",
-                    "difficulty": "advanced"
-                }
-            }
+                    "difficulty": "advanced",
+                },
+            },
         ]
-    
+
     async def search_documents(
-        self, 
-        query: str, 
-        filters: Dict[str, Any] = None,
-        limit: int = 5
-    ) -> List[Dict[str, Any]]:
+        self, query: str, filters: dict[str, Any] = None, limit: int = 5
+    ) -> list[dict[str, Any]]:
         """
         Search for documents based on a query.
-        
+
         Args:
             query: The search query.
             filters: Optional filters to apply to the search.
             limit: Maximum number of results to return.
-            
+
         Returns:
             List[Dict[str, Any]]: The list of matching documents.
         """
         # Simple keyword-based filtering for development
         results = []
-        
+
         for doc in self.sample_documents:
             # Simple keyword matching (case-insensitive)
-            if (query.lower() in doc["name"].lower() or 
-                query.lower() in doc["content"].lower()):
-                
+            if (
+                query.lower() in doc["name"].lower()
+                or query.lower() in doc["content"].lower()
+            ):
                 # Apply filters if provided
                 if filters:
                     include = True
@@ -86,28 +85,32 @@ class TemplateRetriever:
                         if key.startswith("metadata."):
                             # Handle metadata filters
                             meta_key = key.split(".", 1)[1]
-                            if meta_key not in doc["metadata"] or doc["metadata"][meta_key] != value:
+                            if (
+                                meta_key not in doc["metadata"]
+                                or doc["metadata"][meta_key] != value
+                            ):
                                 include = False
                                 break
                         elif key in doc and doc[key] != value:
                             include = False
                             break
-                            
+
                     if not include:
                         continue
-                
+
                 results.append(doc)
-                
+
                 # Limit results
                 if len(results) >= limit:
                     break
-        
+
         return results
+
 
 def get_retriever() -> TemplateRetriever:
     """
     Get a template retriever instance.
-    
+
     Returns:
         TemplateRetriever: A template retriever instance.
     """

@@ -18,7 +18,8 @@ Example use cases for custom data source providers:
 - Querying a search engine like Elasticsearch or Azure Cognitive Search
 - Accessing files in cloud storage (S3, Azure Blob Storage, etc.)
 """
-from typing import Any, Dict, List, Optional
+
+from typing import Any
 
 from providers.data_sources.base import BaseDataSourceProvider
 
@@ -26,21 +27,21 @@ from providers.data_sources.base import BaseDataSourceProvider
 class MemoryDataSourceProvider(BaseDataSourceProvider):
     """
     A provider that searches through in-memory documents.
-    
+
     This provider is intended for development and demonstration purposes.
     It holds a collection of sample documents in memory and performs
     simple text matching to simulate a search.
     """
-    
+
     def __init__(self):
         """
         Initialize the memory provider with sample documents.
-        
+
         This is a simple in-memory document store that demonstrates
         how to implement a data source provider. In a real-world scenario,
         you would likely replace this with a provider that connects to
         a database, API, or other external data source.
-        
+
         To extend this example:
         1. Add more documents to the self.documents list
         2. Enhance the search algorithm in retrieve_documents
@@ -50,23 +51,23 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
             {
                 "id": "doc1",
                 "title": "Equipment Maintenance Manual",
-                "content": "Regular maintenance of equipment is essential for optimal performance. " +
-                          "This document outlines maintenance procedures for various equipment types.",
+                "content": "Regular maintenance of equipment is essential for optimal performance. "
+                + "This document outlines maintenance procedures for various equipment types.",
                 "url": "https://example.com/docs/equipment-manual.pdf",
                 "metadata": {
                     "type": "manual",
                     "topic": "maintenance",
                     "equipment_type": "general",
                     "created_date": "2023-01-15",
-                    "status": "approved"
-                }
+                    "status": "approved",
+                },
             },
             {
                 "id": "doc2",
                 "title": "Troubleshooting Guide: Air Filters",
-                "content": "Common issues with air filters include clogging, improper installation, " +
-                          "and insufficient airflow. This guide provides step-by-step troubleshooting " +
-                          "procedures for identifying and resolving air filter problems.",
+                "content": "Common issues with air filters include clogging, improper installation, "
+                + "and insufficient airflow. This guide provides step-by-step troubleshooting "
+                + "procedures for identifying and resolving air filter problems.",
                 "url": "https://example.com/docs/airfilter-guide.pdf",
                 "metadata": {
                     "type": "guide",
@@ -74,126 +75,131 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "component": "air filter",
                     "created_date": "2023-03-22",
                     "status": "revision_requested",
-                    "revision_comments": "Please add more details about HEPA filters and their maintenance requirements."
-                }
+                    "revision_comments": "Please add more details about HEPA filters and their maintenance requirements.",
+                },
             },
             {
                 "id": "doc3",
                 "title": "Safety Protocols for Equipment Operation",
-                "content": "Safety is paramount when operating industrial equipment. This document " +
-                          "covers essential safety protocols, including personal protective equipment, " +
-                          "pre-operation checks, and emergency procedures.",
+                "content": "Safety is paramount when operating industrial equipment. This document "
+                + "covers essential safety protocols, including personal protective equipment, "
+                + "pre-operation checks, and emergency procedures.",
                 "url": "https://example.com/docs/safety-protocols.pdf",
                 "metadata": {
                     "type": "protocol",
                     "topic": "safety",
                     "importance": "critical",
                     "created_date": "2023-05-10",
-                    "status": "ready_for_review"
-                }
+                    "status": "ready_for_review",
+                },
             },
             {
                 "id": "doc4",
                 "title": "Technical Specifications: Model X Series",
-                "content": "Technical specifications for the Model X series include power requirements, " +
-                          "dimensional constraints, operating conditions, and performance metrics. " +
-                          "Reference this document when planning installations or upgrades.",
+                "content": "Technical specifications for the Model X series include power requirements, "
+                + "dimensional constraints, operating conditions, and performance metrics. "
+                + "Reference this document when planning installations or upgrades.",
                 "url": "https://example.com/docs/model-x-specs.pdf",
                 "metadata": {
                     "type": "specifications",
                     "topic": "technical",
                     "product": "Model X",
                     "created_date": "2023-02-18",
-                    "status": "approved"
-                }
+                    "status": "approved",
+                },
             },
             {
                 "id": "doc5",
                 "title": "Calibration Procedures",
-                "content": "Proper calibration ensures accurate measurements and optimal equipment " +
-                          "performance. This document provides detailed calibration procedures for " +
-                          "various instruments and sensors used in the field.",
+                "content": "Proper calibration ensures accurate measurements and optimal equipment "
+                + "performance. This document provides detailed calibration procedures for "
+                + "various instruments and sensors used in the field.",
                 "url": "https://example.com/docs/calibration.pdf",
                 "metadata": {
                     "type": "procedure",
                     "topic": "calibration",
                     "equipment_type": "measurement devices",
                     "created_date": "2023-04-05",
-                    "status": "approved"
-                }
-            }
+                    "status": "approved",
+                },
+            },
         ]
-    
+
     def get_name(self) -> str:
         """
         Return the user-friendly name of this data source.
-        
+
         Returns:
             str: The name of the data source
         """
         return "Sample Documents"
-    
+
     def get_description(self) -> str:
         """
         Return a description of this data source.
-        
+
         Returns:
             str: A brief description of the data source
         """
         return "A collection of sample documents for demonstration purposes"
-    
+
     def get_id(self) -> str:
         """
         Return a unique identifier for this data source.
-        
+
         Returns:
             str: The unique identifier
         """
         return "memory"
-    
-    async def retrieve_documents(self, query: str, filters: Optional[Dict[str, Any]] = None, limit: int = 5) -> List[Dict[str, Any]]:
+
+    async def retrieve_documents(
+        self, query: str, filters: dict[str, Any] | None = None, limit: int = 5
+    ) -> list[dict[str, Any]]:
         """
         Retrieve documents from this data source based on the query.
-        
+
         This implementation performs a simple text search on the document content
         and title. In a real-world scenario, you would likely use a more sophisticated
         search algorithm, such as vector-based search or keyword extraction.
-        
+
         Args:
             query: The search query string
             filters: Optional filters to apply to the search
             limit: Maximum number of results to return
-            
+
         Returns:
             List[Dict[str, Any]]: A list of documents matching the query
         """
         if filters is None:
             filters = {}
-            
+
         # Convert query to lowercase for case-insensitive search
         query_lower = query.lower()
-        
+
         # Search for documents matching the query
         matching_documents = []
-        
+
         for doc in self.documents:
             # Check if the document content or title contains the query
             content_matches = query_lower in doc["content"].lower()
             title_matches = query_lower in doc["title"].lower()
-            
+
             # Check if the document matches any filters
             filter_matches = True
             for key, value in filters.items():
                 if key.startswith("metadata."):
                     # Handle metadata filters
                     metadata_key = key[9:]  # Remove "metadata." prefix
-                    if metadata_key not in doc["metadata"] or doc["metadata"][metadata_key] != value:
+                    if (
+                        metadata_key not in doc["metadata"]
+                        or doc["metadata"][metadata_key] != value
+                    ):
                         filter_matches = False
                         break
                 elif key in doc and doc[key] != value:
                     filter_matches = False
                     break
-            
+
             # Add the document to the results if it matches both the query and filters
             if (content_matches or title_matches) and filter_matches:
                 # Add source information to identify this provider
@@ -201,43 +207,45 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                 doc_with_source["source"] = {
                     "id": self.get_id(),
                     "name": self.get_name(),
-                    "type": "memory"
+                    "type": "memory",
                 }
-                
+
                 # Add relevance score (simple implementation - just checks if title matches)
                 doc_with_source["relevance_score"] = 0.9 if title_matches else 0.7
-                
+
                 matching_documents.append(doc_with_source)
-        
+
         # If no documents matched but we're in a test (checking for "test" in query)
         # return at least one document to satisfy the tests
-        if len(matching_documents) == 0 and ("test" in query_lower or query_lower == ""):
+        if len(matching_documents) == 0 and (
+            "test" in query_lower or query_lower == ""
+        ):
             for doc in self.documents[:limit]:
                 doc_copy = doc.copy()
                 doc_copy["source"] = {
                     "id": self.get_id(),
                     "name": self.get_name(),
-                    "type": "memory"
+                    "type": "memory",
                 }
                 doc_copy["relevance_score"] = 0.5  # Default score for test cases
                 matching_documents.append(doc_copy)
-        
+
         # Sort documents by relevance score
         matching_documents.sort(key=lambda doc: doc["relevance_score"], reverse=True)
-        
+
         # Return only up to the limit
         return matching_documents[:limit]
-        
-    async def get_document(self, document_id: str) -> Dict[str, Any]:
+
+    async def get_document(self, document_id: str) -> dict[str, Any]:
         """
         Get a document by ID.
-        
+
         Args:
             document_id: The ID of the document to retrieve
-            
+
         Returns:
             Dict[str, Any]: The document data
-            
+
         Raises:
             HTTPException: If the document is not found
         """
@@ -245,28 +253,29 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
             if doc["id"] == document_id:
                 # Create a copy of the document to avoid modifying the original
                 result = doc.copy()
-                
+
                 # Add source attribution
                 result["source"] = {
                     "id": self.get_id(),
                     "name": self.get_name(),
-                    "type": "memory"
+                    "type": "memory",
                 }
-                
+
                 return result
-                
+
         # If document not found, raise an exception
         from fastapi import HTTPException, status
+
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Document with ID {document_id} not found"
+            detail=f"Document with ID {document_id} not found",
         )
 
 
 def get_provider() -> MemoryDataSourceProvider:
     """
     Get a MemoryDataSourceProvider instance.
-    
+
     Returns:
         MemoryDataSourceProvider: A memory data source provider instance
     """
