@@ -1,4 +1,4 @@
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse, delay } from 'msw';
 import { qaPairsHandlers } from './qa-pairs-handlers';
 
 // Mock user data
@@ -46,7 +46,9 @@ export const authHandlers = [
 
 // Collections endpoints
 export const collectionsHandlers = [
-  http.get('http://localhost:8000/collections', () => {
+  http.get('http://localhost:8000/collections', async () => {
+    // Add a small delay to simulate network latency (but not too long)
+    await delay(50);
     return HttpResponse.json([
       {
         id: '1',
@@ -54,6 +56,8 @@ export const collectionsHandlers = [
         description: 'A collection for testing',
         created_at: '2025-05-01T12:00:00Z',
         updated_at: '2025-05-02T12:00:00Z',
+        tags: ['test', 'sample'],
+        qa_pair_count: 5,
       },
       {
         id: '2',
@@ -61,24 +65,47 @@ export const collectionsHandlers = [
         description: 'Another collection for testing',
         created_at: '2025-05-03T12:00:00Z',
         updated_at: '2025-05-04T12:00:00Z',
+        tags: ['production', 'important'],
+        qa_pair_count: 10,
       },
     ]);
   }),
   
-  http.get('http://localhost:8000/collections/:id', ({ params }) => {
+  http.get('http://localhost:8000/collections/:id', async () => {
+    // Add a small delay to simulate network latency
+    await delay(50);
     return HttpResponse.json({
-      id: params.id,
+      id: '1',
       name: 'Test Collection',
       description: 'A collection for testing',
       created_at: '2025-05-01T12:00:00Z',
       updated_at: '2025-05-02T12:00:00Z',
+      tags: ['test', 'sample'],
       qa_pairs: [
         {
           id: '1',
-          question: 'Test question?',
+          collection_id: '1',
+          question: 'What is a test question?',
           answer: 'Test answer',
           created_at: '2025-05-01T14:00:00Z',
+          status: 'approved',
+          documents: [],
+          created_by: 'user-1',
+          metadata: {},
+          updated_at: '2025-05-02T14:00:00Z'
         },
+        {
+          id: '2',
+          collection_id: '1',
+          question: 'Another test question?',
+          answer: 'Another test answer',
+          created_at: '2025-05-03T14:00:00Z',
+          status: 'draft',
+          documents: [],
+          created_by: 'user-1',
+          metadata: {},
+          updated_at: '2025-05-04T14:00:00Z'
+        }
       ],
     });
   }),

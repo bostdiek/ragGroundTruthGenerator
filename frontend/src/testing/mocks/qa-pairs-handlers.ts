@@ -1,4 +1,4 @@
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse, delay } from 'msw';
 import { QAPair } from '../../types';
 
 // Mock QA pairs data
@@ -32,15 +32,19 @@ export const mockQAPairs: QAPair[] = [
 // Define QA pairs request handlers
 export const qaPairsHandlers = [
   // Get QA pairs for a collection
-  http.get('http://localhost:8000/collections/:collectionId/qa-pairs', ({ params }) => {
+  http.get('http://localhost:8000/collections/:collectionId/qa-pairs', async ({ params }) => {
     const { collectionId } = params;
+    // Add a small delay to simulate network latency
+    await delay(50);
     const filteredQAPairs = mockQAPairs.filter(qa => qa.collection_id === collectionId);
     return HttpResponse.json(filteredQAPairs);
   }),
   
   // Get a specific QA pair
-  http.get('http://localhost:8000/collections/qa-pairs/:id', ({ params }) => {
+  http.get('http://localhost:8000/collections/qa-pairs/:id', async ({ params }) => {
     const { id } = params;
+    // Add a small delay to simulate network latency
+    await delay(50);
     const qaPair = mockQAPairs.find(qa => qa.id === id);
     
     if (qaPair) {

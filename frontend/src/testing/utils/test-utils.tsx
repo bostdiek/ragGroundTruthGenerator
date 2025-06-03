@@ -3,27 +3,14 @@ import { render, RenderOptions } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider, useAuth } from '../../features/auth/contexts/AuthContext';
 import { CollectionsProvider } from '../../features/collections/contexts/CollectionsContext';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '../setup';
 
 /**
  * Custom render function that includes providers
  * This allows us to render components with the necessary context providers
  */
 const AllProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-        gcTime: 0,
-        staleTime: 0,
-        refetchOnWindowFocus: false,
-      },
-      mutations: {
-        retry: false,
-      }
-    },
-  });
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -61,25 +48,11 @@ export const AuthenticatedWrapper: React.FC<{ children: React.ReactNode }> = ({
 
 /**
  * React Query Test Provider
- * Creates a new QueryClient for each test to ensure isolation
+ * Uses the shared queryClient for consistent test isolation
  */
 export const TestQueryProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-        gcTime: 0,
-        staleTime: 0,
-        refetchOnWindowFocus: false,
-      },
-      mutations: {
-        retry: false,
-      }
-    },
-  });
-
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );

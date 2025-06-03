@@ -122,7 +122,8 @@ const FilterGroup = styled.div`
   align-items: center;
 `;
 
-const FilterLabel = styled.span`
+// Changed to <label> to support htmlFor attribute
+const FilterLabel = styled.label`
   margin-right: 1rem;
   font-weight: 500;
   color: #555;
@@ -343,7 +344,9 @@ const truncateText = (text: string, maxLength: number): string => {
  * Displays details of a collection and its QA pairs.
  */
 const CollectionDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  // Support both 'id' and 'collectionId' route params for consistency with tests and routes
+  const params = useParams<{ id?: string; collectionId?: string }>();
+  const id = params.id ?? params.collectionId;
   const [collection, setCollection] = useState<Collection | null>(null);
   const [qaPairs, setQaPairs] = useState<QAPair[]>([]);
   const [filteredQaPairs, setFilteredQaPairs] = useState<QAPair[]>([]);
@@ -377,19 +380,18 @@ const CollectionDetail: React.FC = () => {
     fetchCollectionDetails();
   }, [id]);
   
+  // Effect to filter QA pairs when status or search query changes
   useEffect(() => {
-    filterQaPairs();
-  }, [activeStatus, searchQuery, qaPairs]);
-  
-  const filterQaPairs = () => {
+    if (!qaPairs.length) return;
+    
     let filtered = [...qaPairs];
     
-    // Filter by status
+    // Apply status filter
     if (activeStatus !== 'all') {
       filtered = filtered.filter(qa => qa.status === activeStatus);
     }
     
-    // Filter by search query
+    // Apply search filter
     if (searchQuery.trim() !== '') {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(qa => 
@@ -399,7 +401,13 @@ const CollectionDetail: React.FC = () => {
     }
     
     setFilteredQaPairs(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
+    setCurrentPage(1);
+  }, [qaPairs, activeStatus, searchQuery]);
+  
+  // Handle status change
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newStatus = e.target.value;
+    setActiveStatus(newStatus);
   };
   
   // Get current items for pagination
@@ -431,26 +439,36 @@ const CollectionDetail: React.FC = () => {
             ))}
           </TagsContainer>
         </HeaderContent>
-        
-        <ActionButton to={`/create-qa/${collection.id}`}>
-          Create Q&A Pair
+        {/* Edit Collection button for navigation */}
+        <ActionButton
+          to={`/collections/${collection.id}/edit`}
+          role="button"
+        >
+          Edit Collection
         </ActionButton>
+        {/* Create Q&A Pair link */}
+        <ActionButton to={`/create-qa/${collection.id}`}>Create Q&A Pair</ActionButton>
       </Header>
       
       <FilterContainer>
         <FilterGroup>
-          <FilterLabel>Status:</FilterLabel>
-          <StatusFilterContainer>
+          <FilterLabel htmlFor="status-filter">Status:</FilterLabel>
+          <select
+            id="status-filter"
+            aria-label="Status"
+            value={activeStatus}
+            onChange={handleStatusChange}
+          >
             {STATUSES.map(status => (
-              <StatusFilter 
+              <option
                 key={status}
-                active={activeStatus === status}
+                value={status}
                 onClick={() => setActiveStatus(status)}
               >
                 {formatStatusLabel(status)}
-              </StatusFilter>
+              </option>
             ))}
-          </StatusFilterContainer>
+          </select>
         </FilterGroup>
         
         <SearchInput 
@@ -458,6 +476,7 @@ const CollectionDetail: React.FC = () => {
           placeholder="Search questions or answers..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          aria-label="Search questions or answers"
         />
       </FilterContainer>
       

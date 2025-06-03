@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import CollectionsService from '../api/collections.service';
 
 // Styled Components
-const CreateContainer = styled.div`
+const EditContainer = styled.div`
   padding: 2rem;
   max-width: 800px;
   margin: 0 auto;
@@ -189,13 +189,12 @@ const ErrorMessage = styled.div`
 `;
 
 /**
- * CreateCollection page component.
- * Allows creating a new collection or editing an existing one.
+ * EditCollection page component.
+ * Allows editing an existing collection.
  */
-const CreateCollection: React.FC = () => {
+const EditCollection: React.FC = () => {
   const navigate = useNavigate();
   const params = useParams<{ collectionId?: string }>();
-  const isEditMode = !!params.collectionId;
   
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -204,14 +203,13 @@ const CreateCollection: React.FC = () => {
   
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(!!params.collectionId); // Only set loading to true if in edit mode
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Fetch collection data if in edit mode
+  // Fetch collection data
   useEffect(() => {
     const fetchCollection = async () => {
       if (!params.collectionId) {
-        // Not in edit mode, just return without loading
-        setIsLoading(false);
+        navigate('/collections');
         return;
       }
       
@@ -232,7 +230,7 @@ const CreateCollection: React.FC = () => {
     };
     
     fetchCollection();
-  }, [params.collectionId]);
+  }, [params.collectionId, navigate]);
   
   const handleAddTag = () => {
     if (tagInput.trim() === '') return;
@@ -283,49 +281,33 @@ const CreateCollection: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      if (isEditMode) {
-        // Update existing collection
-        const updatedCollection = await CollectionsService.updateCollection(params.collectionId!, {
-          name,
-          description,
-          tags
-        });
-        
-        console.log('Updated collection:', updatedCollection);
-        navigate(`/collections/${updatedCollection.id}`);
-      } else {
-        // Create new collection
-        const newCollection = await CollectionsService.createCollection({
-          name,
-          description,
-          tags
-        });
-        
-        console.log('Created collection:', newCollection);
-        navigate(`/collections/${newCollection.id}`);
-      }
+      // Update existing collection
+      const updatedCollection = await CollectionsService.updateCollection(params.collectionId!, {
+        name,
+        description,
+        tags
+      });
+      
+      console.log('Updated collection:', updatedCollection);
+      navigate(`/collections/${updatedCollection.id}`);
     } catch (error) {
-      console.error(`Error ${isEditMode ? 'updating' : 'creating'} collection:`, error);
+      console.error('Error updating collection:', error);
       setErrors({
-        submit: `Failed to ${isEditMode ? 'update' : 'create'} collection. Please try again.`
+        submit: 'Failed to update collection. Please try again.'
       });
       setIsSubmitting(false);
     }
   };
   
   const handleCancel = () => {
-    navigate('/collections');
+    navigate(`/collections/${params.collectionId}`);
   };
   
   return (
-    <CreateContainer>
+    <EditContainer>
       <Header>
-        <Title>{isEditMode ? 'Edit Collection' : 'Create Collection'}</Title>
-        <Subtitle>
-          {isEditMode 
-            ? 'Update your collection details' 
-            : 'Create a new collection to organize your Q&A pairs'}
-        </Subtitle>
+        <Title>Edit Collection</Title>
+        <Subtitle>Update your collection details</Subtitle>
       </Header>
       
       {isLoading ? (
@@ -405,15 +387,13 @@ const CreateCollection: React.FC = () => {
               Cancel
             </CancelButton>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting 
-                ? (isEditMode ? 'Updating...' : 'Creating...') 
-                : (isEditMode ? 'Update Collection' : 'Create Collection')}
+              {isSubmitting ? 'Updating...' : 'Update Collection'}
             </Button>
           </ButtonGroup>
         </Form>
       )}
-    </CreateContainer>
+    </EditContainer>
   );
 };
 
-export default CreateCollection;
+export default EditCollection;

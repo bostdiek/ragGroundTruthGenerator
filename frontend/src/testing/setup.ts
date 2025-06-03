@@ -1,25 +1,59 @@
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
-import { afterEach, vi } from 'vitest';
+import { afterEach, vi, beforeAll, afterAll, beforeEach } from 'vitest';
 import { setupServer } from 'msw/node';
+import { QueryClient } from '@tanstack/react-query';
 
-// Import handlers (we'll create these next)
+// Import handlers
 import { handlers } from './mocks/handlers';
 
-// Set up the MSW server
+// Set up the MSW server with specific delay settings
 export const server = setupServer(...handlers);
 
-// Start the MSW server before all tests
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+// Create a function to get a fresh query client for tests
+export const getQueryClient = () => new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      gcTime: Infinity,
+      staleTime: Infinity,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: false,
+    },
+  },
+});
 
-// Reset handlers after each test
+// Create an initial query client for sharing
+export let queryClient = getQueryClient();
+
+// Start the MSW server before all tests
+beforeAll(() => {
+  // Use bypass to avoid logging unwanted requests
+  server.listen({ 
+    onUnhandledRequest: 'bypass'
+  });
+});
+
+// Create a fresh query client for each test
+beforeEach(() => {
+  queryClient = getQueryClient();
+});
+
+// Reset handlers and cleanup after each test
 afterEach(() => {
   cleanup();
   server.resetHandlers();
+  queryClient.clear(); // Clear React Query cache between tests
+  vi.clearAllMocks(); // Clear all mocked functions
+  localStorage.clear(); // Clear localStorage between tests
 });
 
 // Close server after all tests
-afterAll(() => server.close());
+afterAll(() => {
+  server.close();
+});
 
 // Mock localStorage
 const localStorageMock = (() => {

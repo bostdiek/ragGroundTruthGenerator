@@ -1,0 +1,203 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { render } from '../../../testing/utils/test-utils';
+import { server } from '../../../testing/setup';
+import { http, HttpResponse } from 'msw';
+import QAPairForm from '../components/QAPairForm';
+
+// Mock submit handler
+const mockSubmit = vi.fn();
+const mockCancel = vi.fn();
+
+// Mock QA Pair for editing
+const mockQAPair = {
+  id: '123',
+  question: 'Existing Question?',
+  answer: 'Existing Answer',
+  status: 'ready_for_review' as const,
+  created_at: '2025-05-01T12:00:00Z',
+  updated_at: '2025-05-02T12:00:00Z',
+};
+
+describe('QA Pair Form - Creation Mode', () => {
+  beforeEach(() => {
+    // Reset mocks
+    mockSubmit.mockReset();
+    mockCancel.mockReset();
+  });
+
+  it('renders the QA pair creation form', () => {
+    render(<QAPairForm onSubmit={mockSubmit} onCancel={mockCancel} />);
+    
+    // Check if form elements are rendered
+    expect(screen.getByLabelText(/question/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/answer/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+  });
+
+  it('validates required fields', async () => {
+    const user = userEvent.setup();
+    render(<QAPairForm onSubmit={mockSubmit} onCancel={mockCancel} />);
+    
+    // Try to submit without filling required fields
+    const saveButton = screen.getByRole('button', { name: /save|create/i });
+    await user.click(saveButton);
+    
+    // Check for validation messages - using a more specific selector
+    // The button should be disabled when fields are empty, so the form won't submit
+    expect(saveButton).toBeDisabled();
+    
+    // Validation should prevent submission
+    expect(mockSubmit).not.toHaveBeenCalled();
+  });
+
+  it('submits a new QA pair with valid data', async () => {
+    const user = userEvent.setup();
+    render(<QAPairForm onSubmit={mockSubmit} onCancel={mockCancel} />);
+    
+    // Fill in the form
+    await user.type(screen.getByLabelText(/question/i), 'New Test Question?');
+    await user.type(screen.getByLabelText(/answer/i), 'New Test Answer');
+    
+    // Submit the form
+    const saveButton = screen.getByRole('button', { name: /save|create/i });
+    await user.click(saveButton);
+    
+    // Check if submit handler was called with correct data
+    expect(mockSubmit).toHaveBeenCalledWith({
+      question: 'New Test Question?',
+      answer: 'New Test Answer',
+    });
+  });
+
+  it('cancels creation', async () => {
+    const user = userEvent.setup();
+    render(<QAPairForm onSubmit={mockSubmit} onCancel={mockCancel} />);
+    
+    // Click the cancel button
+    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    await user.click(cancelButton);
+    
+    // Check if cancel handler was called
+    expect(mockCancel).toHaveBeenCalled();
+  });
+});
+
+describe('QA Pair Form - Edit Mode', () => {
+  beforeEach(() => {
+    // Reset mocks
+    mockSubmit.mockReset();
+    mockCancel.mockReset();
+  });
+
+  it('loads and displays existing QA pair data for editing', () => {
+    render(
+      <QAPairForm 
+        initialData={mockQAPair} 
+        onSubmit={mockSubmit} 
+        onCancel={mockCancel}
+      />
+    );
+    
+    // Check if form is pre-filled with existing data
+    expect(screen.getByDisplayValue('Existing Question?')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Existing Answer')).toBeInTheDocument();
+    
+    // Check if the button still says "Save" (or "Update" depending on implementation)
+    expect(screen.getByRole('button', { name: /save|update/i })).toBeInTheDocument();
+  });
+
+  it('updates an existing QA pair with new data', async () => {
+    const user = userEvent.setup();
+    render(
+      <QAPairForm 
+        initialData={mockQAPair} 
+        onSubmit={mockSubmit}
+        onCancel={mockCancel}
+      />
+    );
+    
+    // Update the form fields
+    const questionInput = screen.getByLabelText(/question/i);
+    await user.clear(questionInput);
+    await user.type(questionInput, 'Updated Question?');
+    
+    const answerInput = screen.getByLabelText(/answer/i);
+    await user.clear(answerInput);
+    await user.type(answerInput, 'Updated Answer');
+    
+    // Submit the form
+    const saveButton = screen.getByRole('button', { name: /save|update/i });
+    await user.click(saveButton);
+    
+    // Check if submit handler was called with correct data
+    expect(mockSubmit).toHaveBeenCalledWith({
+      id: '123',
+      question: 'Updated Question?',
+      answer: 'Updated Answer',
+    });
+  });
+
+  it('shows validation error when updating with empty fields', async () => {
+    const user = userEvent.setup();
+    render(
+      <QAPairForm 
+        initialData={mockQAPair} 
+        onSubmit={mockSubmit}
+        onCancel={mockCancel}
+      />
+    );
+    
+    // Clear required fields
+    const questionInput = screen.getByLabelText(/question/i);
+    await user.clear(questionInput);
+    
+    // Submit the form
+    const saveButton = screen.getByRole('button', { name: /save|update/i });
+    
+    // Button should be disabled when question is empty
+    expect(saveButton).toBeDisabled();
+    
+    // Validation should prevent submission
+    expect(mockSubmit).not.toHaveBeenCalled();
+  });
+});
+
+// Integration test for QA Pair creation in a collection
+describe.skip('QA Pair Integration with Collection Detail', () => {
+  beforeEach(() => {
+    // Mock the API endpoint for creating a QA pair
+    server.use(
+      http.post('http://localhost:8000/collections/:collectionId/qa-pairs', async ({ request, params }) => {
+        const body = await request.json() as any;
+        return HttpResponse.json({
+          id: 'new-qa-pair-id',
+          ...body,
+          status: 'ready_for_review',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }, { status: 201 });
+      }),
+      
+      http.put('http://localhost:8000/collections/:collectionId/qa-pairs/:qaPairId', async ({ request }) => {
+        const body = await request.json() as any;
+        return HttpResponse.json({
+          ...mockQAPair,
+          ...body,
+          updated_at: new Date().toISOString(),
+        });
+      })
+    );
+  });
+
+  // This would be a more complex integration test using the Collection Detail component
+  // that includes the QA Pair form. The test would check the end-to-end flow of
+  // adding/editing QA pairs within the collection context.
+  
+  // Such a test would render the CollectionDetail component, click "Add QA Pair",
+  // fill and submit the form, then verify the new QA pair appears in the list.
+  
+  // NOTE: This test is currently skipped as it's not implemented yet and was causing tests to hang
+});

@@ -171,38 +171,43 @@ This document outlines the tasks for refactoring the frontend according to the B
 ### Task 6: Refactor Collections Feature
 
 1. Create feature directory structure:
-   - [ ] `features/collections/api` - Collections API functions
-   - [ ] `features/collections/components` - Collections-specific components
-   - [ ] `features/collections/hooks` - Collections-specific hooks
-   - [ ] `features/collections/stores` - Collections state management
-   - [ ] `features/collections/types` - Collections type definitions
-   - [ ] `features/collections/utils` - Collections utilities
-   - [ ] `features/collections/routes` - Collections routes
+   - [x] `features/collections/api` - Collections API functions
+   - [x] `features/collections/components` - Collections-specific components
+   - [x] `features/collections/hooks` - Collections-specific hooks
+   - [x] `features/collections/stores` - Collections state management
+   - [x] `features/collections/types` - Collections type definitions
+   - [x] `features/collections/utils` - Collections utilities
+   - [x] `features/collections/routes` - Collections routes
 
 2. Implement collections API services:
-   - [ ] Get collections list
-   - [ ] Get collection details
-   - [ ] Create/update/delete collections
-   - [ ] Get QA pairs for a collection
-   - [ ] Create/update/delete QA pairs
+   - [x] Get collections list
+   - [x] Get collection details
+   - [x] Create/update/delete collections
+   - [x] Get QA pairs for a collection
+   - [x] Create/update/delete QA pairs
 
 3. Create collections state management:
-   - [ ] Set up React Query for collections data
-   - [ ] Create collections store with Zustand if needed
-   - [ ] Implement optimistic updates for mutations
+   - [x] Set up React Query for collections data
+   - [x] Create collections store with Zustand if needed
+   - [x] Implement optimistic updates for mutations
 
 4. Refactor collection views:
-   - [ ] Create collections list page
-   - [ ] Create collection detail page
-   - [ ] Create collection creation/edit forms
-   - [ ] Implement QA pair creation/editing
-   - [ ] Add filtering and sorting functionality
+   - [x] Create collections list page
+   - [x] Create collection detail page
+   - [x] Create collection creation/edit forms
+   - [x] Implement QA pair creation/editing
+   - [x] Add filtering and sorting functionality
+   - [x] Create and update reusable components:
+     - [x] Create CollectionCard component using shared UI components
+     - [x] Create CollectionFilters component using shared UI components
+     - [x] Create QAPairForm component using shared UI components
+     - [x] Update QAPairList component to use shared UI components
 
 5. Run tests to verify collections functionality:
-   - [ ] Test collections list view
-   - [ ] Test collection detail view
-   - [ ] Test collection creation/editing
-   - [ ] Test QA pair creation/editing
+   - [x] Test collections list view
+   - [x] Test collection detail view
+   - [x] Test collection creation/editing
+   - [x] Test QA pair creation/editing
 
 ### Task 7: Refactor Answer Generation Feature
 

@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react() as any], // Type cast to avoid version mismatch issues
   test: {
     globals: true,
     environment: 'jsdom',
@@ -23,11 +23,5 @@ export default defineConfig({
         '**/*.d.ts',
       ],
     },
-    // Add timeout and other fixes for tests that might get stuck
-    testTimeout: 10000, // Increase timeout to 10 seconds
-    hookTimeout: 10000,
-    maxThreads: 1, // Run tests in sequence to avoid issues with concurrent requests
-    minThreads: 1,
-    isolate: true, // Isolate environments for tests
   },
 });

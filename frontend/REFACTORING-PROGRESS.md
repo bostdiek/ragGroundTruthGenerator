@@ -68,11 +68,16 @@ This document tracks our progress on the frontend refactoring tasks.
 
 ### Task 6: Refactor Collections Feature
 
-- [ ] Move collections-related files to the collections feature directory
-- [ ] Implement collections API services
-- [ ] Create collections state management
-- [ ] Refactor collection listing and detail views
-- [ ] Run tests to verify collections functionality
+- [x] Move collections-related files to the collections feature directory
+- [x] Implement collections API services
+- [x] Create collections state management
+- [x] Refactor collection listing and detail views
+- [x] Create and update reusable components for collections feature
+  - [x] Create CollectionCard component using shared UI components
+  - [x] Create CollectionFilters component using shared UI components
+  - [x] Create QAPairForm component using shared UI components
+  - [x] Update QAPairList component to use shared UI components
+- [x] Run tests to verify collections functionality
 
 ### Task 7: Refactor Answer Generation Feature
 
