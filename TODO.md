@@ -31,6 +31,13 @@
 - [ ] Add rate limiting for API endpoints
 - [ ] Enhance error handling and logging
 - [ ] Implement webhooks for integration with other systems
+- [ ] **Implement extensible data source provider system**
+  - [x] Create base data source provider interface
+  - [x] Implement memory provider as reference example
+  - [x] Update factory with data source provider support
+  - [x] Update retrieval router to support data source selection
+  - [ ] Update frontend to support data source selection
+  - [ ] Add documentation for creating custom providers
 
 ## Data Management
 

@@ -17,6 +17,8 @@
 - [x] **Testing in Isolation**: Implemented unit tests that focus on contract boundaries
 - [x] **Behavior-Driven Testing**: Structured tests around user behavior
 - [x] **Contract Testing**: Defined interfaces for API responses and test data
+- [x] **React Query Testing**: Implemented TestQueryProvider for isolated React Query testing
+- [x] **Authentication Testing**: Added AuthenticatedWrapper to simulate logged-in state
 
 ## Testing Tools Set Up
 
@@ -34,8 +36,10 @@
    - Add tests for all custom hooks
 
 2. **Refine Integration Tests**:
-   - Add tests for collection management
-   - Add tests for QA pair creation and editing
+   - [x] Fix authentication flow tests (completed)
+   - [x] Fix useQAPairs hook tests (completed)
+   - [ ] Add tests for collection management
+   - [ ] Add tests for QA pair creation and editing
 
 3. **Complete E2E Testing Setup**:
    - Install Playwright dependencies
@@ -47,3 +51,29 @@
    - Create guidelines for writing maintainable tests
 
 The testing infrastructure is now in place to support the frontend refactoring according to Bulletproof React principles.
+
+## Recent Progress
+
+- [x] **Fixed Authentication Flow Tests**: All tests in authentication-flow.test.tsx now pass
+  - Fixed login form submission in test
+  - Fixed sign out button detection
+  - Added proper auth state initialization in tests
+  - Improved MSW handlers for auth endpoints
+
+- [x] **Fixed QA Pairs Hook Tests**: All tests in useQAPairs.test.ts now pass
+  - Updated mocking to use vi.mocked() correctly
+  - Fixed API service mocking
+  - Added proper React Query test environment
+
+- [x] **Improved Test Utilities**:
+  - Added TestQueryProvider with proper options for React Query v5+
+  - Added AuthenticatedWrapper for simulating logged-in state
+  - Updated page objects to be more robust in finding elements
+  - Added data-testid attributes to critical components
+
+## Remaining Test Issues
+
+- [ ] QA-pairs-api integration tests appear to be skipped
+- [ ] Some MSW handlers may need updating for additional endpoints
+- [ ] Consider adding more test coverage for React Query hooks
+- [ ] Evaluate if more robust test setup is needed for complex components
