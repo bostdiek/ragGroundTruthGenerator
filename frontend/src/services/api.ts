@@ -7,7 +7,7 @@ import axios from 'axios';
  */
 
 // Get API base URL from environment variables
-let defaultUrl = 'http://localhost:8000';
+let defaultUrl = 'http://localhost:8000'; // Default to port 8000 to match docker-compose configuration
 // Always use localhost for browser access, regardless of environment variable
 const API_URL = process.env.REACT_APP_API_URL || defaultUrl;
 
@@ -28,6 +28,13 @@ const api = axios.create({
  */
 api.interceptors.request.use(
   (config) => {
+    console.log('API Request:', {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      headers: config.headers,
+      data: config.data,
+    });
+    
     const token = localStorage.getItem('auth_token');
     
     if (token) {
@@ -37,6 +44,7 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error('Request Error:', error);
     return Promise.reject(error);
   }
 );

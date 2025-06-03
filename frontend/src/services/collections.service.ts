@@ -21,7 +21,7 @@ const CollectionsService = {
    * @returns Promise with array of collections
    */
   getCollections: async (): Promise<Collection[]> => {
-    const response = await api.get<Collection[]>('/api/collections');
+    const response = await api.get<Collection[]>('/collections');
     return response.data;
   },
   
@@ -31,7 +31,7 @@ const CollectionsService = {
    * @returns Promise with collection details
    */
   getCollection: async (id: string): Promise<Collection> => {
-    const response = await api.get<Collection>(`/api/collections/${id}`);
+    const response = await api.get<Collection>(`/collections/${id}`);
     return response.data;
   },
   
@@ -41,7 +41,7 @@ const CollectionsService = {
    * @returns Promise with created collection
    */
   createCollection: async (collection: CollectionCreateRequest): Promise<Collection> => {
-    const response = await api.post<Collection>('/api/collections', collection);
+    const response = await api.post<Collection>('/collections', collection);
     return response.data;
   },
   
@@ -52,7 +52,7 @@ const CollectionsService = {
    * @returns Promise with updated collection
    */
   updateCollection: async (id: string, collection: Partial<CollectionCreateRequest>): Promise<Collection> => {
-    const response = await api.put<Collection>(`/api/collections/${id}`, collection);
+    const response = await api.put<Collection>(`/collections/${id}`, collection);
     return response.data;
   },
   
@@ -62,7 +62,7 @@ const CollectionsService = {
    * @returns Promise with deletion confirmation
    */
   deleteCollection: async (id: string): Promise<void> => {
-    await api.delete(`/api/collections/${id}`);
+    await api.delete(`/collections/${id}`);
   },
   
   /**
@@ -71,8 +71,15 @@ const CollectionsService = {
    * @returns Promise with array of Q&A pairs
    */
   getQAPairs: async (collectionId: string): Promise<QAPair[]> => {
-    const response = await api.get<QAPair[]>(`/api/collections/${collectionId}/qa-pairs`);
-    return response.data;
+    console.log(`Fetching QA pairs for collection: ${collectionId}`);
+    try {
+      const response = await api.get<QAPair[]>(`/collections/${collectionId}/qa-pairs`);
+      console.log('QA pairs response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching QA pairs:', error);
+      throw error;
+    }
   },
   
   /**
@@ -81,7 +88,7 @@ const CollectionsService = {
    * @returns Promise with Q&A pair details
    */
   getQAPair: async (id: string): Promise<QAPair> => {
-    const response = await api.get<QAPair>(`/api/collections/qa-pairs/${id}`);
+    const response = await api.get<QAPair>(`/collections/qa-pairs/${id}`);
     return response.data;
   },
   
@@ -92,7 +99,7 @@ const CollectionsService = {
    * @returns Promise with created Q&A pair
    */
   createQAPair: async (collectionId: string, qaPair: Partial<QAPair>): Promise<QAPair> => {
-    const response = await api.post<QAPair>(`/api/collections/${collectionId}/qa-pairs`, qaPair);
+    const response = await api.post<QAPair>(`/collections/${collectionId}/qa-pairs`, qaPair);
     return response.data;
   },
   
@@ -110,7 +117,7 @@ const CollectionsService = {
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
       const response = await api.put<QAPair>(
-        `/api/collections/qa-pairs/${id}`, 
+        `/collections/qa-pairs/${id}`, 
         qaPair,
         { signal: controller.signal }
       );
@@ -134,7 +141,7 @@ const CollectionsService = {
    * @returns Promise with updated Q&A pair
    */
   updateQAPairStatus: async (id: string, status: string): Promise<QAPair> => {
-    const response = await api.patch<QAPair>(`/api/collections/qa-pairs/${id}`, { status });
+    const response = await api.patch<QAPair>(`/collections/qa-pairs/${id}`, { status });
     return response.data;
   },
   
@@ -150,11 +157,11 @@ const CollectionsService = {
     
     try {
       // First get the current QA pair to preserve existing metadata
-      const currentQA = await api.get<QAPair>(`/api/collections/qa-pairs/${id}`);
+      const currentQA = await api.get<QAPair>(`/collections/qa-pairs/${id}`);
       const currentMetadata = currentQA.data.metadata || {};
       
       // Merge existing metadata with new revision comments
-      const response = await api.patch<QAPair>(`/api/collections/qa-pairs/${id}`, { 
+      const response = await api.patch<QAPair>(`/collections/qa-pairs/${id}`, { 
         status,
         metadata: {
           ...currentMetadata,
@@ -176,7 +183,7 @@ const CollectionsService = {
    * @returns Promise with deletion confirmation
    */
   deleteQAPair: async (id: string): Promise<void> => {
-    await api.delete(`/api/collections/qa-pairs/${id}`);
+    await api.delete(`/collections/qa-pairs/${id}`);
   }
 };
 

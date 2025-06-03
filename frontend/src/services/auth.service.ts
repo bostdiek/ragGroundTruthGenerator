@@ -46,7 +46,7 @@ const createAuthService = () => {
        * @returns Promise with token response
        */
       login: async (credentials: LoginRequest): Promise<TokenResponse> => {
-        const response = await api.post<TokenResponse>('/api/auth/login', credentials);
+        const response = await api.post<TokenResponse>('/auth/login', credentials);
         
         if (response.data.access_token) {
           localStorage.setItem('auth_token', response.data.access_token);
@@ -69,7 +69,7 @@ const createAuthService = () => {
         }
         
         // If not in localStorage, fetch from API
-        const response = await api.get<UserInfo>('/api/auth/me');
+        const response = await api.get<UserInfo>('/auth/me');
         return response.data;
       },
       
@@ -95,7 +95,7 @@ const createAuthService = () => {
   // Default to simple auth if no provider specified
   return {
     login: async (credentials: LoginRequest): Promise<TokenResponse> => {
-      const response = await api.post<TokenResponse>('/api/auth/login', credentials);
+      const response = await api.post<TokenResponse>('/auth/login', credentials);
       
       if (response.data.access_token) {
         localStorage.setItem('auth_token', response.data.access_token);
@@ -111,7 +111,7 @@ const createAuthService = () => {
         return JSON.parse(cachedUser);
       }
       
-      const response = await api.get<UserInfo>('/api/auth/me');
+      const response = await api.get<UserInfo>('/auth/me');
       return response.data;
     },
     

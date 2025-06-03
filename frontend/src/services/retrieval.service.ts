@@ -37,7 +37,7 @@ const RetrievalService = {
    * @returns Promise with array of sources
    */
   getSources: async (): Promise<Source[]> => {
-    const response = await api.get<Source[]>('/api/retrieval/sources');
+    const response = await api.get<Source[]>('/retrieval/data_sources');
     return response.data;
   },
   
@@ -47,7 +47,7 @@ const RetrievalService = {
    * @returns Promise with array of documents
    */
   searchDocuments: async (searchQuery: SearchQuery): Promise<Document[]> => {
-    const response = await api.post<Document[]>('/api/retrieval/search', searchQuery);
+    const response = await api.post<Document[]>('/retrieval/search', searchQuery);
     return response.data;
   },
   
@@ -57,7 +57,7 @@ const RetrievalService = {
    * @returns Promise with document details
    */
   getDocument: async (id: string): Promise<Document> => {
-    const response = await api.get<Document>(`/api/retrieval/documents/${id}`);
+    const response = await api.get<Document>(`/retrieval/documents/${id}`);
     return response.data;
   },
   
@@ -82,7 +82,7 @@ const RetrievalService = {
       max_results: limit || 10
     });
     try {
-      const response = await api.post<Document[]>('/api/retrieval/search', {
+      const response = await api.post<Document[]>('/retrieval/search', {
         query: question,
         sources,
         filters,

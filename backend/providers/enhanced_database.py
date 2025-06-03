@@ -1,20 +1,19 @@
 """
 Database provider factory for the AI Ground Truth Generator.
 
-This module provides a factory function to get the appropriate database provider
+This module provides an improved factory function to get the appropriate database provider
 based on the environment configuration.
 """
 import os
 import logging
 from typing import Any
 
+# Get the database provider from environment variables
+database_provider = os.getenv("DATABASE_PROVIDER", "memory")
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Get the database provider from environment variables
-database_provider = os.getenv("DATABASE_PROVIDER", "memory")
-logger.info(f"Using database provider: {database_provider}")
 
 def get_database(collection_name: str) -> Any:
     """
@@ -51,6 +50,5 @@ def get_database(collection_name: str) -> Any:
             from providers.database.memory import get_memory_database
             return get_memory_database(collection_name)
         except ImportError:
-            logger.warning("Memory database not found, falling back to legacy memory database")
             from providers.memory_db import get_database as get_legacy_memory_db
             return get_legacy_memory_db(collection_name)

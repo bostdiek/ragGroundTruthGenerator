@@ -18,7 +18,7 @@ _database: Dict[str, List[Dict[str, Any]]] = {
             "name": "Equipment Manuals",
             "description": "Technical manuals for equipment maintenance",
             "tags": ["manuals", "maintenance", "technical"],
-            "document_count": 45,
+            "document_count": 4,  # Updated to match actual count
             "created_at": "2023-05-15T10:30:00Z",
             "updated_at": "2023-06-20T15:45:00Z"
         },
@@ -27,7 +27,7 @@ _database: Dict[str, List[Dict[str, Any]]] = {
             "name": "SAP Notifications",
             "description": "Historical customer issues and resolutions",
             "tags": ["sap", "notifications", "issues"],
-            "document_count": 128,
+            "document_count": 2,  # Updated to match actual count
             "created_at": "2023-04-10T09:15:00Z",
             "updated_at": "2023-06-22T11:20:00Z"
         },
@@ -36,7 +36,7 @@ _database: Dict[str, List[Dict[str, Any]]] = {
             "name": "Internal Wiki",
             "description": "Knowledge base for common procedures",
             "tags": ["wiki", "knowledge", "procedures"],
-            "document_count": 73,
+            "document_count": 2,  # Updated to match actual count
             "created_at": "2023-01-05T14:20:00Z",
             "updated_at": "2023-06-15T08:30:00Z"
         }

@@ -1,22 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import axios from 'axios';
-
-// API endpoint (would be configured from environment in real app)
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+import CollectionsService, { Collection as ServiceCollection } from '../services/collections.service';
 
 // Types
-interface Collection {
-  id: string;
-  name: string;
-  description: string;
-  tags: string[];
-  created_at: string;
-  updated_at: string;
-  document_count: number;
-  status_counts?: {[key: string]: number};
-}
+interface Collection extends ServiceCollection {}
 
 // Styled Components
 const CollectionsContainer = styled.div`
@@ -222,9 +210,9 @@ const Collections: React.FC = () => {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        // Always fetch from the API
-        const response = await axios.get(`${API_URL}/api/collections`);
-        setCollections(response.data);
+        // Use the collections service
+        const data = await CollectionsService.getCollections();
+        setCollections(data);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching collections:', err);

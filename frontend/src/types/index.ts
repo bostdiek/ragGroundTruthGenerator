@@ -21,6 +21,7 @@ export interface Collection {
   created_at: string;
   updated_at: string;
   document_count: number;
+  status_counts?: {[key: string]: number};
   
   // Extensible metadata - Add custom fields here
   metadata?: Record<string, any>;

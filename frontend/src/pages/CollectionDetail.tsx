@@ -298,12 +298,16 @@ const CollectionDetail: React.FC = () => {
   useEffect(() => {
     const fetchCollectionData = async () => {
       try {
+        console.log(`Fetching collection data for ID: ${id}`);
         // Fetch collection details from API
         const collectionResponse = await CollectionsService.getCollection(id || '');
+        console.log('Collection response:', collectionResponse);
         setCollection(collectionResponse);
         
         // Fetch QA pairs for this collection
+        console.log(`Now fetching QA pairs for collection ID: ${id}`);
         const qaPairsResponse = await CollectionsService.getQAPairs(id || '');
+        console.log('QA pairs response:', qaPairsResponse);
         setQAPairs(qaPairsResponse);
         setFilteredQAPairs(qaPairsResponse);
         

@@ -25,7 +25,21 @@ DEMO_USERS = {
         "password": "password",  # NEVER do this in production
         "roles": ["contributor"]
     },
+    "demo": {  # Allow login with just "demo" as username
+        "id": "user_1",
+        "name": "Demo User",
+        "email": "demo@example.com",
+        "password": "password",  # NEVER do this in production
+        "roles": ["contributor"]
+    },
     "admin@example.com": {
+        "id": "user_2",
+        "name": "Admin User",
+        "email": "admin@example.com",
+        "password": "admin123",  # NEVER do this in production
+        "roles": ["contributor", "admin"]
+    },
+    "admin": {  # Allow login with just "admin" as username
         "id": "user_2",
         "name": "Admin User",
         "email": "admin@example.com",
@@ -133,12 +147,15 @@ class SimpleAuthProvider(BaseAuthProvider):
         # For development, allow authentication with either username or email
         user = None
         
-        # Try to find the user by email
+        # Try to find the user by username or email
         if username in DEMO_USERS:
             user = DEMO_USERS[username]
-        
-        # If not found by email, try to find by username (if applicable)
-        # This is just a placeholder - in a real app, you'd query your user database
+            
+            # Print debug info for authentication attempt
+            print(f"Authentication attempt for user: {username}")
+            print(f"Password check: {password == user['password']}")
+        else:
+            print(f"Authentication attempt failed: User '{username}' not found")
         
         # Check if user exists and password is correct
         if user is None or user["password"] != password:

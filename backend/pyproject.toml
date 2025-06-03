@@ -6,12 +6,16 @@ requires-python = ">=3.10"
 dependencies = [
     "fastapi-utils>=0.8.0",
     "fastapi[standard]>=0.115.12",
+    "httpx>=0.28.1",
     "openai>=1.82.1",
     "passlib>=1.7.4",
     "pydantic>=2.11.5",
     "pyjwt>=2.10.1",
+    "pytest>=8.3.5",
+    "pytest-asyncio>=1.0.0",
     "python-dotenv>=1.1.0",
     "python-jose>=3.5.0",
+    "requests>=2.32.3",
     "uvicorn>=0.34.2",
 ]
 

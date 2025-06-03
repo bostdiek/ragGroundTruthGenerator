@@ -3,6 +3,7 @@ Collections router for the AI Ground Truth Generator backend.
 
 This module handles collection management operations.
 """
+import json
 import uuid
 from datetime import datetime, UTC
 from typing import Any, Dict, List, Optional
@@ -10,6 +11,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
+# Import the database provider
 from providers.database import get_database
 
 # Create router
@@ -50,11 +52,19 @@ async def get_collections():
     collections_db = get_database("collections")
     collections = await collections_db.list_collections()
     
-    # For each collection, get QA pair statistics
+    # Get qa_pairs database to query QA pairs for each collection
     qa_pairs_db = get_database("qa_pairs")
+    
     for collection in collections:
-        # Get count of QA pairs for this collection
-        qa_pairs = await qa_pairs_db.list_collections({"collection_id": collection["id"]})
+        collection_id = collection["id"]
+        print(f"Looking for QA pairs with collection_id: {collection_id}")
+        
+        # Use the database provider to find QA pairs for this collection
+        qa_pairs = await qa_pairs_db.find_all({"collection_id": collection_id})
+        
+        print(f"Found {len(qa_pairs)} QA pairs for collection {collection_id}")
+        
+        # Set the document count
         collection["document_count"] = len(qa_pairs)
         
         # Get counts by status
@@ -68,6 +78,8 @@ async def get_collections():
         sample_questions = [qa_pair["question"] for qa_pair in qa_pairs[:3]]
         collection["sample_questions"] = sample_questions
     
+    # Log the final response being sent
+    print(f"Returning collections with document counts: {[(c['name'], c['document_count']) for c in collections]}")
     return collections
 
 @router.post("/", response_model=Collection, status_code=status.HTTP_201_CREATED)
@@ -146,7 +158,7 @@ async def update_collection(collection_id: str, collection: CollectionBase):
     
     # Get updated QA pair statistics
     qa_pairs_db = get_database("qa_pairs")
-    qa_pairs = await qa_pairs_db.find_all({"collection_id": collection_id})
+    qa_pairs = await qa_pairs_db.list_collections({"collection_id": collection_id})
     
     # Calculate document count
     updated_collection["document_count"] = len(qa_pairs)
@@ -163,7 +175,7 @@ async def update_collection(collection_id: str, collection: CollectionBase):
 @router.get("/{collection_id}", response_model=Collection)
 async def get_collection(collection_id: str):
     """
-    Get a specific collection by ID. This implementation uses the database provider.
+    Get a specific collection by ID. This implementation uses the enhanced database provider.
     
     Args:
         collection_id: The ID of the collection to retrieve.
@@ -184,6 +196,8 @@ async def get_collection(collection_id: str):
     # Get QA pair statistics
     qa_pairs_db = get_database("qa_pairs")
     qa_pairs = await qa_pairs_db.find_all({"collection_id": collection_id})
+    
+    print(f"Found {len(qa_pairs)} QA pairs for collection {collection_id}")
     
     # Calculate document count
     collection["document_count"] = len(qa_pairs)
@@ -224,6 +238,7 @@ async def update_collection(collection_id: str, collection: CollectionBase):
         "name": collection.name,
         "description": collection.description,
         "tags": collection.tags,
+        "metadata": collection.metadata or {},
         "updated_at": datetime.now(UTC).isoformat()
     }
     
@@ -250,6 +265,22 @@ async def update_collection(collection_id: str, collection: CollectionBase):
     updated_collection["status_counts"] = status_counts
     
     return updated_collection
+    
+    # Get updated QA pair statistics
+    qa_pairs_db = get_database("qa_pairs")
+    qa_pairs = await qa_pairs_db.list_collections({"collection_id": collection_id})
+    
+    # Calculate document count
+    updated_collection["document_count"] = len(qa_pairs)
+    
+    # Calculate counts by status
+    status_counts = {}
+    for qa_pair in qa_pairs:
+        status = qa_pair.get("status", "draft")
+        status_counts[status] = status_counts.get(status, 0) + 1
+    updated_collection["status_counts"] = status_counts
+    
+    return updated_collection
 
 @router.delete("/{collection_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_collection(collection_id: str):
@@ -259,34 +290,21 @@ async def delete_collection(collection_id: str):
     Args:
         collection_id: The ID of the collection to delete.
     """
-    # Check if the collection exists
-    collections_db = get_database("collections")
-    collection = await collections_db.find_one({"id": collection_id})
-    
-    if not collection:
+    try:
+        # Use the database provider to delete the collection
+        collections_db = get_database("collections")
+        
+        # The delete_collection method will handle deleting the collection
+        # and all associated QA pairs
+        deleted_collection = await collections_db.delete_collection(collection_id)
+        
+        # Return nothing for successful deletion (204 No Content)
+        return None
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Collection with ID {collection_id} not found"
+            detail=str(e)
         )
-    
-    # Delete the collection
-    deleted = await collections_db.delete_one({"id": collection_id})
-    
-    if not deleted:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to delete collection"
-        )
-    
-    # Delete all QA pairs for this collection
-    qa_pairs_db = get_database("qa_pairs")
-    qa_pairs = await qa_pairs_db.find_all({"collection_id": collection_id})
-    
-    for qa_pair in qa_pairs:
-        await qa_pairs_db.delete_one({"id": qa_pair["id"]})
-    
-    # Return nothing for successful deletion (204 No Content)
-    return None
 
 # QA Pair models
 class QAPairBase(BaseModel):
@@ -316,29 +334,27 @@ class QAPair(QAPairBase):
 @router.get("/{collection_id}/qa-pairs", response_model=List[QAPair])
 async def get_qa_pairs(collection_id: str):
     """
-    Get all QA pairs for a collection.
+    Get QA pairs for a collection.
     
     Args:
-        collection_id: The ID of the collection.
+        collection_id: The collection ID.
         
     Returns:
-        List[QAPair]: A list of QA pairs for the collection.
+        List[QAPair]: A list of QA pairs.
     """
-    # Check if the collection exists
-    collections_db = get_database("collections")
-    collection = await collections_db.find_one({"id": collection_id})
+    print(f"Looking for QA pairs with collection_id: {collection_id}")
     
-    if not collection:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Collection with ID {collection_id} not found"
-        )
-    
-    # Get QA pairs for the collection
-    qa_pairs_db = get_database("qa_pairs")
-    qa_pairs = await qa_pairs_db.find_all({"collection_id": collection_id})
-    
-    return qa_pairs
+    # Use the database provider's list_qa_pairs method
+    try:
+        qa_pairs_db = get_database("qa_pairs")
+        qa_pairs = await qa_pairs_db.list_qa_pairs(collection_id)
+        
+        print(f"Found {len(qa_pairs)} QA pairs for collection {collection_id}")
+        
+        # Return the QA pairs
+        return qa_pairs
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 @router.post("/{collection_id}/qa-pairs", response_model=QAPair, status_code=status.HTTP_201_CREATED)
 async def create_qa_pair(collection_id: str, qa_pair: QAPairCreate):
@@ -396,7 +412,7 @@ async def get_qa_pair(qa_pair_id: str):
     Returns:
         QAPair: The requested QA pair.
     """
-    # Get the QA pair from the database
+    # Use the enhanced database provider
     qa_pairs_db = get_database("qa_pairs")
     qa_pair = await qa_pairs_db.find_one({"id": qa_pair_id})
     
@@ -406,6 +422,7 @@ async def get_qa_pair(qa_pair_id: str):
             detail=f"QA pair with ID {qa_pair_id} not found"
         )
     
+    print(f"Found QA pair with ID {qa_pair_id}: {qa_pair.get('question')}")
     return qa_pair
 
 class QAPairUpdate(BaseModel):
@@ -428,7 +445,7 @@ async def update_qa_pair(qa_pair_id: str, qa_pair_update: QAPairUpdate):
     Returns:
         QAPair: The updated QA pair.
     """
-    # Check if the QA pair exists
+    # Use the enhanced database provider
     qa_pairs_db = get_database("qa_pairs")
     qa_pair = await qa_pairs_db.find_one({"id": qa_pair_id})
     
@@ -472,4 +489,30 @@ async def update_qa_pair(qa_pair_id: str, qa_pair_update: QAPairUpdate):
             detail="Failed to update QA pair"
         )
     
+    print(f"Updated QA pair with ID {qa_pair_id}")
+    return updated_qa_pair
+    if qa_pair_update.answer is not None:
+        update_data["answer"] = qa_pair_update.answer
+    if qa_pair_update.question is not None:
+        update_data["question"] = qa_pair_update.question
+    if qa_pair_update.documents is not None:
+        update_data["documents"] = qa_pair_update.documents
+    if qa_pair_update.metadata is not None:
+        # Merge existing metadata with updates instead of replacing
+        existing_metadata = qa_pair.get("metadata", {})
+        update_data["metadata"] = {**existing_metadata, **qa_pair_update.metadata}
+    
+    # Update the timestamp
+    update_data["updated_at"] = datetime.now(UTC).isoformat()
+    
+    # Update the QA pair
+    updated_qa_pair = await qa_pairs_db.update_one({"id": qa_pair_id}, update_data)
+    
+    if not updated_qa_pair:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update QA pair"
+        )
+    
+    print(f"Updated QA pair with ID {qa_pair_id}")
     return updated_qa_pair
