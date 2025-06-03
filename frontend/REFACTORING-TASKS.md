@@ -212,36 +212,30 @@ This document outlines the tasks for refactoring the frontend according to the B
 ### Task 7: Refactor Answer Generation Feature
 
 1. Create feature directory structure:
-   - [ ] `features/generation/api` - Generation API functions
-   - [ ] `features/generation/components` - Generation-specific components
-   - [ ] `features/generation/hooks` - Generation-specific hooks
-   - [ ] `features/generation/stores` - Generation state management
-   - [ ] `features/generation/types` - Generation type definitions
-   - [ ] `features/generation/utils` - Generation utilities
-   - [ ] `features/generation/routes` - Generation routes
+   - [x] `features/generation/api` - Generation API functions (generation.service.ts already exists)
+   - [x] `features/generation/components` - Generation-specific components
+   - [x] `features/generation/hooks` - Simple custom hooks for generation functionality
+   - [x] `features/generation/types` - Generation type definitions (move types from component files)
+   - [x] `features/generation/pages` - Generation pages (CreateQA.tsx already exists)
 
-2. Implement generation API services:
-   - [ ] Create answer generation service
-   - [ ] Create answer validation service
-   - [ ] Implement error handling for generation
-   - [ ] Add caching for generated answers
+2. Implement streamlined generation API services:
+   - [x] Fix endpoint discrepancy (frontend uses `/generation/generate` while backend uses `/generation/answer`)
+   - [x] Add basic error handling and loading states
+   - [x] Use React Query for data fetching and caching
 
-3. Create generation state management:
-   - [ ] Set up React Query for generation data
-   - [ ] Create generation store with Zustand if needed
-   - [ ] Implement loading and error states
+3. Simplify component structure:
+   - [x] Break down the CreateQA component into 2-3 logical parts:
+     - [x] Document selection component
+     - [x] Question input component 
+     - [x] Answer display/edit component
+   - [x] Use shared UI components from component library
+   - [x] Maintain current functionality without adding complexity
 
-4. Refactor generation components:
-   - [ ] Create generation form component
-   - [ ] Create answer display component
-   - [ ] Implement document selection/viewing
-   - [ ] Add feedback/correction functionality
+4. Add minimal tests:
+   - [x] Test basic generation flow
+   - [x] Test error handling
 
-5. Run tests to verify generation functionality:
-   - [ ] Test answer generation flow
-   - [ ] Test loading and error states
-   - [ ] Test document selection
-   - [ ] Test answer submission
+Note: The goal is to maintain the current functionality with cleaner code organization, not to add complexity. The feature should remain simple and focused on its core purpose: letting users select documents, ask questions, apply rules, and generate/edit answers.
 
 ### Task 8: Refactor Document Retrieval Feature
 

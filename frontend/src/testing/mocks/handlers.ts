@@ -1,5 +1,6 @@
 import { http, HttpResponse, delay } from 'msw';
 import { qaPairsHandlers } from './qa-pairs-handlers';
+import { generationHandlers } from './generation-handlers';
 
 // Mock user data
 export const mockUser = {
@@ -115,5 +116,6 @@ export const collectionsHandlers = [
 export const handlers = [
   ...authHandlers,
   ...collectionsHandlers,
-  ...qaPairsHandlers
+  ...qaPairsHandlers,
+  ...generationHandlers
 ];
