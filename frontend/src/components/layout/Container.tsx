@@ -52,9 +52,16 @@ export const Container: React.FC<ContainerProps> = ({
   padding = true,
   className,
   children,
+  ...rest
 }) => {
   return (
-    <StyledContainer maxWidth={maxWidth} padding={padding} className={className}>
+    <StyledContainer 
+      maxWidth={maxWidth} 
+      padding={padding} 
+      className={className}
+      data-testid="container"
+      {...rest}
+    >
       {children}
     </StyledContainer>
   );

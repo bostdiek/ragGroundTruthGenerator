@@ -177,7 +177,7 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <ModalOverlay onClick={handleOverlayClick}>
-      <ModalContent ref={modalRef} size={size}>
+      <ModalContent ref={modalRef} size={size} role="dialog" aria-modal="true">
         {title && (
           <ModalHeader>
             <ModalTitle>{title}</ModalTitle>

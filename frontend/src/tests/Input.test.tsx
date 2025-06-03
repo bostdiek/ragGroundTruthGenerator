@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import { Input } from '../components/ui/Input';
 
 // Create a mock for jest/vitest functions
@@ -39,7 +40,7 @@ describe('Input Component', () => {
   });
 
   it('calls onChange handler when value changes', () => {
-    const handleChange = jest.fn();
+    const handleChange = vi.fn();
     render(<Input label="Search" onChange={handleChange} />);
     
     const input = screen.getByLabelText('Search');

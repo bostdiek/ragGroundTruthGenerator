@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
@@ -10,7 +11,7 @@ import { Card } from '../components/ui/Card';
 import { Form, FormField, FormLabel } from '../components/form/Form';
 
 // Mock functions for event handlers
-const createMockHandler = () => jest.fn();
+const createMockHandler = () => vi.fn();
 
 // This test file focuses on accessibility aspects of components
 describe('Accessibility Tests', () => {
@@ -20,14 +21,16 @@ describe('Accessibility Tests', () => {
     it('has the correct role', () => {
       render(<Button>Accessible Button</Button>);
       const button = screen.getByText('Accessible Button');
-      expect(button).toHaveAttribute('role', 'button');
+      // HTML buttons have implicit role="button", not explicitly set
+      expect(button.tagName).toBe('BUTTON');
     });
     
     it('properly handles disabled state', () => {
       render(<Button disabled>Disabled Button</Button>);
       const button = screen.getByText('Disabled Button');
       expect(button).toBeDisabled();
-      expect(button).toHaveAttribute('aria-disabled', 'true');
+      // HTML buttons don't need explicit aria-disabled when disabled attribute is set
+      expect(button.hasAttribute('disabled')).toBe(true);
     });
     
     it('supports custom aria attributes', () => {
@@ -196,10 +199,10 @@ describe('Accessibility Tests', () => {
           <p>Modal with ARIA</p>
         </Modal>
       );
-      
-      // Some modal implementations will use role="dialog"
-      // Check based on your implementation
-      // This test may need to be adjusted based on your modal component's implementation
+      // Check for appropriate modal role on content container
+      const modalContent = screen.getByText('Modal with ARIA').closest('[role="dialog"]');
+      expect(modalContent).toBeInTheDocument();
+      // Ensure title text is present
       expect(screen.getByText('ARIA Modal')).toBeInTheDocument();
     });
   });

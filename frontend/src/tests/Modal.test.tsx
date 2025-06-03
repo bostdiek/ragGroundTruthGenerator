@@ -1,18 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import { Modal } from '../components/ui/Modal';
 
-// Mock jest/vitest functions
-const createMockFn = () => {
-  if (typeof jest !== 'undefined') {
-    return jest.fn();
-  }
-  if (typeof vi !== 'undefined') {
-    return vi.fn();
-  }
-  return function mockFn() {};
-};
-
+// Mock test functions
+const createMockFn = () => vi.fn();
 describe('Modal Component', () => {
   it('renders when isOpen is true', () => {
     render(
@@ -54,18 +46,18 @@ describe('Modal Component', () => {
 
   it('calls onClose when overlay is clicked and closeOnOutsideClick is true', () => {
     const handleClose = createMockFn();
-    render(
+    const { container } = render(
       <Modal isOpen={true} onClose={handleClose} closeOnOutsideClick={true}>
         <div>Modal Content</div>
       </Modal>
     );
     
-    // Find the overlay (parent of the modal content)
-    // Note: This is implementation-specific and might need adjustment
-    const modalContent = screen.getByText('Modal Content');
-    const overlay = modalContent.parentElement?.parentElement;
+    // Find the overlay directly
+    const overlay = container.firstChild;
+    expect(overlay).toBeTruthy();
     
     if (overlay) {
+      // Click on the overlay (not the modal content)
       fireEvent.click(overlay);
       expect(handleClose).toHaveBeenCalledTimes(1);
     }
