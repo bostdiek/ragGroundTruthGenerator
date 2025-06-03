@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import AuthService from '../../services/auth.service';
-import api from '../../services/api';
+import AuthService from '../../features/auth/api/auth.service';
+import { apiClient } from '../../lib/api/client';
 import { mockTokenResponse, mockUser } from '../../testing/mocks/handlers';
 
 // Mock the API module
-vi.mock('../../services/api', () => ({
-  default: {
+vi.mock('../../lib/api/client', () => ({
+  apiClient: {
     post: vi.fn(),
     get: vi.fn(),
   },
@@ -22,12 +22,12 @@ describe('AuthService', () => {
       const credentials = { username: 'testuser', password: 'password' };
       
       // Mock successful response
-      (api.post as any).mockResolvedValue({ data: mockTokenResponse });
+      (apiClient.post as any).mockResolvedValue({ data: mockTokenResponse });
       
       const result = await AuthService.login(credentials);
       
       // Should call API with correct endpoint and data
-      expect(api.post).toHaveBeenCalledWith('/auth/login', credentials);
+      expect(apiClient.post).toHaveBeenCalledWith('/auth/login', credentials);
       
       // Should return the token response
       expect(result).toEqual(mockTokenResponse);
@@ -41,7 +41,7 @@ describe('AuthService', () => {
       const credentials = { username: 'wrong', password: 'wrong' };
       
       // Mock failed response
-      (api.post as any).mockRejectedValue(new Error('Unauthorized'));
+      (apiClient.post as any).mockRejectedValue(new Error('Unauthorized'));
       
       // Should throw error
       await expect(AuthService.login(credentials)).rejects.toThrow('Unauthorized');
@@ -62,17 +62,17 @@ describe('AuthService', () => {
       expect(user).toEqual(mockUser);
       
       // Should not make API call
-      expect(api.get).not.toHaveBeenCalled();
+      expect(apiClient.get).not.toHaveBeenCalled();
     });
 
     it('should fetch user from API if not in localStorage', async () => {
       // Mock successful response
-      (api.get as any).mockResolvedValue({ data: mockUser });
+      (apiClient.get as any).mockResolvedValue({ data: mockUser });
       
       const user = await AuthService.getCurrentUser();
       
       // Should call API
-      expect(api.get).toHaveBeenCalledWith('/auth/me');
+      expect(apiClient.get).toHaveBeenCalledWith('/auth/me');
       
       // Should return user from API
       expect(user).toEqual(mockUser);

@@ -2,6 +2,33 @@
 
 This is the frontend component of the AI Ground Truth Generator project, built with React and TypeScript. It provides a modern, responsive user interface for managing collections, retrieving documents, and generating ground truth data for AI training.
 
+## Project Structure
+
+The frontend follows a feature-based architecture inspired by [Bulletproof React](https://github.com/alan2207/bulletproof-react). This architecture organizes code by features rather than technical concerns, making the codebase more maintainable and scalable.
+
+```plaintext
+src/
+├── components/      # Shared UI components
+│   ├── form/        # Form-related components
+│   ├── layout/      # Layout components like NavBar
+│   └── ui/          # Basic UI components
+├── features/        # Feature-based modules
+│   ├── auth/        # Authentication feature
+│   │   ├── api/     # API services
+│   │   ├── components/
+│   │   ├── contexts/
+│   │   └── pages/
+│   ├── collections/ # Collections management
+│   ├── core/        # Core application features
+│   ├── generation/  # QA generation
+│   └── retrieval/   # Document retrieval
+├── lib/             # Shared libraries
+│   └── api/         # API utilities
+├── styles/          # Global styles
+├── testing/         # Testing utilities
+└── types/           # TypeScript type definitions
+```
+
 ## Getting Started
 
 ### Prerequisites

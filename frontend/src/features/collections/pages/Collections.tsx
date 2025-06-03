@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import CollectionsService, { Collection as ServiceCollection } from '../services/collections.service';
+import CollectionsService, { Collection as ServiceCollection } from '../api/collections.service';
 
 // Types
 interface Collection extends ServiceCollection {}

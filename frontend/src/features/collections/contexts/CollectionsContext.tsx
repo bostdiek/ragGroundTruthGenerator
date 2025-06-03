@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import CollectionsService, { Collection, QAPair } from '../services/collections.service';
+import CollectionsService, { Collection, QAPair } from '../../collections/api/collections.service';
 
 // Types
 interface CollectionsContextType {

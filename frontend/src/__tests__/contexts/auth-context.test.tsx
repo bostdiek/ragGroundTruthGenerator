@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { renderHook, act } from '@testing-library/react';
-import { AuthProvider, useAuth } from '../../contexts/AuthContext';
-import AuthService from '../../services/auth.service';
+import { AuthProvider, useAuth } from '../../features/auth/contexts/AuthContext';
+import AuthService from '../../features/auth/api/auth.service';
 import { mockUser } from '../../testing/mocks/handlers';
 
 // Mock the AuthService
-vi.mock('../../services/auth.service', () => ({
+vi.mock('../../features/auth/api/auth.service', () => ({
   default: {
     login: vi.fn(),
     getCurrentUser: vi.fn(),

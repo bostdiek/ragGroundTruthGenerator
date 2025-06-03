@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import CollectionsService from '../services/collections.service';
+import CollectionsService from '../api/collections.service';
 
 // Styled Components
 const CreateContainer = styled.div`
@@ -55,13 +55,13 @@ const Input = styled.input`
   }
 `;
 
-const TextArea = styled.textarea`
+const Textarea = styled.textarea`
   width: 100%;
   padding: 0.75rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
-  min-height: 100px;
+  min-height: 120px;
   resize: vertical;
   
   &:focus {
@@ -75,15 +75,15 @@ const TagsContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
 `;
 
 const Tag = styled.div`
   background-color: #f0f0f0;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
-  font-size: 0.8rem;
-  color: #666;
+  font-size: 0.9rem;
+  color: #333;
   display: flex;
   align-items: center;
 `;
@@ -91,73 +91,57 @@ const Tag = styled.div`
 const RemoveTagButton = styled.button`
   background: none;
   border: none;
-  color: #999;
-  margin-left: 0.25rem;
+  color: #666;
+  font-size: 1rem;
+  margin-left: 0.5rem;
   cursor: pointer;
-  font-size: 0.9rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
   &:hover {
-    color: #d32f2f;
+    color: #d13438;
   }
 `;
 
-const TagInput = styled(Input)`
-  margin-bottom: 0.5rem;
+const TagInput = styled.div`
+  display: flex;
+`;
+
+const TagInputField = styled(Input)`
+  margin-right: 0.5rem;
 `;
 
 const AddTagButton = styled.button`
-  background-color: #f0f0f0;
-  color: #333;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  
-  &:hover {
-    background-color: #e0e0e0;
-  }
-`;
-
-const HelpText = styled.p`
-  font-size: 0.85rem;
-  color: #666;
-  margin-top: 0.25rem;
-`;
-
-const ErrorText = styled.p`
-  color: #d32f2f;
-  font-size: 0.85rem;
-  margin-top: 0.5rem;
-`;
-
-const ButtonContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
-`;
-
-const CancelButton = styled.button`
   background-color: #f3f3f3;
-  color: #333;
   border: 1px solid #ddd;
   border-radius: 4px;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  color: #333;
+  font-weight: 500;
   cursor: pointer;
+  white-space: nowrap;
   
   &:hover {
     background-color: #e6e6e6;
   }
   
   &:disabled {
-    opacity: 0.5;
+    background-color: #f3f3f3;
+    color: #ccc;
     cursor: not-allowed;
   }
 `;
 
-const SubmitButton = styled.button`
+const ButtonGroup = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+`;
+
+const Button = styled.button`
   background-color: #0078d4;
   color: white;
   border: none;
@@ -172,104 +156,119 @@ const SubmitButton = styled.button`
   }
   
   &:disabled {
-    opacity: 0.5;
+    background-color: #ccc;
     cursor: not-allowed;
   }
 `;
 
+const CancelButton = styled.button`
+  background-color: #f3f3f3;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #e6e6e6;
+  }
+`;
+
+const HelpText = styled.p`
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+`;
+
+const ErrorMessage = styled.div`
+  color: #d13438;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+`;
+
 /**
- * CreateCollection component for creating a new collection.
+ * CreateCollection page component.
+ * Allows creating a new collection.
  */
 const CreateCollection: React.FC = () => {
   const navigate = useNavigate();
   
-  // Form state
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   
-  // Form validation state
-  const [nameError, setNameError] = useState('');
-  const [descriptionError, setDescriptionError] = useState('');
-  
-  // Form submission state
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Add a new tag
   const handleAddTag = () => {
-    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      setTags([...tags, tagInput.trim()]);
+    if (tagInput.trim() === '') return;
+    
+    // Don't add duplicate tags
+    if (tags.includes(tagInput.trim())) {
       setTagInput('');
+      return;
     }
+    
+    setTags([...tags, tagInput.trim()]);
+    setTagInput('');
   };
   
-  // Handle tag input keydown (add tag on Enter key)
+  const handleRemoveTag = (index: number) => {
+    const newTags = [...tags];
+    newTags.splice(index, 1);
+    setTags(newTags);
+  };
+  
   const handleTagInputKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      e.preventDefault();
+      e.preventDefault(); // Prevent form submission
       handleAddTag();
     }
   };
   
-  // Remove a tag
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
-  };
-  
-  // Validate form fields
   const validateForm = (): boolean => {
-    let isValid = true;
+    const newErrors: { [key: string]: string } = {};
     
-    // Validate name
-    if (!name.trim()) {
-      setNameError('Collection name is required');
-      isValid = false;
-    } else {
-      setNameError('');
+    if (name.trim() === '') {
+      newErrors.name = 'Collection name is required';
     }
     
-    // Validate description
-    if (!description.trim()) {
-      setDescriptionError('Description is required');
-      isValid = false;
-    } else {
-      setDescriptionError('');
+    if (description.trim() === '') {
+      newErrors.description = 'Description is required';
     }
     
-    return isValid;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
   
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
     
     setIsSubmitting(true);
     
     try {
-      // Create collection using the service
       const newCollection = await CollectionsService.createCollection({
-        name: name.trim(),
-        description: description.trim(),
-        tags: tags
+        name,
+        description,
+        tags
       });
       
-      // Navigate to the create Q&A form for this collection
-      navigate(`/create-qa/${newCollection.id}`);
+      console.log('Created collection:', newCollection);
+      navigate(`/collections/${newCollection.id}`);
     } catch (error) {
       console.error('Error creating collection:', error);
-      // In a real app, we would show an error notification
-    } finally {
+      setErrors({
+        submit: 'Failed to create collection. Please try again.'
+      });
       setIsSubmitting(false);
     }
   };
   
-  // Handle cancel button click
   const handleCancel = () => {
     navigate('/collections');
   };
@@ -277,8 +276,8 @@ const CreateCollection: React.FC = () => {
   return (
     <CreateContainer>
       <Header>
-        <Title>Create New Collection</Title>
-        <Subtitle>Create a collection to organize your Q&A pairs</Subtitle>
+        <Title>Create Collection</Title>
+        <Subtitle>Create a new collection to organize your Q&A pairs</Subtitle>
       </Header>
       
       <Form onSubmit={handleSubmit}>
@@ -290,41 +289,43 @@ const CreateCollection: React.FC = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Enter a name for your collection"
-            required
           />
-          {nameError && <ErrorText>{nameError}</ErrorText>}
+          {errors.name && <ErrorMessage>{errors.name}</ErrorMessage>}
+          <HelpText>Choose a clear, descriptive name for your collection</HelpText>
         </FormGroup>
         
         <FormGroup>
           <Label htmlFor="description">Description</Label>
-          <TextArea
+          <Textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe what this collection is about"
-            required
+            placeholder="Describe the purpose and content of this collection"
           />
-          {descriptionError && <ErrorText>{descriptionError}</ErrorText>}
+          {errors.description && <ErrorMessage>{errors.description}</ErrorMessage>}
+          <HelpText>Explain what types of Q&A pairs will be included</HelpText>
         </FormGroup>
         
         <FormGroup>
           <Label htmlFor="tags">Tags</Label>
-          <TagInput
-            id="tags"
-            type="text"
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyDown={handleTagInputKeyDown}
-            placeholder="Enter tags to categorize your collection"
-          />
-          <AddTagButton 
-            type="button" 
-            onClick={handleAddTag}
-            disabled={!tagInput.trim()}
-          >
-            Add Tag
-          </AddTagButton>
-          <HelpText>Press Enter to add a tag</HelpText>
+          <TagInput>
+            <TagInputField
+              id="tags"
+              type="text"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              placeholder="Add tags to categorize your collection"
+              onKeyDown={handleTagInputKeyDown}
+            />
+            <AddTagButton
+              type="button"
+              onClick={handleAddTag}
+              disabled={tagInput.trim() === ''}
+            >
+              Add
+            </AddTagButton>
+          </TagInput>
+          <HelpText>Press Enter or click Add to add a tag</HelpText>
           
           {tags.length > 0 && (
             <TagsContainer>
@@ -333,7 +334,8 @@ const CreateCollection: React.FC = () => {
                   {tag}
                   <RemoveTagButton
                     type="button"
-                    onClick={() => handleRemoveTag(tag)}
+                    onClick={() => handleRemoveTag(index)}
+                    aria-label="Remove tag"
                   >
                     ×
                   </RemoveTagButton>
@@ -343,21 +345,16 @@ const CreateCollection: React.FC = () => {
           )}
         </FormGroup>
         
-        <ButtonContainer>
-          <CancelButton 
-            type="button" 
-            onClick={handleCancel}
-            disabled={isSubmitting}
-          >
+        {errors.submit && <ErrorMessage>{errors.submit}</ErrorMessage>}
+        
+        <ButtonGroup>
+          <CancelButton type="button" onClick={handleCancel}>
             Cancel
           </CancelButton>
-          <SubmitButton 
-            type="submit"
-            disabled={isSubmitting}
-          >
+          <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Creating...' : 'Create Collection'}
-          </SubmitButton>
-        </ButtonContainer>
+          </Button>
+        </ButtonGroup>
       </Form>
     </CreateContainer>
   );

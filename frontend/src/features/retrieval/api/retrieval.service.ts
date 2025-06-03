@@ -1,4 +1,4 @@
-import api from './api';
+import { apiClient } from '../../../lib/api/client';
 
 // Types
 export interface Document {
@@ -37,7 +37,7 @@ const RetrievalService = {
    * @returns Promise with array of sources
    */
   getSources: async (): Promise<Source[]> => {
-    const response = await api.get<Source[]>('/retrieval/data_sources');
+    const response = await apiClient.get<Source[]>('/retrieval/data_sources');
     return response.data;
   },
   
@@ -47,7 +47,7 @@ const RetrievalService = {
    * @returns Promise with array of documents
    */
   searchDocuments: async (searchQuery: SearchQuery): Promise<Document[]> => {
-    const response = await api.post<Document[]>('/retrieval/search', searchQuery);
+    const response = await apiClient.post<Document[]>('/retrieval/search', searchQuery);
     return response.data;
   },
   
@@ -57,7 +57,7 @@ const RetrievalService = {
    * @returns Promise with document details
    */
   getDocument: async (id: string): Promise<Document> => {
-    const response = await api.get<Document>(`/retrieval/documents/${id}`);
+    const response = await apiClient.get<Document>(`/retrieval/documents/${id}`);
     return response.data;
   },
   
@@ -82,7 +82,7 @@ const RetrievalService = {
       max_results: limit || 10
     });
     try {
-      const response = await api.post<Document[]>('/retrieval/search', {
+      const response = await apiClient.post<Document[]>('/retrieval/search', {
         query: question,
         sources,
         filters,

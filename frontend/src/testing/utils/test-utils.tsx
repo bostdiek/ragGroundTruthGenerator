@@ -1,8 +1,8 @@
 import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider } from '../../contexts/AuthContext';
-import { CollectionsProvider } from '../../contexts/CollectionsContext';
+import { AuthProvider } from '../../features/auth/contexts/AuthContext';
+import { CollectionsProvider } from '../../features/collections/contexts/CollectionsContext';
 
 /**
  * Custom render function that includes providers

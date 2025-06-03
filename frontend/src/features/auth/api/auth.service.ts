@@ -1,4 +1,4 @@
-import api from './api';
+import { apiClient } from '../../../lib/api/client';
 
 /**
  * Authentication Service
@@ -7,18 +7,18 @@ import api from './api';
  */
 
 // Types
-interface LoginRequest {
+export interface LoginRequest {
   username: string;
   password: string;
 }
 
-interface TokenResponse {
+export interface TokenResponse {
   access_token: string;
   token_type: string;
   user: UserInfo;
 }
 
-interface UserInfo {
+export interface UserInfo {
   id: string;
   username: string;
   email: string;
@@ -46,7 +46,7 @@ const createAuthService = () => {
        * @returns Promise with token response
        */
       login: async (credentials: LoginRequest): Promise<TokenResponse> => {
-        const response = await api.post<TokenResponse>('/auth/login', credentials);
+        const response = await apiClient.post<TokenResponse>('/auth/login', credentials);
         
         if (response.data.access_token) {
           localStorage.setItem('auth_token', response.data.access_token);
@@ -69,7 +69,7 @@ const createAuthService = () => {
         }
         
         // If not in localStorage, fetch from API
-        const response = await api.get<UserInfo>('/auth/me');
+        const response = await apiClient.get<UserInfo>('/auth/me');
         return response.data;
       },
       
@@ -95,7 +95,7 @@ const createAuthService = () => {
   // Default to simple auth if no provider specified
   return {
     login: async (credentials: LoginRequest): Promise<TokenResponse> => {
-      const response = await api.post<TokenResponse>('/auth/login', credentials);
+      const response = await apiClient.post<TokenResponse>('/auth/login', credentials);
       
       if (response.data.access_token) {
         localStorage.setItem('auth_token', response.data.access_token);
@@ -111,7 +111,7 @@ const createAuthService = () => {
         return JSON.parse(cachedUser);
       }
       
-      const response = await api.get<UserInfo>('/auth/me');
+      const response = await apiClient.get<UserInfo>('/auth/me');
       return response.data;
     },
     

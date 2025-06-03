@@ -19,7 +19,8 @@ export const mockTokenResponse = {
 export const handlers = [
   // Auth endpoints
   http.post('http://localhost:8000/auth/login', async ({ request }) => {
-    const { username, password } = await request.json();
+    const body = await request.json() as { username: string; password: string };
+    const { username, password } = body;
     
     if (username === 'testuser' && password === 'password') {
       return HttpResponse.json(mockTokenResponse);

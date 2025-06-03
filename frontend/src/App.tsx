@@ -3,19 +3,19 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import './App.css';
 
 // Import components and pages
-import PrivateRoute from './components/PrivateRoute';
-import NavBar from './components/NavBar';
-import Login from './pages/Login';
-import Home from './pages/Home';
-import Collections from './pages/Collections';
-import CollectionDetail from './pages/CollectionDetail';
-import CreateCollection from './pages/CreateCollection';
-import CreateQA from './pages/CreateQA';
-import ReviewQA from './pages/ReviewQA';
+import PrivateRoute from './features/auth/components/PrivateRoute';
+import NavBar from './components/layout/NavBar';
+import Login from './features/auth/pages/Login';
+import Home from './features/core/pages/Home';
+import Collections from './features/collections/pages/Collections';
+import CollectionDetail from './features/collections/pages/CollectionDetail';
+import CreateCollection from './features/collections/pages/CreateCollection';
+import CreateQA from './features/generation/pages/CreateQA';
+import ReviewQA from './features/generation/pages/ReviewQA';
 
 // Import context providers
-import { AuthProvider } from './contexts/AuthContext';
-import { CollectionsProvider } from './contexts/CollectionsContext';
+import { AuthProvider } from './features/auth/contexts/AuthContext';
+import { CollectionsProvider } from './features/collections/contexts/CollectionsContext';
 
 /**
  * Main Application Component
