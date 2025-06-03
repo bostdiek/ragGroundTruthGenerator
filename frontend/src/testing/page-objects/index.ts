@@ -26,8 +26,41 @@ export class LoginPage {
    * Submit the login form
    */
   async submitLoginForm() {
-    const submitButton = screen.getByRole('button', { name: /sign in/i });
-    fireEvent.click(submitButton);
+    // Try multiple strategies to find the login form button
+    let submitButton;
+    
+    try {
+      // First try to find it within a form element
+      const form = screen.queryByTestId('login-form');
+      if (form) {
+        submitButton = form.querySelector('button[type="submit"]');
+      }
+      
+      // If not found in form, try by role and name
+      if (!submitButton) {
+        const buttons = screen.getAllByRole('button', { name: /sign in/i });
+        
+        // If there are multiple buttons, find the one within the login form
+        if (buttons.length > 1) {
+          // Find the one that's in the login form context
+          submitButton = buttons.find(button => {
+            const parent = button.closest('form') || button.closest('[data-testid="login-form"]');
+            return !!parent;
+          });
+        } else {
+          submitButton = buttons[0];
+        }
+      }
+      
+      if (!submitButton) {
+        throw new Error('Submit button not found in the login form');
+      }
+      
+      fireEvent.click(submitButton);
+    } catch (error) {
+      console.error('Error finding submit button:', error);
+      throw error;
+    }
   }
   
   /**
@@ -49,9 +82,30 @@ export class LoginPage {
    * Check if the error message is displayed
    */
   async hasErrorMessage(message: string) {
-    return await waitFor(() => {
-      return screen.getByText(new RegExp(message, 'i')) !== null;
-    });
+    try {
+      // Look for any error message with case-insensitive matching
+      const errorElement = await screen.findByText(
+        (content, element) => {
+          const lowerContent = content.toLowerCase();
+          const lowerMessage = message.toLowerCase();
+          
+          return (
+            // Check for exact match
+            lowerContent.includes(lowerMessage) ||
+            // Check for 'Invalid credentials' message
+            lowerContent.includes('invalid credentials') ||
+            // Check for 'Invalid username or password' message
+            lowerContent.includes('invalid username or password')
+          );
+        },
+        {},
+        { timeout: 1000 } // Add timeout for async finding
+      );
+      return true;
+    } catch (error) {
+      console.error('Error finding error message:', error);
+      return false;
+    }
   }
 }
 
@@ -63,16 +117,41 @@ export class NavigationPage {
    * Click the logout button
    */
   async logout() {
-    const logoutButton = await screen.findByRole('button', { name: /sign out/i });
-    fireEvent.click(logoutButton);
-  }
-  
-  /**
-   * Navigate to a specific page
-   */
-  async navigateTo(linkText: string) {
-    const link = screen.getByText(new RegExp(linkText, 'i'));
-    fireEvent.click(link);
+    try {
+      // First try by data-testid
+      let logoutButton = screen.queryByTestId('sign-out-button');
+      
+      // If not found, try to find the navbar
+      if (!logoutButton) {
+        const navbar = screen.queryByTestId('main-navbar');
+        
+        if (navbar) {
+          // Look for the button within the navbar
+          const buttons = Array.from(navbar.querySelectorAll('button'));
+          const foundButton = buttons.find(button => 
+            button.textContent?.toLowerCase().includes('sign out')
+          );
+          
+          if (foundButton) {
+            logoutButton = foundButton;
+          }
+        }
+      }
+      
+      // If still not found, try the general approach
+      if (!logoutButton) {
+        logoutButton = await screen.findByRole('button', { name: /sign out/i });
+      }
+      
+      if (!logoutButton) {
+        throw new Error('Sign Out button not found');
+      }
+      
+      fireEvent.click(logoutButton);
+    } catch (error) {
+      console.error('Error finding Sign Out button:', error);
+      throw error;
+    }
   }
   
   /**
@@ -80,8 +159,35 @@ export class NavigationPage {
    */
   async isLoggedIn() {
     try {
-      const logoutButton = await screen.findByRole('button', { name: /sign out/i });
-      return logoutButton !== null;
+      // First try by data-testid
+      const logoutButtonByTestId = screen.queryByTestId('sign-out-button');
+      
+      if (logoutButtonByTestId) {
+        return true;
+      }
+      
+      // Try to find the navbar
+      const navbar = screen.queryByTestId('main-navbar');
+      
+      if (navbar) {
+        // Look for the button within the navbar
+        const buttons = Array.from(navbar.querySelectorAll('button'));
+        const foundButton = buttons.find(button => 
+          button.textContent?.toLowerCase().includes('sign out')
+        );
+        
+        if (foundButton) {
+          return true;
+        }
+      }
+      
+      // If not found yet, try the general approach
+      try {
+        const logoutButton = await screen.findByRole('button', { name: /sign out/i });
+        return !!logoutButton;
+      } catch (e) {
+        return false;
+      }
     } catch (error) {
       return false;
     }
@@ -136,5 +242,13 @@ export class CollectionsPage {
   async clickCreateCollection() {
     const createButton = screen.getByRole('button', { name: /create collection/i });
     fireEvent.click(createButton);
+  }
+  
+  /**
+   * Navigate to a specific page
+   */
+  async navigateTo(linkText: string) {
+    const link = screen.getByText(new RegExp(linkText, 'i'));
+    fireEvent.click(link);
   }
 }

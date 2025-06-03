@@ -115,7 +115,7 @@ const Login: React.FC = () => {
           for AI training and evaluation.
         </Description>
 
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit} data-testid="login-form">
           {error && <ErrorMessage>{error}</ErrorMessage>}
           
           <InputGroup>

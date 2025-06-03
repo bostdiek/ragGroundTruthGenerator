@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, beforeAll, afterAll, afterEach, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter, Routes, Route, Navigate } from 'react-router-dom';
@@ -11,6 +11,8 @@ import { AuthProvider } from '../../features/auth/contexts/AuthContext';
 import { CollectionsProvider } from '../../features/collections/contexts/CollectionsContext';
 import { LoginPage, NavigationPage } from '../../testing/page-objects';
 import { createUser, createCollections } from '../../testing/factories';
+import NavBar from '../../components/layout/NavBar';
+import { TestQueryProvider } from '../../testing/utils/test-utils';
 
 // Create test user and collections
 const testUser = createUser({ username: 'testuser' });
@@ -19,25 +21,26 @@ const testCollections = createCollections(2);
 // Mock server setup
 const server = setupServer(
   // Auth endpoints
-  http.post('/api/auth/login', async ({ request }) => {
+  http.post('http://localhost:8000/auth/login', async ({ request }) => {
     const body = await request.json() as { username: string; password: string };
     const { username, password } = body;
     
     if (username === 'testuser' && password === 'password') {
       return HttpResponse.json({
-        token: 'fake-jwt-token',
+        access_token: 'fake-jwt-token',
+        token_type: 'bearer',
         user: testUser
       }, { status: 200 });
     }
     
     return HttpResponse.json(
-      { message: 'Invalid credentials' }, 
+      { detail: 'Invalid credentials' }, 
       { status: 401 }
     );
   }),
   
   // Protected route data
-  http.get('/api/collections', ({ request }) => {
+  http.get('http://localhost:8000/collections', ({ request }) => {
     const authHeader = request.headers.get('Authorization');
     
     if (!authHeader || !authHeader.includes('Bearer fake-jwt-token')) {
@@ -55,18 +58,25 @@ afterAll(() => server.close());
 
 // Wrapper component with all necessary providers
 const AppWrapper = ({ initialEntries = ['/login'] }) => (
-  <AuthProvider>
-    <CollectionsProvider>
-      <MemoryRouter initialEntries={initialEntries}>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
-          <Route path="/collections" element={<PrivateRoute><Collections /></PrivateRoute>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </MemoryRouter>
-    </CollectionsProvider>
-  </AuthProvider>
+  <TestQueryProvider>
+    <AuthProvider>
+      <CollectionsProvider>
+        <MemoryRouter initialEntries={initialEntries}>
+          <div className="App">
+            <NavBar data-testid="main-navbar" />
+            <main className="App-content">
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+                <Route path="/collections" element={<PrivateRoute><Collections /></PrivateRoute>} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </main>
+          </div>
+        </MemoryRouter>
+      </CollectionsProvider>
+    </AuthProvider>
+  </TestQueryProvider>
 );
 
 describe('Authentication Flow', () => {
@@ -120,8 +130,21 @@ describe('Authentication Flow', () => {
   it('should allow user to log out', async () => {
     // Set up authenticated state
     localStorage.setItem('auth_token', 'fake-jwt-token');
+    localStorage.setItem('auth_user', JSON.stringify(testUser));
+    
+    // Add specific handler for this test to handle auth/me calls
+    server.use(
+      http.get('http://localhost:8000/auth/me', ({ request }) => {
+        return HttpResponse.json(testUser, { status: 200 });
+      })
+    );
     
     render(<AppWrapper initialEntries={['/']} />);
+    
+    // Wait for the auth state to be updated (user data to be loaded)
+    await waitFor(() => {
+      expect(screen.queryByTestId('sign-out-button')).not.toBeNull();
+    });
     
     // Use page object to logout
     await navPage.logout();

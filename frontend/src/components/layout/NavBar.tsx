@@ -89,7 +89,7 @@ const NavBar: React.FC = () => {
       {isAuthenticated ? (
         <UserInfo>
           {user && <UserName>{user.username}</UserName>}
-          <Button onClick={handleLogout}>Sign Out</Button>
+          <Button onClick={handleLogout} data-testid="sign-out-button">Sign Out</Button>
         </UserInfo>
       ) : (
         <Button onClick={handleLogin}>Sign In</Button>

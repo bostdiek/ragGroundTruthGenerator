@@ -1,4 +1,5 @@
 import { http, HttpResponse } from 'msw';
+import { qaPairsHandlers } from './qa-pairs-handlers';
 
 // Mock user data
 export const mockUser = {
@@ -16,7 +17,7 @@ export const mockTokenResponse = {
 };
 
 // Define request handlers
-export const handlers = [
+export const authHandlers = [
   // Auth endpoints
   http.post('http://localhost:8000/auth/login', async ({ request }) => {
     const body = await request.json() as { username: string; password: string };
@@ -32,11 +33,19 @@ export const handlers = [
     });
   }),
   
-  http.get('http://localhost:8000/auth/me', () => {
+  http.get('http://localhost:8000/auth/me', ({ request }) => {
+    const authHeader = request.headers.get('Authorization');
+    
+    if (!authHeader || !authHeader.includes('Bearer mock-jwt-token')) {
+      return new HttpResponse(null, { status: 401 });
+    }
+    
     return HttpResponse.json(mockUser);
   }),
-  
-  // Collections endpoints
+];
+
+// Collections endpoints
+export const collectionsHandlers = [
   http.get('http://localhost:8000/collections', () => {
     return HttpResponse.json([
       {
@@ -73,4 +82,11 @@ export const handlers = [
       ],
     });
   }),
+];
+
+// Combine all handlers
+export const handlers = [
+  ...authHandlers,
+  ...collectionsHandlers,
+  ...qaPairsHandlers
 ];
