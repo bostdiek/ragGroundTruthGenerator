@@ -38,6 +38,34 @@ This is the frontend component of the AI Ground Truth Generator project, built w
    REACT_APP_AUTH_PROVIDER=simple
    ```
 
+## Testing
+
+The frontend includes a comprehensive testing suite using Vitest, Testing Library, and MSW for API mocking.
+
+1. **Install testing dependencies**:
+
+   ```bash
+   ./install-test-deps.sh
+   ```
+
+2. **Run tests**:
+
+   ```bash
+   # Run all tests
+   npm run test
+   
+   # Run tests in watch mode
+   npm run test:watch
+   
+   # Generate test coverage report
+   npm run test:coverage
+   
+   # Run tests with UI
+   npm run test:ui
+   ```
+
+For more information about our testing approach, see [TESTING.md](./TESTING.md).
+
 ## Building for Production
 
 ```bash

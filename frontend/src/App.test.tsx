@@ -3,8 +3,10 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import App from './App';
 
-test('renders learn react link', () => {
+test('renders application title', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  // Use getAllByText since there are multiple elements with the same text
+  const titleElements = screen.getAllByText(/AI Ground Truth Generator/i);
+  // Check that at least one title element exists
+  expect(titleElements.length).toBeGreaterThan(0);
 });
