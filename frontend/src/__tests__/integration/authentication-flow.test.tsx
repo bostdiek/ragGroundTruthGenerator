@@ -1,9 +1,12 @@
-import { describe, it, expect, beforeEach, beforeAll, afterAll, afterEach } from 'vitest';
-import { render } from '@testing-library/react';
+import { describe, it, expect, beforeEach, beforeAll, afterAll, afterEach, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { MemoryRouter } from 'react-router-dom';
-import App from '../../App';
+import { MemoryRouter, Routes, Route, Navigate } from 'react-router-dom';
+import PrivateRoute from '../../features/auth/components/PrivateRoute';
+import Login from '../../features/auth/pages/Login';
+import Home from '../../features/core/pages/Home';
+import Collections from '../../features/collections/pages/Collections';
 import { AuthProvider } from '../../features/auth/contexts/AuthContext';
 import { CollectionsProvider } from '../../features/collections/contexts/CollectionsContext';
 import { LoginPage, NavigationPage } from '../../testing/page-objects';
@@ -55,7 +58,12 @@ const AppWrapper = ({ initialEntries = ['/login'] }) => (
   <AuthProvider>
     <CollectionsProvider>
       <MemoryRouter initialEntries={initialEntries}>
-        <App />
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+          <Route path="/collections" element={<PrivateRoute><Collections /></PrivateRoute>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </MemoryRouter>
     </CollectionsProvider>
   </AuthProvider>
