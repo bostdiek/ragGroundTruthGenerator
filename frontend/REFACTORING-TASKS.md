@@ -138,35 +138,35 @@ This document outlines the tasks for refactoring the frontend according to the B
 ### Task 5: Refactor Authentication Feature
 
 1. Create feature directory structure:
-   - [ ] `features/auth/api` - Auth API functions
-   - [ ] `features/auth/components` - Auth-specific components
-   - [ ] `features/auth/hooks` - Auth-specific hooks
-   - [ ] `features/auth/stores` - Auth state management
-   - [ ] `features/auth/types` - Auth type definitions
-   - [ ] `features/auth/utils` - Auth utilities
+   - [x] `features/auth/api` - Auth API functions
+   - [x] `features/auth/components` - Auth-specific components
+   - [x] `features/auth/hooks` - Auth-specific hooks
+   - [x] `features/auth/stores` - Auth state management
+   - [x] `features/auth/types` - Auth type definitions
+   - [x] `features/auth/utils` - Auth utilities
 
 2. Implement auth API services:
-   - [ ] Login service
-   - [ ] Logout service
-   - [ ] User profile service
-   - [ ] Token refresh handling
+   - [x] Login service
+   - [x] Logout service
+   - [x] User profile service
+   - [x] Token refresh handling
 
 3. Create auth state management:
-   - [ ] Create auth store with Zustand
-   - [ ] Implement persistence for auth state
-   - [ ] Create React Query hooks for auth data
+   - [x] Create auth store with Zustand
+   - [x] Implement persistence for auth state
+   - [x] Create React Query hooks for auth data
 
 4. Refactor login/logout functionality:
-   - [ ] Create Login page component
-   - [ ] Implement login form with validation
-   - [ ] Create logout functionality
-   - [ ] Implement protected routes
+   - [x] Create Login page component
+   - [x] Implement login form with validation
+   - [x] Create logout functionality
+   - [x] Implement protected routes
 
 5. Run tests to verify auth flows:
-   - [ ] Test login flow
-   - [ ] Test logout flow
-   - [ ] Test protected routes
-   - [ ] Test token refresh
+   - [x] Test login flow
+   - [x] Test logout flow
+   - [x] Test protected routes
+   - [x] Test token refresh
 
 ### Task 6: Refactor Collections Feature
 
