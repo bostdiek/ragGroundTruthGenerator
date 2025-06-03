@@ -2,6 +2,19 @@
 
 This is the backend component of the AI Ground Truth Generator project. It provides a simple, extensible FastAPI application that serves as a template for generating ground truth data for AI training.
 
+## Architecture
+
+The backend follows a modular architecture with clearly defined interfaces, allowing teams to customize and extend various components based on their specific requirements.
+
+- [General Architecture Overview](./docs/architecture.md) - High-level system overview
+- [Detailed Backend Architecture](./docs/backend_architecture.md) - Detailed architecture with focus on database, retrieval, and generation
+- Provider-specific documentation:
+  - [Database Providers](./providers/database/README.md) - Database interface and implementations
+  - [Data Source Providers](./providers/data_sources/README.md) - Document retrieval interfaces
+  - [Generation Providers](./providers/generation/README.md) - Answer generation interfaces
+  - [Authentication Providers](./providers/auth/README.md) - Authentication and authorization
+  - [Retrieval Providers](./providers/retrieval/README.md) - Template management
+
 ## Overview
 
 The backend is designed as a modular, provider-based API that can be easily extended to support different authentication methods, database systems, storage solutions, retrieval mechanisms, and generation engines.
@@ -64,7 +77,7 @@ If you prefer not to use uv, you can set up the project with standard Python too
    uvicorn app:app --reload --host 0.0.0.0 --port 8000
    ```
 
-## Architecture
+## Core Components and Structure
 
 ### Core Components
 
@@ -79,21 +92,34 @@ The backend follows a clean, modular architecture with the following main compon
 
 ```plaintext
 backend/
-├── app.py                 # Main application entry point
-├── routers/               # API route definitions
-│   ├── auth.py            # Authentication endpoints
-│   ├── collections.py     # Collection management endpoints
-│   ├── generation.py      # Answer generation endpoints
-│   └── retrieval.py       # Document retrieval endpoints
-├── providers/             # Pluggable service implementations
-│   ├── database.py        # Database provider factory
-│   ├── factory.py         # General provider factory functions
-│   ├── memory_db.py       # In-memory database implementation
-│   ├── demo_generator.py  # Demo answer generator implementation
-│   ├── simple_auth.py     # Simple authentication implementation
-│   └── template_retriever.py  # Template retrieval implementation
-└── data/                  # Local data storage
-    └── storage/           # Local file storage directory
+├── app.py                    # Main application entry point
+├── docs/                     # Architecture documentation
+│   ├── architecture.md       # High-level architecture overview
+│   └── backend_architecture.md # Detailed backend architecture
+├── routers/                  # API route definitions
+│   ├── auth.py               # Authentication endpoints
+│   ├── collections.py        # Collection management endpoints
+│   ├── generation.py         # Answer generation endpoints
+│   └── retrieval.py          # Document retrieval endpoints
+├── providers/                # Pluggable service implementations
+│   ├── auth/                 # Authentication providers
+│   │   ├── base.py           # Base authentication interface
+│   │   └── simple_auth.py    # Simple authentication implementation
+│   ├── data_sources/         # Data source providers
+│   │   ├── base.py           # Base data source interface
+│   │   └── memory.py         # Memory data source implementation
+│   ├── database/             # Database providers
+│   │   ├── base.py           # Base database interface
+│   │   └── memory.py         # Memory database implementation
+│   ├── generation/           # Generation providers
+│   │   ├── base.py           # Base generator interface
+│   │   └── demo.py           # Demo generator implementation
+│   ├── retrieval/            # Retrieval providers
+│   │   ├── base.py           # Base retrieval interface
+│   │   └── template.py       # Template retrieval implementation
+│   └── factory.py            # Central provider factory
+└── data/                     # Local data storage
+    └── storage/              # Local file storage directory
 ```
 
 ### Provider Pattern
@@ -102,18 +128,28 @@ The backend uses a provider pattern to make implementations swappable. Each core
 
 1. **Authentication Providers**: Handle user authentication and authorization
    - Default: `simple` - Basic JWT token authentication
+   - Interface: `providers/auth/base.py`
+   - Implementation: `providers/auth/simple_auth.py`
 
 2. **Database Providers**: Store and retrieve structured data
    - Default: `memory` - In-memory database (resets on app restart)
+   - Interface: `providers/database/base.py`
+   - Implementation: `providers/database/memory.py`
 
-3. **Storage Providers**: Handle file storage
-   - Default: `local` - Local filesystem storage
+3. **Data Source Providers**: Retrieve documents from various sources
+   - Default: `memory` - In-memory document storage
+   - Interface: `providers/data_sources/base.py`
+   - Implementation: `providers/data_sources/memory.py`
 
-4. **Retrieval Providers**: Search and retrieve documents
+4. **Retrieval Providers**: Manage templates and retrieval methods
    - Default: `template` - Simple template-based document retrieval
+   - Interface: `providers/retrieval/base.py`
+   - Implementation: `providers/retrieval/template.py`
 
 5. **Generation Providers**: Generate answers from documents
-   - Default: `template` - Simple template-based answer generation
+   - Default: `demo` - Simple demo generator
+   - Interface: `providers/generation/base.py`
+   - Implementation: `providers/generation/demo.py`
 
 ## Configuration
 
@@ -158,19 +194,40 @@ GENERATION_PROVIDER=template
 
 To add a new provider implementation:
 
-1. Create a new file in the `providers/` directory for your implementation
-2. Update the relevant factory function to include your new provider
-3. Update the environment variable to use your new provider
+1. Create a new file in the appropriate provider subdirectory (e.g., `providers/database/mongodb.py`)
+2. Implement the required interface (e.g., `BaseDatabase`)
+3. Add a factory function to return an instance of your provider
+4. Update `providers/factory.py` to include your new provider
+5. Set the appropriate environment variable to use your new provider
 
-Example for adding a new database provider:
+Example for adding a new MongoDB database provider:
 
-1. Create `providers/mongodb.py` with your MongoDB implementation
-2. Update `providers/database.py` to include your new provider:
+1. Create `providers/database/mongodb.py` with your MongoDB implementation:
 
    ```python
-   elif database_provider == "mongodb":
-       from providers.mongodb import get_database as get_mongodb
-       return get_mongodb(collection_name)
+   from providers.database.base import BaseDatabase
+   
+   class MongoDBDatabase(BaseDatabase):
+       # Implement required methods
+       
+   def get_mongodb_database(collection_name: str) -> BaseDatabase:
+       return MongoDBDatabase(collection_name)
+   ```
+
+2. Update `providers/factory.py` to include your new provider:
+
+   ```python
+   def get_database(collection_name: str) -> Any:
+       database_provider = os.getenv("DATABASE_PROVIDER", "memory")
+       
+       if database_provider == "memory":
+           from providers.database.memory import get_memory_database
+           return get_memory_database(collection_name)
+       elif database_provider == "mongodb":
+           from providers.database.mongodb import get_mongodb_database
+           return get_mongodb_database(collection_name)
+       else:
+           raise ValueError(f"Unknown database provider: {database_provider}")
    ```
 
 3. Set `DATABASE_PROVIDER=mongodb` in your `.env` file
