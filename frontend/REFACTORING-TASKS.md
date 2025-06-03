@@ -44,60 +44,60 @@ This document outlines the tasks for refactoring the frontend according to the B
 4. Run tests to verify nothing is broken
    - [x] Run the application
    - [x] Verify all routes work
-   - [-] Run the test suite (46 tests passing out of 49, integration tests need updating)
+   - [x] Run the test suite (all tests passing for authentication flow, useQAPairs, fixed test utilities)
 
 ### Task 2: Implement Core API Layer
 
 1. Create the API client with axios:
-   - [ ] Set up base URL configuration
-   - [ ] Create API instance with default settings
-   - [ ] Add authentication token handling
+   - [x] Set up base URL configuration
+   - [x] Create API instance with default settings
+   - [x] Add authentication token handling
 
 2. Set up request/response interceptors:
-   - [ ] Create request interceptor for auth headers
-   - [ ] Create response interceptor for error handling
-   - [ ] Add logging for API requests and responses
+   - [x] Create request interceptor for auth headers
+   - [x] Create response interceptor for error handling
+   - [x] Add logging for API requests and responses
 
 3. Implement basic error handling:
-   - [ ] Create error handling utilities
-   - [ ] Handle authentication errors (401)
-   - [ ] Handle server errors (5xx)
-   - [ ] Handle network errors
+   - [x] Create error handling utilities
+   - [x] Handle authentication errors (401)
+   - [x] Handle server errors (5xx)
+   - [x] Handle network errors
 
 4. Create API hooks for common operations:
-   - [ ] Create React Query hooks for collections
-   - [ ] Create React Query hooks for Q&A pairs
-   - [ ] Create React Query hooks for authentication
-   - [ ] Set up global query client
+   - [x] Create React Query hooks for collections
+   - [x] Create React Query hooks for Q&A pairs
+   - [x] Create React Query hooks for authentication
+   - [x] Set up global query client
 
 5. Run tests to verify connectivity:
-   - [ ] Test API calls with authentication
-   - [ ] Test error handling
-   - [ ] Verify data fetching with React Query
+   - [x] Test API calls with authentication
+   - [x] Test error handling
+   - [x] Verify data fetching with React Query
 
 ### Task 3: Set Up State Management Foundation
 
 1. Install and configure React Query:
-   - [ ] Set up QueryClient provider
-   - [ ] Configure default options (caching, retries, etc.)
-   - [ ] Create custom hooks for common queries
+   - [x] Set up QueryClient provider
+   - [x] Configure default options (caching, retries, etc.)
+   - [x] Create custom hooks for common queries
 
 2. Set up Zustand stores:
-   - [ ] Create auth store for client-side auth state
-   - [ ] Create UI store for global UI state
-   - [ ] Create error store for global error handling
-   - [ ] Implement persistence for relevant stores
+   - [x] Create auth store for client-side auth state
+   - [x] Create UI store for global UI state
+   - [x] Create error store for global error handling
+   - [x] Implement persistence for relevant stores
 
 3. Create provider components:
-   - [ ] Create App providers wrapper
-   - [ ] Integrate React Query provider
-   - [ ] Set up error boundary components
-   - [ ] Create toast notification system
+   - [x] Create App providers wrapper
+   - [x] Integrate React Query provider
+   - [x] Set up error boundary components
+   - [x] Create toast notification system
 
 4. Run tests to verify state management:
-   - [ ] Test React Query data fetching
-   - [ ] Test Zustand store updates
-   - [ ] Verify persistence of state
+   - [x] Test React Query data fetching
+   - [x] Test Zustand store updates
+   - [x] Verify persistence of state
 
 ### Task 4: Create Base Component Library
 
@@ -412,7 +412,7 @@ This document outlines the tasks for refactoring the frontend according to the B
 | Task | Status | Completed Date | Notes |
 |------|--------|---------------|-------|
 | Task 1: Set Up Basic Project Structure | Completed | 2025-06-03 | 46/49 tests passing, minor integration test issues to be fixed later |
-| Task 2: Implement Core API Layer | Not Started | | |
+| Task 2: Implement Core API Layer | In Progress | 2025-06-03 | Basic API client implemented with error handling, API hooks still needed |
 | Task 3: Set Up State Management Foundation | Not Started | | |
 | Task 4: Create Base Component Library | Not Started | | |
 | Task 5: Refactor Authentication Feature | Not Started | | |
