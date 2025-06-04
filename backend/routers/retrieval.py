@@ -132,13 +132,25 @@ async def search_documents_get(
         )
 
 
-@router.get("/data_sources", response_model=list[dict[str, str]])
-async def get_sources():
+class PaginatedResponse(BaseModel):
+    """Model for paginated responses."""
+    
+    data: list[dict[str, str]]
+    pagination: dict[str, int]
+
+    model_config = {"from_attributes": True}
+
+
+@router.get("/data_sources", response_model=PaginatedResponse)
+async def get_sources(
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+    limit: int = Query(20, ge=1, le=100, description="Number of sources per page")
+):
     """
-    Get all available data sources.
+    Get all available data sources with pagination.
 
     Returns:
-        List of data sources with id, name, and description.
+        Paginated list of data sources with id, name, and description.
     """
     providers = get_all_data_source_providers()
     sources = []
@@ -152,7 +164,23 @@ async def get_sources():
             }
         )
 
-    return sources
+    # Apply pagination
+    total_count = len(sources)
+    start_index = (page - 1) * limit
+    end_index = start_index + limit
+    paginated_sources = sources[start_index:end_index]
+    
+    total_pages = (total_count + limit - 1) // limit  # Ceiling division
+
+    return PaginatedResponse(
+        data=paginated_sources,
+        pagination={
+            "page": page,
+            "limit": limit,
+            "totalCount": total_count,
+            "totalPages": total_pages,
+        }
+    )
 
 
 from fastapi import Header
