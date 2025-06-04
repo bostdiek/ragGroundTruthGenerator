@@ -15,11 +15,56 @@ const SourceSelectorContainer = styled.div`
   margin-bottom: 2rem;
 `;
 
+const SourceList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+`;
+
+const SourceCard = styled.div<{ selected: boolean }>`
+  padding: 1rem;
+  border: 1px solid ${props => (props.selected ? '#1976d2' : '#ddd')};
+  background-color: ${props => (props.selected ? '#e3f2fd' : '#fff')};
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1 0 200px;
+  max-width: 300px;
+
+  &:hover {
+    border-color: ${props => (props.selected ? '#1976d2' : '#aaa')};
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const SourceTitle = styled.h3`
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  color: #333;
+`;
+
+const SourceDescription = styled.p`
+  margin: 0;
+  font-size: 0.875rem;
+  color: #666;
+`;
+
+const ErrorMessage = styled.div`
+  color: #d32f2f;
+  padding: 1rem;
+  background-color: #ffebee;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+`;
+
+/**
+ * Component for displaying and selecting data sources
+ */
 const SourceSelector: React.FC<SourceSelectorProps> = ({
   sources,
-  // Temporarily disabled props until implementation
-  // selectedSources,
-  // onSelectSource,
+  selectedSources,
+  onSelectSource,
   isLoading = false,
   error = null,
 }) => {
@@ -28,7 +73,7 @@ const SourceSelector: React.FC<SourceSelectorProps> = ({
   }
 
   if (error) {
-    return <div style={{ color: 'red' }}>{error}</div>;
+    return <ErrorMessage>{error}</ErrorMessage>;
   }
 
   if (sources.length === 0) {
@@ -37,8 +82,22 @@ const SourceSelector: React.FC<SourceSelectorProps> = ({
 
   return (
     <SourceSelectorContainer>
-      {/* Source selector implementation will go here */}
-      <div>Placeholder for source selector component</div>
+      <h2>Select Data Sources</h2>
+      <p>Choose which data sources to search for relevant documents</p>
+      <SourceList>
+        {sources.map(source => (
+          <SourceCard
+            key={source.id}
+            selected={selectedSources.includes(source.id)}
+            onClick={() =>
+              onSelectSource(source.id, !selectedSources.includes(source.id))
+            }
+          >
+            <SourceTitle>{source.name}</SourceTitle>
+            <SourceDescription>{source.description}</SourceDescription>
+          </SourceCard>
+        ))}
+      </SourceList>
     </SourceSelectorContainer>
   );
 };

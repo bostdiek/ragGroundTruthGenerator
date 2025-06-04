@@ -249,10 +249,10 @@ Note: The goal is to maintain the current functionality with cleaner code organi
    - [x] `features/retrieval/context` - Shared context for retrieval state
 
 2. Implement clear separation of concerns:
-   - [ ] Move source selection functionality from generation to retrieval feature
-   - [ ] Move document discovery functionality from generation to retrieval feature
-   - [ ] Move document selection functionality from generation to retrieval feature
-   - [ ] Create proper interfaces between retrieval and generation features
+   - [x] Move source selection functionality from generation to retrieval feature
+   - [x] Move document discovery functionality from generation to retrieval feature
+   - [x] Move document selection functionality from generation to retrieval feature
+   - [x] Create proper interfaces between retrieval and generation features
 
 3. Implement retrieval API services:
    - [ ] Create/refactor source listing service

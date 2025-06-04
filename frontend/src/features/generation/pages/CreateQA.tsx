@@ -2,24 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { Document, Source } from '../../../types';
+import { Document } from '../../../types';
 import CollectionsService from '../../collections/api/collections.service';
-import RetrievalService from '../../retrieval/api/retrieval.service';
-import {
-  AdvancedDocumentSelector,
-  AnswerEditor,
-  DocumentSelector,
-  QuestionInput,
-  SourceSelector,
-} from '../components';
+import { RetrievalProvider, RetrievalSelector } from '../../retrieval';
+import { AnswerEditor, QuestionInput } from '../components';
 
 // Types
-interface GenerationResponse {
-  answer: string;
-  model_used?: string;
-  token_usage?: Record<string, number>;
-}
-
 interface CreateQAProps {
   isEditMode?: boolean;
 }
@@ -184,17 +172,8 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
   // Question state
   const [question, setQuestion] = useState('');
 
-  // Source selection state
-  const [sources, setSources] = useState<Source[]>([]);
-  const [selectedSources, setSelectedSources] = useState<string[]>([]);
-  const [isLoadingSources, setIsLoadingSources] = useState(false);
-  const [sourcesError, setSourcesError] = useState<string | null>(null);
-
-  // Document search and selection state
+  // Document selection state
   const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
-  const [recommendedDocuments, setRecommendedDocuments] = useState<Document[]>([]);
-  const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
-  const [documentsError, setDocumentsError] = useState<string | null>(null);
 
   // Answer generation state
   const [answer, setAnswer] = useState('');
@@ -229,25 +208,6 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
       fetchQAPair();
     }
   }, [isEditMode, qaId]);
-
-  // Fetch available sources when the component mounts
-  useEffect(() => {
-    const fetchSources = async () => {
-      setIsLoadingSources(true);
-      setSourcesError(null);
-      try {
-        const availableSources = await RetrievalService.getSources();
-        setSources(availableSources);
-      } catch (error) {
-        console.error('Error fetching sources:', error);
-        setSourcesError('Failed to load data sources. Please try again.');
-      } finally {
-        setIsLoadingSources(false);
-      }
-    };
-
-    fetchSources();
-  }, []);
 
   // Save the QA pair
   const saveQAPair = async () => {
@@ -308,41 +268,10 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
     setQuestion(newQuestion);
   };
 
-  // Handle source selection
-  const handleSourceSelection = (sourceId: string, isSelected: boolean) => {
-    if (isSelected) {
-      setSelectedSources(prev => [...prev, sourceId]);
-    } else {
-      setSelectedSources(prev => prev.filter(id => id !== sourceId));
-    }
-  };
-
-  // Fetch recommended documents based on the question and selected sources
-  const fetchRecommendedDocuments = async () => {
-    if (!question.trim() || selectedSources.length === 0) {
-      return;
-    }
-
-    setIsLoadingDocuments(true);
-    setDocumentsError(null);
-
-    try {
-      const documents = await RetrievalService.getRecommendedDocuments(
-        question,
-        selectedSources
-      );
-      setRecommendedDocuments(documents);
-    } catch (error) {
-      console.error('Error fetching recommended documents:', error);
-      setDocumentsError('Failed to fetch relevant documents. Please try again.');
-    } finally {
-      setIsLoadingDocuments(false);
-    }
-  };
-
-  // Handle document selection change
-  const handleDocumentSelectionChange = (documents: Document[]) => {
+  // Handle document selection from retrieval feature
+  const handleDocumentsSelected = (documents: Document[]) => {
     setSelectedDocuments(documents);
+    goToStep(4); // Move to the answer creation step
   };
 
   // Handle answer change
@@ -373,21 +302,14 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
           <StepNumber active={currentStep === 2} completed={currentStep > 2}>
             {currentStep > 2 ? '' : '2'}
           </StepNumber>
-          <StepLabel active={currentStep === 2}>Select Sources</StepLabel>
+          <StepLabel active={currentStep === 2}>Select Documents</StepLabel>
         </Step>
 
         <Step active={currentStep === 3} completed={currentStep > 3}>
           <StepNumber active={currentStep === 3} completed={currentStep > 3}>
             {currentStep > 3 ? '' : '3'}
           </StepNumber>
-          <StepLabel active={currentStep === 3}>Select Documents</StepLabel>
-        </Step>
-
-        <Step active={currentStep === 4} completed={false}>
-          <StepNumber active={currentStep === 4} completed={false}>
-            {currentStep > 4 ? '' : '4'}
-          </StepNumber>
-          <StepLabel active={currentStep === 4}>Create Answer</StepLabel>
+          <StepLabel active={currentStep === 3}>Create Answer</StepLabel>
         </Step>
       </StepIndicator>
 
@@ -406,73 +328,29 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
         />
       )}
 
-      {/* Step 2: Select Sources */}
+      {/* Step 2: Select Documents using Retrieval Feature */}
       {currentStep === 2 && (
-        <div>
-          <SourceSelector
-            sources={sources}
-            selectedSources={selectedSources}
-            onSelectSource={handleSourceSelection}
-            isLoading={isLoadingSources}
-            error={sourcesError}
-          />
-          <ButtonsContainer>
-            <BackButton onClick={() => goToStep(1)}>Back</BackButton>
-            <PrimaryButton
-              onClick={() => {
-                fetchRecommendedDocuments();
-                goToStep(3);
-              }}
-              disabled={selectedSources.length === 0}
-            >
-              Next: Find Documents
-            </PrimaryButton>
-          </ButtonsContainer>
-        </div>
-      )}
-
-      {/* Step 3: Select Documents */}
-      {currentStep === 3 && (
-        <div>
-          <h2>Select relevant documents for your answer</h2>
-          {isLoadingDocuments ? (
-            <div>Loading relevant documents...</div>
-          ) : documentsError ? (
-            <div style={{ color: 'red' }}>{documentsError}</div>
-          ) : (
-            <DocumentSelector
-              documents={recommendedDocuments}
-              selectedDocuments={selectedDocuments}
-              onSelectDocument={(document: Document) => {
-                const isAlreadySelected = selectedDocuments.some(doc => doc.id === document.id);
-                if (isAlreadySelected) {
-                  setSelectedDocuments(selectedDocuments.filter(doc => doc.id !== document.id));
-                } else {
-                  setSelectedDocuments([...selectedDocuments, document]);
-                }
-              }}
+        <RetrievalProvider>
+          <div>
+            <RetrievalSelector
+              question={question}
+              onDocumentsSelected={handleDocumentsSelected}
             />
-          )}
-          <ButtonsContainer>
-            <BackButton onClick={() => goToStep(2)}>Back</BackButton>
-            <PrimaryButton
-              onClick={() => goToStep(4)}
-              disabled={selectedDocuments.length === 0}
-            >
-              Next: Create Answer
-            </PrimaryButton>
-          </ButtonsContainer>
-        </div>
+            <ButtonsContainer>
+              <BackButton onClick={() => goToStep(1)}>Back</BackButton>
+            </ButtonsContainer>
+          </div>
+        </RetrievalProvider>
       )}
 
-      {/* Step 4: Create Answer */}
-      {currentStep === 4 && (
+      {/* Step 3: Create Answer */}
+      {currentStep === 3 && (
         <AnswerEditor
           question={question}
           answer={answer}
           onAnswerChange={handleAnswerChange}
           selectedDocuments={selectedDocuments}
-          onPreviousStep={() => goToStep(3)}
+          onPreviousStep={() => goToStep(2)}
           onSave={saveQAPair}
         />
       )}
