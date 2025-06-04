@@ -255,11 +255,11 @@ Note: The goal is to maintain the current functionality with cleaner code organi
    - [x] Create proper interfaces between retrieval and generation features
 
 3. Implement retrieval API services:
-   - [ ] Create/refactor source listing service
-   - [ ] Create/refactor document search service
-   - [ ] Create/refactor document retrieval service
-   - [ ] Implement filtering and sorting
-   - [ ] Add pagination functionality
+   - [x] Create/refactor source listing service
+   - [x] Create/refactor document search service
+   - [x] Create/refactor document retrieval service
+   - [x] Implement filtering and sorting
+   - [x] Add pagination functionality
 
 4. Create retrieval state management:
    - [ ] Set up React Query for source and document data

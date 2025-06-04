@@ -1,58 +1,71 @@
-/* global console */
-import { apiClient } from '../../../lib/api/client';
-
-// Types
-export interface Document {
-  id: string;
-  title: string;
-  content: string;
-  source: {
-    id: string;
-    name: string;
-    type?: string;
-  };
-  url?: string;
-  metadata: Record<string, any>;
-  relevance_score?: number;
-}
-
-export interface Source {
-  id: string;
-  name: string;
-  description: string;
-}
-
-export interface SearchQuery {
-  query: string;
-  filters?: Record<string, any>;
-  sources?: string[];
-  limit?: number;
-}
+import { apiClient, createApiError } from '../../../lib/api/client';
+import {
+  Document,
+  PaginatedResponse,
+  SearchParams,
+  SearchResult,
+  Source,
+} from '../types';
 
 /**
  * Service for document retrieval API calls
  */
 const RetrievalService = {
   /**
-   * Get available data sources
-   * @returns Promise with array of sources
+   * Get available data sources with optional pagination
+   * @param page - Page number (1-indexed)
+   * @param limit - Number of sources per page
+   * @returns Promise with array of sources and pagination metadata
    */
-  getSources: async (): Promise<Source[]> => {
-    const response = await apiClient.get<Source[]>('/retrieval/data_sources');
-    return response.data;
+  getSources: async (
+    page = 1,
+    limit = 20
+  ): Promise<PaginatedResponse<Source>> => {
+    try {
+      const response = await apiClient.get<PaginatedResponse<Source>>(
+        '/retrieval/data_sources',
+        {
+          params: {
+            page,
+            limit,
+          },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      throw createApiError(error);
+    }
   },
 
   /**
-   * Search for documents
-   * @param searchQuery - Search parameters
-   * @returns Promise with array of documents
+   * Search for documents with pagination, filtering, and sorting
+   * @param searchParams - Search parameters including pagination, filters, and sorting
+   * @returns Promise with search results and pagination metadata
    */
-  searchDocuments: async (searchQuery: SearchQuery): Promise<Document[]> => {
-    const response = await apiClient.post<Document[]>(
-      '/retrieval/search',
-      searchQuery
-    );
-    return response.data;
+  searchDocuments: async (
+    searchParams: SearchParams
+  ): Promise<SearchResult> => {
+    try {
+      const {
+        query,
+        filters,
+        sort,
+        sortDirection,
+        page = 1,
+        limit = 10,
+      } = searchParams;
+      const response = await apiClient.post<SearchResult>('/retrieval/search', {
+        query,
+        filters,
+        sort,
+        sort_direction: sortDirection,
+        page,
+        limit,
+      });
+      return response.data;
+    } catch (error: any) {
+      throw createApiError(error);
+    }
   },
 
   /**
@@ -61,47 +74,76 @@ const RetrievalService = {
    * @returns Promise with document details
    */
   getDocument: async (id: string): Promise<Document> => {
-    const response = await apiClient.get<Document>(
-      `/retrieval/documents/${id}`
-    );
-    return response.data;
+    try {
+      const response = await apiClient.get<Document>(
+        `/retrieval/documents/${id}`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw createApiError(error);
+    }
   },
 
   /**
-   * Get recommended documents based on a question
+   * Get recommended documents based on a question with pagination, filtering, and sorting
    * @param question - The question text
-   * @param sources - Optional array of source IDs to filter by
-   * @param filters - Optional metadata filters to apply
-   * @param limit - Optional maximum number of results to return
-   * @returns Promise with array of recommended documents
+   * @param searchParams - Additional search parameters (sources, filters, pagination, sorting)
+   * @returns Promise with search results and pagination metadata
    */
   getRecommendedDocuments: async (
     question: string,
+    searchParams: Omit<SearchParams, 'query'> = {}
+  ): Promise<SearchResult> => {
+    try {
+      const {
+        filters,
+        sort = 'relevance_score',
+        sortDirection = 'desc',
+        page = 1,
+        limit = 10,
+      } = searchParams;
+
+      const response = await apiClient.post<SearchResult>('/retrieval/search', {
+        query: question,
+        filters,
+        sort,
+        sort_direction: sortDirection,
+        page,
+        limit,
+      });
+
+      return response.data;
+    } catch (error: any) {
+      throw createApiError(error);
+    }
+  },
+
+  /**
+   * Get document suggestions based on partial input
+   * @param partialInput - Partial text input for suggestion
+   * @param sources - Optional array of source IDs to filter by
+   * @param limit - Optional maximum number of results to return
+   * @returns Promise with array of document suggestions
+   */
+  getDocumentSuggestions: async (
+    partialInput: string,
     sources?: string[],
-    filters?: Record<string, any>,
     limit?: number
   ): Promise<Document[]> => {
-    // eslint-disable-next-line no-console
-    console.log('Retrieving documents with params:', {
-      query: question,
-      sources,
-      filters,
-      max_results: limit || 10,
-    });
     try {
-      const response = await apiClient.post<Document[]>('/retrieval/search', {
-        query: question,
-        sources,
-        filters,
-        max_results: limit || 10,
-      });
-      // eslint-disable-next-line no-console
-      console.log('Retrieved documents:', response.data);
+      const response = await apiClient.get<Document[]>(
+        '/retrieval/suggestions',
+        {
+          params: {
+            query: partialInput,
+            sources: sources?.join(','),
+            limit: limit || 5,
+          },
+        }
+      );
       return response.data;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error in getRecommendedDocuments:', error);
-      throw error;
+    } catch (error: any) {
+      throw createApiError(error);
     }
   },
 };
