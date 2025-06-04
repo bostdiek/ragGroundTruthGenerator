@@ -269,7 +269,7 @@ Note: The goal is to maintain the current functionality with cleaner code organi
 
 5. Refactor/Create retrieval components:
    - [x] Create/Move SourceSelector component
-   - [ ] Create DocumentDiscovery component for automatic document retrieval
+   - [x] Create DocumentDiscovery component for automatic document retrieval
    - [x] Refactor DocumentSelector component
    - [ ] Create RetrievalWorkflow component to manage the overall retrieval process
 
