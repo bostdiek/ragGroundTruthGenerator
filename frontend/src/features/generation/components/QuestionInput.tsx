@@ -27,7 +27,7 @@ const QuestionTextarea = styled.textarea`
   min-height: 100px;
   margin-bottom: 1rem;
   resize: vertical;
-  
+
   &:focus {
     outline: none;
     border-color: #0078d4;
@@ -45,11 +45,11 @@ const Button = styled.button`
   font-weight: 500;
   cursor: pointer;
   margin-right: 1rem;
-  
+
   &:hover {
     background-color: #106ebe;
   }
-  
+
   &:disabled {
     background-color: #ccc;
     cursor: not-allowed;
@@ -62,21 +62,18 @@ const Button = styled.button`
 const QuestionInput: React.FC<QuestionInputProps> = ({
   question,
   onQuestionChange,
-  onNextStep
+  onNextStep,
 }) => {
   return (
     <Section>
       <SectionTitle>What question do you want to answer?</SectionTitle>
       <QuestionTextarea
         value={question}
-        onChange={(e) => onQuestionChange(e.target.value)}
+        onChange={e => onQuestionChange(e.target.value)}
         placeholder="Enter your question here..."
       />
-      
-      <Button 
-        onClick={onNextStep} 
-        disabled={!question.trim()}
-      >
+
+      <Button onClick={onNextStep} disabled={!question.trim()}>
         Next: Select Documents
       </Button>
     </Section>

@@ -1,6 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { colors, borderRadius, shadows, spacing, zIndex, transitions } from './theme';
+
+import {
+  borderRadius,
+  colors,
+  shadows,
+  spacing,
+  transitions,
+  zIndex,
+} from './theme';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -44,7 +52,8 @@ const ModalOverlay = styled.div`
   align-items: center;
   justify-content: center;
   z-index: ${zIndex.modal};
-  animation: ${fadeIn} ${transitions.duration.medium} ${transitions.easing.easeOut};
+  animation: ${fadeIn} ${transitions.duration.medium}
+    ${transitions.easing.easeOut};
 `;
 
 const ModalContent = styled.div<{ size: 'small' | 'medium' | 'large' }>`
@@ -66,7 +75,8 @@ const ModalContent = styled.div<{ size: 'small' | 'medium' | 'large' }>`
   max-height: calc(100vh - 64px);
   display: flex;
   flex-direction: column;
-  animation: ${slideIn} ${transitions.duration.medium} ${transitions.easing.easeOut};
+  animation: ${slideIn} ${transitions.duration.medium}
+    ${transitions.easing.easeOut};
   margin: ${spacing.md};
 `;
 
@@ -96,12 +106,13 @@ const CloseButton = styled.button`
   border-radius: 50%;
   width: 32px;
   height: 32px;
-  transition: background-color ${transitions.duration.short} ${transitions.easing.easeInOut};
-  
+  transition: background-color ${transitions.duration.short}
+    ${transitions.easing.easeInOut};
+
   &:hover {
     background-color: ${colors.grey[100]};
   }
-  
+
   &:focus {
     outline: none;
     box-shadow: 0 0 0 2px ${colors.primary.light};
@@ -165,7 +176,7 @@ export const Modal: React.FC<ModalProps> = ({
     } else {
       document.body.style.overflow = '';
     }
-    
+
     return () => {
       document.body.style.overflow = '';
     };
@@ -182,9 +193,27 @@ export const Modal: React.FC<ModalProps> = ({
           <ModalHeader>
             <ModalTitle>{title}</ModalTitle>
             <CloseButton onClick={onClose} aria-label="Close modal">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M18 6L6 18"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M6 6L18 18"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </CloseButton>
           </ModalHeader>

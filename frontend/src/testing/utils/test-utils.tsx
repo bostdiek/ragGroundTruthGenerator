@@ -1,16 +1,22 @@
-import React, { ReactElement, useEffect } from 'react';
-import { render, RenderOptions } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider, useAuth } from '../../features/auth/contexts/AuthContext';
-import { CollectionsProvider } from '../../features/collections/contexts/CollectionsContext';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { render, RenderOptions } from '@testing-library/react';
+import React, { ReactElement, useEffect } from 'react';
+import { BrowserRouter } from 'react-router-dom';
+
+import {
+  AuthProvider,
+  useAuth,
+} from '../../features/auth/contexts/AuthContext';
+import { CollectionsProvider } from '../../features/collections/contexts/CollectionsContext';
 import { queryClient } from '../setup';
 
 /**
  * Custom render function that includes providers
  * This allows us to render components with the necessary context providers
  */
-const AllProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const AllProviders: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -25,16 +31,16 @@ const AllProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 /**
  * Authentication wrapper that simulates a logged-in state
  */
-export const AuthenticatedWrapper: React.FC<{ children: React.ReactNode }> = ({ 
-  children 
+export const AuthenticatedWrapper: React.FC<{ children: React.ReactNode }> = ({
+  children,
 }) => {
   const { login } = useAuth();
-  
+
   useEffect(() => {
     // Simulate user login - the login function needs username and password
     const username = 'testuser';
     const password = 'password';
-    
+
     // Only attempt login if not already authenticated
     if (!localStorage.getItem('auth_token')) {
       login(username, password).catch(error => {
@@ -42,7 +48,7 @@ export const AuthenticatedWrapper: React.FC<{ children: React.ReactNode }> = ({
       });
     }
   }, [login]);
-  
+
   return <>{children}</>;
 };
 
@@ -93,7 +99,7 @@ const renderWithAuthAndQuery = (
       <AuthProvider>{children}</AuthProvider>
     </TestQueryProvider>
   );
-  
+
   return render(ui, { wrapper: Wrapper, ...options });
 };
 
@@ -101,10 +107,10 @@ const renderWithAuthAndQuery = (
 export * from '@testing-library/react';
 
 // Override render method
-export { 
-  customRender as render, 
-  renderWithRouter, 
-  renderWithAuth, 
+export {
+  customRender as render,
+  renderWithAuth,
+  renderWithAuthAndQuery,
   renderWithQuery,
-  renderWithAuthAndQuery
+  renderWithRouter,
 };

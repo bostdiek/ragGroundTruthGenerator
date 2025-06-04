@@ -1,6 +1,6 @@
 /**
  * Collections Routes
- * 
+ *
  * This file defines all the routes for the collections feature.
  */
 
@@ -19,20 +19,20 @@ export const collectionsRoutes: RouteObject[] = [
   {
     path: 'collections',
     children: [
-      { 
-        index: true, 
-        element: <CollectionsPage /> 
+      {
+        index: true,
+        element: <CollectionsPage />,
       },
-      { 
-        path: 'new', 
-        element: <CreateCollectionPage /> 
+      {
+        path: 'new',
+        element: <CreateCollectionPage />,
       },
-      { 
-        path: ':collectionId', 
-        element: <CollectionDetailPage /> 
-      }
-    ]
-  }
+      {
+        path: ':collectionId',
+        element: <CollectionDetailPage />,
+      },
+    ],
+  },
 ];
 
 export default collectionsRoutes;

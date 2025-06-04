@@ -1,10 +1,11 @@
 /**
  * Authentication Hooks
- * 
+ *
  * This file contains React Query hooks for authentication-related API calls.
  */
 
 import { useMutation, useQuery } from '@tanstack/react-query';
+
 import { apiClient } from '../../../lib/api/client';
 import { LoginRequest, TokenResponse, UserInfo } from '../api/auth.service';
 
@@ -21,13 +22,16 @@ export const authKeys = {
 export const useLogin = () => {
   return useMutation({
     mutationFn: async (credentials: LoginRequest) => {
-      const response = await apiClient.post<TokenResponse>('/auth/login', credentials);
-      
+      const response = await apiClient.post<TokenResponse>(
+        '/auth/login',
+        credentials
+      );
+
       if (response.data.access_token) {
         localStorage.setItem('auth_token', response.data.access_token);
         localStorage.setItem('auth_user', JSON.stringify(response.data.user));
       }
-      
+
       return response.data;
     },
   });
@@ -45,7 +49,7 @@ export const useCurrentUser = () => {
       if (cachedUser) {
         return JSON.parse(cachedUser) as UserInfo;
       }
-      
+
       // If not in localStorage, fetch from API
       const response = await apiClient.get<UserInfo>('/auth/me');
       return response.data;

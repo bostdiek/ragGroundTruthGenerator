@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
+
 import GenerationService from '../api/generation.service';
 import { GenerationRequest, GenerationResponse, Rule } from '../types';
 
@@ -16,7 +17,7 @@ const GENERATION_QUERY_KEYS = {
  */
 export const useGenerateAnswer = () => {
   return useMutation<GenerationResponse, Error, GenerationRequest>({
-    mutationFn: (request) => GenerationService.generateAnswer(request),
+    mutationFn: request => GenerationService.generateAnswer(request),
     // No need for invalidation as each generation is unique
   });
 };
@@ -52,7 +53,7 @@ export const useCreateRule = () => {
     // Add invalidation to refresh rules list after creation
     onSuccess: (_, __, context) => {
       // Optionally add queryClient invalidation here if needed
-    }
+    },
   });
 };
 
@@ -61,12 +62,17 @@ export const useCreateRule = () => {
  */
 export const useUpdateRule = () => {
   return useMutation({
-    mutationFn: ({ id, rule }: { id: string; rule: Partial<Omit<Rule, 'id'>> }) => 
-      GenerationService.updateRule(id, rule),
+    mutationFn: ({
+      id,
+      rule,
+    }: {
+      id: string;
+      rule: Partial<Omit<Rule, 'id'>>;
+    }) => GenerationService.updateRule(id, rule),
     // Add invalidation to refresh rule after update
     onSuccess: (_, variables) => {
       // Optionally add queryClient invalidation here if needed
-    }
+    },
   });
 };
 
@@ -79,6 +85,6 @@ export const useDeleteRule = () => {
     // Add invalidation to refresh rules list after deletion
     onSuccess: () => {
       // Optionally add queryClient invalidation here if needed
-    }
+    },
   });
 };

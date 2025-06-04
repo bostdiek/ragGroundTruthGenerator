@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { Document } from '../../../types';
 
 interface DocumentSelectorProps {
@@ -17,7 +18,7 @@ const DocumentSelector: React.FC<DocumentSelectorProps> = ({
   selectedDocuments,
   onSelectDocument,
   isLoading = false,
-  error = null
+  error = null,
 }) => {
   // Check if a document is selected
   const isSelected = (document: Document) => {
@@ -40,7 +41,7 @@ const DocumentSelector: React.FC<DocumentSelectorProps> = ({
     <div className="document-selector">
       <h3>Available Documents</h3>
       <div className="document-list">
-        {documents.map((document) => (
+        {documents.map(document => (
           <div
             key={document.id}
             className={`document-item ${isSelected(document) ? 'selected' : ''}`}
@@ -51,7 +52,9 @@ const DocumentSelector: React.FC<DocumentSelectorProps> = ({
             </div>
             <div className="document-info">
               <div className="document-title">{document.title}</div>
-              <div className="document-source">{document.source?.name || 'Unknown source'}</div>
+              <div className="document-source">
+                {document.source?.name || 'Unknown source'}
+              </div>
             </div>
           </div>
         ))}

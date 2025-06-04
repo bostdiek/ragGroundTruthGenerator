@@ -1,6 +1,13 @@
 import React from 'react';
 import styled, { css } from 'styled-components';
-import { colors, borderRadius, spacing, typography, transitions } from './theme';
+
+import {
+  borderRadius,
+  colors,
+  spacing,
+  transitions,
+  typography,
+} from './theme';
 
 export type AlertVariant = 'success' | 'error' | 'warning' | 'info';
 
@@ -101,12 +108,13 @@ const CloseButton = styled.button<{ variant: AlertVariant }>`
   height: 24px;
   margin-left: ${spacing.sm};
   flex-shrink: 0;
-  transition: background-color ${transitions.duration.short} ${transitions.easing.easeInOut};
-  
+  transition: background-color ${transitions.duration.short}
+    ${transitions.easing.easeInOut};
+
   &:hover {
     background-color: rgba(0, 0, 0, 0.05);
   }
-  
+
   &:focus {
     outline: none;
   }
@@ -115,30 +123,64 @@ const CloseButton = styled.button<{ variant: AlertVariant }>`
 // Default icons for each variant
 const DefaultIcons = {
   success: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path
         d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
         stroke="currentColor"
         strokeWidth="2"
         fill="none"
       />
-      <path d="M8 12L11 15L16 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M8 12L11 15L16 9"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   ),
   error: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path
         d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
         stroke="currentColor"
         strokeWidth="2"
         fill="none"
       />
-      <path d="M15 9L9 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M9 9L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path
+        d="M15 9L9 15"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M9 9L15 15"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
     </svg>
   ),
   warning: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path
         d="M12 9V13"
         stroke="currentColor"
@@ -160,15 +202,31 @@ const DefaultIcons = {
     </svg>
   ),
   info: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path
         d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
         stroke="currentColor"
         strokeWidth="2"
         fill="none"
       />
-      <path d="M12 16V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M12 8V8.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path
+        d="M12 16V12"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M12 8V8.01"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
     </svg>
   ),
 };
@@ -185,18 +243,38 @@ export const Alert: React.FC<AlertProps> = ({
 
   return (
     <AlertContainer variant={variant} fullWidth={fullWidth}>
-      <IconContainer variant={variant}>
-        {icon || defaultIcon}
-      </IconContainer>
+      <IconContainer variant={variant}>{icon || defaultIcon}</IconContainer>
       <ContentContainer>
         {title && <AlertTitle>{title}</AlertTitle>}
         <AlertContent>{children}</AlertContent>
       </ContentContainer>
       {onClose && (
-        <CloseButton onClick={onClose} aria-label="Close alert" variant={variant}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <CloseButton
+          onClick={onClose}
+          aria-label="Close alert"
+          variant={variant}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 6L6 18"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M6 6L18 18"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </CloseButton>
       )}

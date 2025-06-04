@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import { colors, spacing, shadows, zIndex } from '../ui/theme';
+
+import { colors, shadows, spacing, zIndex } from '../ui/theme';
 import Container from './Container';
 
 export interface HeaderProps {
@@ -60,9 +61,11 @@ export const Header: React.FC<HeaderProps> = ({
       <Container>
         <HeaderContent>
           {logo && <LogoContainer>{logo}</LogoContainer>}
-          
-          {navigation && <NavigationContainer>{navigation}</NavigationContainer>}
-          
+
+          {navigation && (
+            <NavigationContainer>{navigation}</NavigationContainer>
+          )}
+
           {actions && <ActionsContainer>{actions}</ActionsContainer>}
         </HeaderContent>
       </Container>

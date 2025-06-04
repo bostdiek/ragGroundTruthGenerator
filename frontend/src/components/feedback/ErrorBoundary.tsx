@@ -1,5 +1,6 @@
 import React from 'react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
+
 import { useErrorStore } from '../../stores/error-store';
 import { toastService } from './Toast';
 
@@ -24,7 +25,7 @@ interface AppErrorBoundaryProps {
 
 /**
  * App Error Boundary component
- * 
+ *
  * Wraps children in an error boundary that captures and handles errors
  */
 export const AppErrorBoundary: React.FC<AppErrorBoundaryProps> = ({
@@ -32,7 +33,7 @@ export const AppErrorBoundary: React.FC<AppErrorBoundaryProps> = ({
   fallback = DefaultErrorFallback,
   showToast = true,
 }) => {
-  const addError = useErrorStore((state) => state.addError);
+  const addError = useErrorStore(state => state.addError);
 
   /**
    * Error handler function
@@ -46,7 +47,9 @@ export const AppErrorBoundary: React.FC<AppErrorBoundaryProps> = ({
 
     // Show toast notification if enabled
     if (showToast) {
-      toastService.error('An error occurred. Please try again or contact support.');
+      toastService.error(
+        'An error occurred. Please try again or contact support.'
+      );
     }
 
     // Log error to console in development

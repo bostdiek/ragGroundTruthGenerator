@@ -1,6 +1,6 @@
 /**
  * Collections Feature Exports
- * 
+ *
  * This file exports all components of the collections feature.
  */
 
@@ -11,19 +11,19 @@ export { default as CollectionsService } from './api/collections.service';
 export * from './hooks/useCollections';
 
 // Export components
-export { 
+export {
   CollectionCard,
   CollectionFilters,
+  QAPairForm,
   QAPairList,
-  QAPairForm
 } from './components';
 
 // Export types
-export { QAPairStatus } from './types';
-export type { 
+export type {
   CollectionFilters as CollectionFilterOptions,
-  QAPairFilters
+  QAPairFilters,
 } from './types';
+export { QAPairStatus } from './types';
 
 // Export utils
 export * from './utils';

@@ -1,11 +1,12 @@
 /**
  * CollectionFilters Component
- * 
+ *
  * This component provides filtering and sorting options for collections.
  */
 
 import React from 'react';
 import styled from 'styled-components';
+
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
@@ -37,13 +38,13 @@ const FilterGroup = styled.div`
  * Collection Filters Component
  */
 const CollectionFiltersComponent: React.FC = () => {
-  const { 
-    collectionFilters, 
+  const {
+    collectionFilters,
     setCollectionFilters,
     collectionSortBy,
     collectionSortOrder,
     setCollectionSort,
-    resetFilters
+    resetFilters,
   } = useCollectionsStore();
 
   // Handle search input change
@@ -54,7 +55,7 @@ const CollectionFiltersComponent: React.FC = () => {
   // Handle sort field change
   const handleSortByChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setCollectionSort(
-      e.target.value as CollectionFilters['sortBy'], 
+      e.target.value as CollectionFilters['sortBy'],
       collectionSortOrder
     );
   };
@@ -62,7 +63,7 @@ const CollectionFiltersComponent: React.FC = () => {
   // Handle sort order change
   const handleSortOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setCollectionSort(
-      collectionSortBy, 
+      collectionSortBy,
       e.target.value as CollectionFilters['sortOrder']
     );
   };
@@ -72,12 +73,12 @@ const CollectionFiltersComponent: React.FC = () => {
     { value: 'name', label: 'Name' },
     { value: 'created_at', label: 'Created Date' },
     { value: 'updated_at', label: 'Updated Date' },
-    { value: 'document_count', label: 'Document Count' }
+    { value: 'document_count', label: 'Document Count' },
   ];
 
   const sortOrderOptions = [
     { value: 'asc', label: 'Ascending' },
-    { value: 'desc', label: 'Descending' }
+    { value: 'desc', label: 'Descending' },
   ];
 
   return (
@@ -89,7 +90,7 @@ const CollectionFiltersComponent: React.FC = () => {
           value={collectionFilters.search || ''}
           onChange={handleSearchChange}
         />
-        
+
         <FilterGroup>
           <Select
             label="Sort By"
@@ -98,7 +99,7 @@ const CollectionFiltersComponent: React.FC = () => {
             onChange={handleSortByChange}
           />
         </FilterGroup>
-        
+
         <FilterGroup>
           <Select
             label="Sort Order"
@@ -107,11 +108,8 @@ const CollectionFiltersComponent: React.FC = () => {
             onChange={handleSortOrderChange}
           />
         </FilterGroup>
-        
-        <Button 
-          variant="secondary" 
-          onClick={resetFilters}
-        >
+
+        <Button variant="secondary" onClick={resetFilters}>
           Clear Filters
         </Button>
       </FilterRow>

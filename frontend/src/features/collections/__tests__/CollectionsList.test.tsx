@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { render } from '../../../testing/utils/test-utils';
+import { delay, http, HttpResponse } from 'msw';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { server } from '../../../testing/setup';
-import { http, HttpResponse, delay } from 'msw';
+import { render } from '../../../testing/utils/test-utils';
 import Collections from '../pages/Collections';
 
 // Mock collections data
@@ -41,20 +42,25 @@ describe('Collections List View', () => {
 
   it('renders the collections list with correct data', async () => {
     render(<Collections />);
-    
+
     // Wait for collections to load
-    await waitFor(() => {
-      expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
-    }, { timeout: 5000 });
-    
+    await waitFor(
+      () => {
+        expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+      },
+      { timeout: 5000 }
+    );
+
     // Check if both collections are displayed
     expect(screen.getByText('Test Collection')).toBeInTheDocument();
     expect(screen.getByText('Another Collection')).toBeInTheDocument();
-    
+
     // Check if descriptions are displayed
     expect(screen.getByText('A collection for testing')).toBeInTheDocument();
-    expect(screen.getByText('Another collection for testing')).toBeInTheDocument();
-    
+    expect(
+      screen.getByText('Another collection for testing')
+    ).toBeInTheDocument();
+
     // Check if tags are displayed
     expect(screen.getByText('test')).toBeInTheDocument();
     expect(screen.getByText('sample')).toBeInTheDocument();
@@ -65,31 +71,35 @@ describe('Collections List View', () => {
   it('navigates to collection detail when a collection card is clicked', async () => {
     const user = userEvent.setup();
     render(<Collections />);
-    
+
     // Wait for collections to load
-    await waitFor(() => {
-      expect(screen.getByText('Test Collection')).toBeInTheDocument();
-    }, { timeout: 5000 });
-    
+    await waitFor(
+      () => {
+        expect(screen.getByText('Test Collection')).toBeInTheDocument();
+      },
+      { timeout: 5000 }
+    );
+
     // Find the first collection card and click it
-    const firstCard = screen.getByText('Test Collection').closest('.card') || 
-                     screen.getByText('Test Collection').closest('a');
+    const firstCard =
+      screen.getByText('Test Collection').closest('.card') ||
+      screen.getByText('Test Collection').closest('a');
     expect(firstCard).toBeInTheDocument();
-    
+
     await user.click(firstCard!);
-    
+
     // Since we're using a mock router in tests, we just verify that the Link is correctly set up
     expect(firstCard?.getAttribute('href')).toContain('/collections/1');
   });
 
   it('filters collections by search term', async () => {
-    // NOTE: This test is currently skipped because the Collections component 
+    // NOTE: This test is currently skipped because the Collections component
     // doesn't yet include the CollectionFilters component with search functionality
     // TODO: Update this test once CollectionFilters is integrated into Collections page
   });
 
   it('filters collections by tag', async () => {
-    // NOTE: This test is currently skipped because the Collections component 
+    // NOTE: This test is currently skipped because the Collections component
     // doesn't yet include the CollectionFilters component with tag filtering
     // TODO: Update this test once CollectionFilters is integrated into Collections page
   });
@@ -97,16 +107,19 @@ describe('Collections List View', () => {
   it('creates a new collection when the "Create Collection" button is clicked', async () => {
     const user = userEvent.setup();
     render(<Collections />);
-    
+
     // Wait for collections to load
-    await waitFor(() => {
-      expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
-    }, { timeout: 5000 });
-    
+    await waitFor(
+      () => {
+        expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+      },
+      { timeout: 5000 }
+    );
+
     // Find and click the "Create Collection" link
     const createLink = screen.getByRole('link', { name: /create collection/i });
     await user.click(createLink);
-    
+
     // Check if link was correctly set up
     expect(createLink.getAttribute('href')).toContain('/collections/new');
   });

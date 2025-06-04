@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
 import MDEditor from '@uiw/react-md-editor';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import rehypeSanitize from 'rehype-sanitize';
-import CollectionsService from '../../collections/api/collections.service';
+import styled from 'styled-components';
+
 import DocumentCard from '../../../components/ui/DocumentCard';
 import RevisionModal from '../../../components/ui/RevisionModal';
+import CollectionsService from '../../collections/api/collections.service';
 
 // Types
 interface QAPair {
@@ -69,11 +70,11 @@ const BackButton = styled.button`
   align-items: center;
   padding: 0;
   margin-bottom: 1rem;
-  
+
   &:hover {
     text-decoration: underline;
   }
-  
+
   &:before {
     content: '←';
     margin-right: 0.5rem;
@@ -119,7 +120,7 @@ const StatusBadge = styled.span<{ status: string }>`
   font-size: 0.9rem;
   font-weight: 500;
   margin-left: 1rem;
-  
+
   background-color: ${props => {
     switch (props.status) {
       case 'approved':
@@ -133,7 +134,7 @@ const StatusBadge = styled.span<{ status: string }>`
         return '#e3f2fd';
     }
   }};
-  
+
   color: ${props => {
     switch (props.status) {
       case 'approved':
@@ -171,7 +172,7 @@ const MetadataBox = styled.div`
 const MetadataItem = styled.div`
   margin-bottom: 0.5rem;
   display: flex;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -198,11 +199,11 @@ const Button = styled.button`
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  
+
   &:hover {
     background-color: #106ebe;
   }
-  
+
   &:disabled {
     background-color: #ccc;
     cursor: not-allowed;
@@ -213,7 +214,7 @@ const SecondaryButton = styled(Button)`
   background-color: white;
   color: #333;
   border: 1px solid #ddd;
-  
+
   &:hover {
     background-color: #f3f3f3;
   }
@@ -221,7 +222,7 @@ const SecondaryButton = styled(Button)`
 
 const DangerButton = styled(Button)`
   background-color: #d13438;
-  
+
   &:hover {
     background-color: #c62828;
   }
@@ -266,20 +267,20 @@ const formatStatusLabel = (status: string): string => {
 const ReviewQA: React.FC = () => {
   const { qaId } = useParams<{ qaId: string }>();
   const navigate = useNavigate();
-  
+
   const [qaPair, setQaPair] = useState<QAPair | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [showRevisionModal, setShowRevisionModal] = useState(false);
   const [revisionFeedback, setRevisionFeedback] = useState('');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  
+
   useEffect(() => {
     const fetchQAPair = async () => {
       try {
         if (!qaId) return;
-        
+
         const qaPairData = await CollectionsService.getQAPair(qaId);
         setQaPair(qaPairData);
         setLoading(false);
@@ -289,31 +290,33 @@ const ReviewQA: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     fetchQAPair();
   }, [qaId]);
-  
-  const handleStatusUpdate = async (newStatus: 'approved' | 'rejected' | 'revision_requested') => {
+
+  const handleStatusUpdate = async (
+    newStatus: 'approved' | 'rejected' | 'revision_requested'
+  ) => {
     if (!qaPair) return;
-    
+
     setIsUpdatingStatus(true);
-    
+
     try {
       const metadata = qaPair.metadata || {};
-      
+
       if (newStatus === 'revision_requested' && revisionFeedback) {
         metadata.revision_feedback = revisionFeedback;
       }
-      
+
       await CollectionsService.updateQAPair(qaPair.id, {
         status: newStatus,
-        metadata
+        metadata,
       });
-      
+
       // Refresh the QA pair data
       const updatedQAPair = await CollectionsService.getQAPair(qaPair.id);
       setQaPair(updatedQAPair);
-      
+
       // Close the revision modal if it's open
       setShowRevisionModal(false);
       setRevisionFeedback('');
@@ -324,7 +327,7 @@ const ReviewQA: React.FC = () => {
       setIsUpdatingStatus(false);
     }
   };
-  
+
   const handleGoBack = () => {
     if (qaPair?.collection_id) {
       navigate(`/collections/${qaPair.collection_id}`);
@@ -332,35 +335,33 @@ const ReviewQA: React.FC = () => {
       navigate('/collections');
     }
   };
-  
+
   const handleRevisionRequest = () => {
     setShowRevisionModal(true);
   };
-  
+
   const handleRevisionSubmit = (feedback: string) => {
     setRevisionFeedback(feedback);
     handleStatusUpdate('revision_requested');
   };
-  
+
   const handleRevisionCancel = () => {
     setShowRevisionModal(false);
     setRevisionFeedback('');
   };
-  
+
   if (loading) {
     return <LoadingSpinner>Loading Q&A pair...</LoadingSpinner>;
   }
-  
+
   if (error || !qaPair) {
     return <ReviewContainer>{error || 'Q&A pair not found'}</ReviewContainer>;
   }
-  
+
   return (
     <ReviewContainer>
-      <BackButton onClick={handleGoBack}>
-        Back to Collection
-      </BackButton>
-      
+      <BackButton onClick={handleGoBack}>Back to Collection</BackButton>
+
       <Header>
         <HeaderContent>
           <Title>
@@ -374,36 +375,35 @@ const ReviewQA: React.FC = () => {
           </Subtitle>
         </HeaderContent>
       </Header>
-      
+
       {error && <ErrorMessage>{error}</ErrorMessage>}
-      
+
       <Section>
         <SectionTitle>Question</SectionTitle>
         <QuestionBox>
           <Question>{qaPair.question}</Question>
         </QuestionBox>
-        
+
         <SectionTitle>Answer</SectionTitle>
         <AnswerBox>
-          <MDEditor.Markdown 
-            source={qaPair.answer} 
+          <MDEditor.Markdown
+            source={qaPair.answer}
             rehypePlugins={[[rehypeSanitize]]}
           />
         </AnswerBox>
-        
+
         <DocumentsSection>
-          <SectionTitle>Referenced Documents ({qaPair.documents.length})</SectionTitle>
-          
+          <SectionTitle>
+            Referenced Documents ({qaPair.documents.length})
+          </SectionTitle>
+
           <DocumentsGrid>
             {qaPair.documents.map(document => (
-              <DocumentCard
-                key={document.id}
-                doc={document}
-              />
+              <DocumentCard key={document.id} doc={document} />
             ))}
           </DocumentsGrid>
         </DocumentsSection>
-        
+
         <MetadataBox>
           <MetadataItem>
             <MetadataLabel>Created by:</MetadataLabel>
@@ -411,7 +411,11 @@ const ReviewQA: React.FC = () => {
           </MetadataItem>
           <MetadataItem>
             <MetadataLabel>Last updated:</MetadataLabel>
-            <span>{qaPair.updated_at ? new Date(qaPair.updated_at).toLocaleString() : 'Unknown'}</span>
+            <span>
+              {qaPair.updated_at
+                ? new Date(qaPair.updated_at).toLocaleString()
+                : 'Unknown'}
+            </span>
           </MetadataItem>
           {qaPair.metadata?.revision_feedback && (
             <MetadataItem>
@@ -420,25 +424,25 @@ const ReviewQA: React.FC = () => {
             </MetadataItem>
           )}
         </MetadataBox>
-        
+
         {qaPair.status !== 'approved' && (
           <ButtonGroup>
-            <Button 
-              onClick={() => handleStatusUpdate('approved')} 
+            <Button
+              onClick={() => handleStatusUpdate('approved')}
               disabled={isUpdatingStatus}
             >
               Approve
             </Button>
-            
-            <SecondaryButton 
+
+            <SecondaryButton
               onClick={handleRevisionRequest}
               disabled={isUpdatingStatus}
             >
               Request Revision
             </SecondaryButton>
-            
-            <DangerButton 
-              onClick={() => handleStatusUpdate('rejected')} 
+
+            <DangerButton
+              onClick={() => handleStatusUpdate('rejected')}
               disabled={isUpdatingStatus}
             >
               Reject
@@ -446,7 +450,7 @@ const ReviewQA: React.FC = () => {
           </ButtonGroup>
         )}
       </Section>
-      
+
       <RevisionModal
         isOpen={showRevisionModal}
         onClose={handleRevisionCancel}

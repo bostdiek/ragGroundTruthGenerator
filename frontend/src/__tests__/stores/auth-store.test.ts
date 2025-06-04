@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useAuthStore } from '../../stores/auth-store';
+
 import AuthService from '../../features/auth/api/auth.service';
+import { useAuthStore } from '../../stores/auth-store';
 
 // Mock the AuthService
 vi.mock('../../features/auth/api/auth.service', () => ({
@@ -31,21 +32,32 @@ describe('Auth Store', () => {
   });
 
   it('should update user on setUser', () => {
-    const mockUser = { id: '1', username: 'testuser', email: 'test@example.com' };
+    const mockUser = {
+      id: '1',
+      username: 'testuser',
+      email: 'test@example.com',
+    };
     useAuthStore.getState().setUser(mockUser);
-    
+
     const state = useAuthStore.getState();
     expect(state.user).toEqual(mockUser);
     expect(state.isAuthenticated).toBe(true);
   });
 
   it('should handle login successfully', async () => {
-    const mockUser = { id: '1', username: 'testuser', email: 'test@example.com' };
+    const mockUser = {
+      id: '1',
+      username: 'testuser',
+      email: 'test@example.com',
+    };
     (AuthService.login as any).mockResolvedValueOnce({ user: mockUser });
-    
+
     await useAuthStore.getState().login('testuser', 'password');
-    
-    expect(AuthService.login).toHaveBeenCalledWith({ username: 'testuser', password: 'password' });
+
+    expect(AuthService.login).toHaveBeenCalledWith({
+      username: 'testuser',
+      password: 'password',
+    });
     const state = useAuthStore.getState();
     expect(state.user).toEqual(mockUser);
     expect(state.isAuthenticated).toBe(true);
@@ -57,7 +69,7 @@ describe('Auth Store', () => {
     const mockError: any = new Error('Login failed');
     mockError.response = { status: 401 };
     (AuthService.login as any).mockRejectedValueOnce(mockError);
-    
+
     try {
       await useAuthStore.getState().login('testuser', 'wrong-password');
       // If login doesn't throw, fail the test
@@ -73,12 +85,16 @@ describe('Auth Store', () => {
 
   it('should handle logout', () => {
     // First set a user
-    const mockUser = { id: '1', username: 'testuser', email: 'test@example.com' };
+    const mockUser = {
+      id: '1',
+      username: 'testuser',
+      email: 'test@example.com',
+    };
     useAuthStore.getState().setUser(mockUser);
-    
+
     // Then logout
     useAuthStore.getState().logout();
-    
+
     expect(AuthService.logout).toHaveBeenCalled();
     const state = useAuthStore.getState();
     expect(state.user).toBeNull();

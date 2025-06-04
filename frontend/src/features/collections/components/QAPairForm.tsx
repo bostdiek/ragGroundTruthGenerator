@@ -1,14 +1,15 @@
 /**
  * QAPairForm Component
- * 
+ *
  * This component provides a form for creating or editing QA pairs.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+
 import Button from '../../../components/ui/Button';
-import Input from '../../../components/ui/Input';
 import Card from '../../../components/ui/Card';
+import Input from '../../../components/ui/Input';
 import { QAPair } from '../types';
 
 interface QAPairFormProps {
@@ -43,7 +44,7 @@ const Textarea = styled.textarea`
   width: 100%;
   min-height: 150px;
   resize: vertical;
-  
+
   &:focus {
     outline: none;
     border-color: #6366f1;
@@ -61,26 +62,26 @@ const ButtonGroup = styled.div`
 /**
  * QA Pair Form Component
  */
-const QAPairForm: React.FC<QAPairFormProps> = ({ 
-  initialData = {}, 
-  onSubmit, 
+const QAPairForm: React.FC<QAPairFormProps> = ({
+  initialData = {},
+  onSubmit,
   onCancel,
-  isLoading = false
+  isLoading = false,
 }) => {
   // Form state
   const [formData, setFormData] = useState<Partial<QAPair>>({
     question: '',
     answer: '',
-    ...initialData
+    ...initialData,
   });
-  
+
   // Update form when initialData changes
   useEffect(() => {
     if (initialData) {
       setFormData(prev => ({ ...prev, ...initialData }));
     }
   }, [initialData]);
-  
+
   // Handle input changes
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -88,13 +89,13 @@ const QAPairForm: React.FC<QAPairFormProps> = ({
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-  
+
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
   };
-  
+
   return (
     <FormContainer variant="elevated" padding="medium">
       <Form onSubmit={handleSubmit}>
@@ -110,7 +111,7 @@ const QAPairForm: React.FC<QAPairFormProps> = ({
             required
           />
         </FormGroup>
-        
+
         <FormGroup>
           <FormGroup>
             <label htmlFor="answer">Answer</label>
@@ -124,17 +125,13 @@ const QAPairForm: React.FC<QAPairFormProps> = ({
             />
           </FormGroup>
         </FormGroup>
-        
+
         <ButtonGroup>
-          <Button 
-            type="button" 
-            variant="outline"
-            onClick={onCancel}
-          >
+          <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             variant="primary"
             disabled={isLoading || !formData.question || !formData.answer}
           >

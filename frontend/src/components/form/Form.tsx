@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+
 import { colors, spacing, typography } from '../ui/theme';
 
 export interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {
@@ -83,7 +84,7 @@ const ErrorContainer = styled.div`
 
 export const FormError: React.FC<FormErrorProps> = ({ children }) => {
   if (!children) return null;
-  
+
   return <ErrorContainer role="alert">{children}</ErrorContainer>;
 };
 
@@ -180,8 +181,10 @@ export const FormField: React.FC<FormFieldProps> = ({
   required = false,
 }) => {
   // Generate a unique ID if not provided
-  const [fieldId] = React.useState(() => htmlFor || `field-${Math.random().toString(36).substring(2, 9)}`);
-  
+  const [fieldId] = React.useState(
+    () => htmlFor || `field-${Math.random().toString(36).substring(2, 9)}`
+  );
+
   return (
     <FieldContainer>
       {label && (
@@ -189,12 +192,12 @@ export const FormField: React.FC<FormFieldProps> = ({
           {label}
         </FormLabel>
       )}
-      
+
       {/* We're not modifying the children to avoid type issues */}
       {children}
-      
+
       {error && <FormError>{error}</FormError>}
-      
+
       {hint && !error && <HintText id={`${fieldId}-hint`}>{hint}</HintText>}
     </FieldContainer>
   );

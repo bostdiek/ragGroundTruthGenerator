@@ -1,8 +1,8 @@
-import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 
 /**
  * Page Object Model for Login page
- * 
+ *
  * This provides a high-level API for interacting with the login page
  * in tests, which makes tests more readable and maintainable.
  */
@@ -14,55 +14,57 @@ export class LoginPage {
     // Get the form elements
     const usernameInput = screen.getByLabelText(/username/i);
     const passwordInput = screen.getByLabelText(/password/i);
-    
+
     // Fill the form
     fireEvent.change(usernameInput, { target: { value: username } });
     fireEvent.change(passwordInput, { target: { value: password } });
-    
+
     return { usernameInput, passwordInput };
   }
-  
+
   /**
    * Submit the login form
    */
   async submitLoginForm() {
     // Try multiple strategies to find the login form button
     let submitButton;
-    
+
     try {
       // First try to find it within a form element
       const form = screen.queryByTestId('login-form');
       if (form) {
         submitButton = form.querySelector('button[type="submit"]');
       }
-      
+
       // If not found in form, try by role and name
       if (!submitButton) {
         const buttons = screen.getAllByRole('button', { name: /sign in/i });
-        
+
         // If there are multiple buttons, find the one within the login form
         if (buttons.length > 1) {
           // Find the one that's in the login form context
           submitButton = buttons.find(button => {
-            const parent = button.closest('form') || button.closest('[data-testid="login-form"]');
+            const parent =
+              button.closest('form') ||
+              button.closest('[data-testid="login-form"]');
             return !!parent;
           });
         } else {
           submitButton = buttons[0];
         }
       }
-      
+
       if (!submitButton) {
         throw new Error('Submit button not found in the login form');
       }
-      
+
       fireEvent.click(submitButton);
     } catch (error) {
       console.error('Error finding submit button:', error);
       throw error;
     }
   }
-  
+
   /**
    * Login with given credentials
    */
@@ -70,14 +72,14 @@ export class LoginPage {
     await this.fillLoginForm(username, password);
     await this.submitLoginForm();
   }
-  
+
   /**
    * Check if the login page is displayed
    */
   async isDisplayed() {
     return screen.getByLabelText(/username/i) !== null;
   }
-  
+
   /**
    * Check if the error message is displayed
    */
@@ -88,7 +90,7 @@ export class LoginPage {
         (content, element) => {
           const lowerContent = content.toLowerCase();
           const lowerMessage = message.toLowerCase();
-          
+
           return (
             // Check for exact match
             lowerContent.includes(lowerMessage) ||
@@ -120,40 +122,40 @@ export class NavigationPage {
     try {
       // First try by data-testid
       let logoutButton = screen.queryByTestId('sign-out-button');
-      
+
       // If not found, try to find the navbar
       if (!logoutButton) {
         const navbar = screen.queryByTestId('main-navbar');
-        
+
         if (navbar) {
           // Look for the button within the navbar
           const buttons = Array.from(navbar.querySelectorAll('button'));
-          const foundButton = buttons.find(button => 
+          const foundButton = buttons.find(button =>
             button.textContent?.toLowerCase().includes('sign out')
           );
-          
+
           if (foundButton) {
             logoutButton = foundButton;
           }
         }
       }
-      
+
       // If still not found, try the general approach
       if (!logoutButton) {
         logoutButton = await screen.findByRole('button', { name: /sign out/i });
       }
-      
+
       if (!logoutButton) {
         throw new Error('Sign Out button not found');
       }
-      
+
       fireEvent.click(logoutButton);
     } catch (error) {
       console.error('Error finding Sign Out button:', error);
       throw error;
     }
   }
-  
+
   /**
    * Check if user is logged in by looking for the sign out button
    */
@@ -161,29 +163,31 @@ export class NavigationPage {
     try {
       // First try by data-testid
       const logoutButtonByTestId = screen.queryByTestId('sign-out-button');
-      
+
       if (logoutButtonByTestId) {
         return true;
       }
-      
+
       // Try to find the navbar
       const navbar = screen.queryByTestId('main-navbar');
-      
+
       if (navbar) {
         // Look for the button within the navbar
         const buttons = Array.from(navbar.querySelectorAll('button'));
-        const foundButton = buttons.find(button => 
+        const foundButton = buttons.find(button =>
           button.textContent?.toLowerCase().includes('sign out')
         );
-        
+
         if (foundButton) {
           return true;
         }
       }
-      
+
       // If not found yet, try the general approach
       try {
-        const logoutButton = await screen.findByRole('button', { name: /sign out/i });
+        const logoutButton = await screen.findByRole('button', {
+          name: /sign out/i,
+        });
         return !!logoutButton;
       } catch (e) {
         return false;
@@ -192,7 +196,7 @@ export class NavigationPage {
       return false;
     }
   }
-  
+
   /**
    * Get the displayed user info from the navigation bar
    */
@@ -220,14 +224,14 @@ export class CollectionsPage {
       return screen.getByText(/collections/i) !== null;
     });
   }
-  
+
   /**
    * Get all collection items
    */
   async getCollectionItems() {
     return screen.getAllByTestId('collection-item');
   }
-  
+
   /**
    * Click on a collection by name
    */
@@ -235,15 +239,17 @@ export class CollectionsPage {
     const collectionElement = screen.getByText(name);
     fireEvent.click(collectionElement);
   }
-  
+
   /**
    * Click the create collection button
    */
   async clickCreateCollection() {
-    const createButton = screen.getByRole('button', { name: /create collection/i });
+    const createButton = screen.getByRole('button', {
+      name: /create collection/i,
+    });
     fireEvent.click(createButton);
   }
-  
+
   /**
    * Navigate to a specific page
    */

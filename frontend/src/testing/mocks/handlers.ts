@@ -1,6 +1,7 @@
-import { http, HttpResponse, delay } from 'msw';
-import { qaPairsHandlers } from './qa-pairs-handlers';
+import { delay, http, HttpResponse } from 'msw';
+
 import { generationHandlers } from './generation-handlers';
+import { qaPairsHandlers } from './qa-pairs-handlers';
 
 // Mock user data
 export const mockUser = {
@@ -21,26 +22,29 @@ export const mockTokenResponse = {
 export const authHandlers = [
   // Auth endpoints
   http.post('http://localhost:8000/auth/login', async ({ request }) => {
-    const body = await request.json() as { username: string; password: string };
+    const body = (await request.json()) as {
+      username: string;
+      password: string;
+    };
     const { username, password } = body;
-    
+
     if (username === 'testuser' && password === 'password') {
       return HttpResponse.json(mockTokenResponse);
     }
-    
+
     return new HttpResponse(null, {
       status: 401,
       statusText: 'Unauthorized',
     });
   }),
-  
+
   http.get('http://localhost:8000/auth/me', ({ request }) => {
     const authHeader = request.headers.get('Authorization');
-    
+
     if (!authHeader || !authHeader.includes('Bearer mock-jwt-token')) {
       return new HttpResponse(null, { status: 401 });
     }
-    
+
     return HttpResponse.json(mockUser);
   }),
 ];
@@ -71,7 +75,7 @@ export const collectionsHandlers = [
       },
     ]);
   }),
-  
+
   http.get('http://localhost:8000/collections/:id', async () => {
     // Add a small delay to simulate network latency
     await delay(50);
@@ -93,7 +97,7 @@ export const collectionsHandlers = [
           documents: [],
           created_by: 'user-1',
           metadata: {},
-          updated_at: '2025-05-02T14:00:00Z'
+          updated_at: '2025-05-02T14:00:00Z',
         },
         {
           id: '2',
@@ -105,8 +109,8 @@ export const collectionsHandlers = [
           documents: [],
           created_by: 'user-1',
           metadata: {},
-          updated_at: '2025-05-04T14:00:00Z'
-        }
+          updated_at: '2025-05-04T14:00:00Z',
+        },
       ],
     });
   }),
@@ -117,5 +121,5 @@ export const handlers = [
   ...authHandlers,
   ...collectionsHandlers,
   ...qaPairsHandlers,
-  ...generationHandlers
+  ...generationHandlers,
 ];

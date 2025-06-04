@@ -94,7 +94,8 @@ export const spacing = {
 // Typography
 export const typography = {
   fontFamily: {
-    primary: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+    primary:
+      "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
     code: "source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace",
   },
   fontWeight: {
@@ -105,13 +106,13 @@ export const typography = {
     bold: 700,
   },
   fontSize: {
-    xs: '0.75rem',    // 12px
-    sm: '0.875rem',   // 14px
-    md: '1rem',       // 16px
-    lg: '1.125rem',   // 18px
-    xl: '1.25rem',    // 20px
-    xxl: '1.5rem',    // 24px
-    xxxl: '2rem',     // 32px
+    xs: '0.75rem', // 12px
+    sm: '0.875rem', // 14px
+    md: '1rem', // 16px
+    lg: '1.125rem', // 18px
+    xl: '1.25rem', // 20px
+    xxl: '1.5rem', // 24px
+    xxxl: '2rem', // 32px
   },
   lineHeight: {
     xs: 1.1,
@@ -133,9 +134,9 @@ export const breakpoints = {
 
 // Media query helpers
 export const media = {
-  up: (key: keyof typeof breakpoints) => 
+  up: (key: keyof typeof breakpoints) =>
     `@media (min-width: ${breakpoints[key]})`,
-  down: (key: keyof typeof breakpoints) => 
+  down: (key: keyof typeof breakpoints) =>
     `@media (max-width: ${breakpoints[key]})`,
 };
 

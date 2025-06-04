@@ -1,17 +1,18 @@
 /**
  * QAPairList Component
- * 
+ *
  * This component displays a list of QA pairs for a collection.
  */
 
 import React, { useState } from 'react';
 import styled from 'styled-components';
+
 import Button from '../../../components/ui/Button';
+import Card from '../../../components/ui/Card';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
-import Card from '../../../components/ui/Card';
 import { QAPair, QAPairFilters } from '../types';
-import { filterQAPairs, sortQAPairs, formatDate } from '../utils';
+import { filterQAPairs, formatDate, sortQAPairs } from '../utils';
 
 interface QAPairListProps {
   qaPairs: QAPair[];
@@ -42,11 +43,11 @@ const ListItem = styled.div`
   padding: 1rem;
   border-bottom: 1px solid #e5e7eb;
   align-items: center;
-  
+
   &:hover {
     background-color: #f9fafb;
   }
-  
+
   &:last-child {
     border-bottom: none;
   }
@@ -77,7 +78,7 @@ const Status = styled.div<{ status: string }>`
   font-size: 0.75rem;
   font-weight: 500;
   text-align: center;
-  
+
   ${({ status }) => {
     switch (status) {
       case 'approved':
@@ -129,38 +130,42 @@ const FiltersContainer = styled.div`
 /**
  * QA Pair List Component
  */
-const QAPairList: React.FC<QAPairListProps> = ({ qaPairs, collectionId, onEditQAPair }) => {
+const QAPairList: React.FC<QAPairListProps> = ({
+  qaPairs,
+  collectionId,
+  onEditQAPair,
+}) => {
   // State for filters
   const [filters, setFilters] = useState<QAPairFilters>({
     search: '',
     status: [],
     sortBy: 'updated_at',
-    sortOrder: 'desc'
+    sortOrder: 'desc',
   });
-  
+
   // Apply filters and sorting
-  const filteredQAPairs = filterQAPairs(qaPairs, { 
-    search: filters.search, 
-    status: filters.status 
+  const filteredQAPairs = filterQAPairs(qaPairs, {
+    search: filters.search,
+    status: filters.status,
   });
-  
+
   const sortedQAPairs = sortQAPairs(
-    filteredQAPairs, 
-    filters.sortBy, 
+    filteredQAPairs,
+    filters.sortBy,
     filters.sortOrder
   );
-  
+
   // Handle search change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters({ ...filters, search: e.target.value });
   };
-  
+
   // Handle status filter change
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
-    setFilters({ 
-      ...filters, 
-      status: value === 'all' ? [] : [value]
+    setFilters({
+      ...filters,
+      status: value === 'all' ? [] : [value],
     });
   };
 
@@ -170,28 +175,32 @@ const QAPairList: React.FC<QAPairListProps> = ({ qaPairs, collectionId, onEditQA
     { value: 'ready_for_review', label: 'Ready for Review' },
     { value: 'approved', label: 'Approved' },
     { value: 'revision_requested', label: 'Revision Requested' },
-    { value: 'rejected', label: 'Rejected' }
+    { value: 'rejected', label: 'Rejected' },
   ];
-  
+
   return (
     <div>
       <FiltersContainer>
-        <Input 
-          type="text" 
-          placeholder="Search Q&A pairs..." 
+        <Input
+          type="text"
+          placeholder="Search Q&A pairs..."
           value={filters.search || ''}
           onChange={handleSearchChange}
           size="medium"
           fullWidth
         />
-        <Select 
-          value={filters.status && filters.status.length > 0 ? filters.status[0] : 'all'}
+        <Select
+          value={
+            filters.status && filters.status.length > 0
+              ? filters.status[0]
+              : 'all'
+          }
           onChange={handleStatusChange}
           options={statusOptions}
           size="medium"
         />
       </FiltersContainer>
-      
+
       <ListContainer>
         <ListHeader>
           <div>Question</div>
@@ -200,11 +209,11 @@ const QAPairList: React.FC<QAPairListProps> = ({ qaPairs, collectionId, onEditQA
           <div>Status</div>
           <div>Actions</div>
         </ListHeader>
-        
+
         {sortedQAPairs.length === 0 ? (
           <EmptyState>No QA pairs found.</EmptyState>
         ) : (
-          sortedQAPairs.map((qaPair) => (
+          sortedQAPairs.map(qaPair => (
             <ListItem key={qaPair.id}>
               <Question>{qaPair.question}</Question>
               <Answer>{qaPair.answer}</Answer>
@@ -213,7 +222,7 @@ const QAPairList: React.FC<QAPairListProps> = ({ qaPairs, collectionId, onEditQA
                 {qaPair.status.replace('_', ' ')}
               </Status>
               <Actions>
-                <Button 
+                <Button
                   onClick={() => onEditQAPair(qaPair.id)}
                   variant="outline"
                   size="small"

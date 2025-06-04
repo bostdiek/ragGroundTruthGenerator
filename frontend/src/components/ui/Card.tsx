@@ -1,6 +1,12 @@
-import React, { HTMLAttributes, ReactNode, ForwardRefExoticComponent, RefAttributes } from 'react';
+import React, {
+  ForwardRefExoticComponent,
+  HTMLAttributes,
+  ReactNode,
+  RefAttributes,
+} from 'react';
 import styled, { css } from 'styled-components';
-import { colors, borderRadius, shadows, spacing } from './theme';
+
+import { borderRadius, colors, shadows, spacing } from './theme';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   variant?: 'outlined' | 'elevated';
@@ -32,12 +38,23 @@ interface CardActionsProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 // Define the type for the compound component structure
-interface CardComponent extends ForwardRefExoticComponent<CardProps & RefAttributes<HTMLDivElement>> {
-  Header: ForwardRefExoticComponent<CardHeaderProps & RefAttributes<HTMLDivElement>>;
-  Title: ForwardRefExoticComponent<CardTitleProps & RefAttributes<HTMLHeadingElement>>;
-  Subtitle: ForwardRefExoticComponent<CardSubtitleProps & RefAttributes<HTMLHeadingElement>>;
-  Content: ForwardRefExoticComponent<CardContentProps & RefAttributes<HTMLDivElement>>;
-  Actions: ForwardRefExoticComponent<CardActionsProps & RefAttributes<HTMLDivElement>>;
+interface CardComponent
+  extends ForwardRefExoticComponent<CardProps & RefAttributes<HTMLDivElement>> {
+  Header: ForwardRefExoticComponent<
+    CardHeaderProps & RefAttributes<HTMLDivElement>
+  >;
+  Title: ForwardRefExoticComponent<
+    CardTitleProps & RefAttributes<HTMLHeadingElement>
+  >;
+  Subtitle: ForwardRefExoticComponent<
+    CardSubtitleProps & RefAttributes<HTMLHeadingElement>
+  >;
+  Content: ForwardRefExoticComponent<
+    CardContentProps & RefAttributes<HTMLDivElement>
+  >;
+  Actions: ForwardRefExoticComponent<
+    CardActionsProps & RefAttributes<HTMLDivElement>
+  >;
 }
 
 const StyledCard = styled.div<CardProps>`
@@ -203,14 +220,14 @@ CardActions.displayName = 'Card.Actions';
 // Main Card component
 const CardBase = React.forwardRef<HTMLDivElement, CardProps>(
   (
-    { 
-      children, 
-      variant = 'elevated', 
-      padding = 'medium', 
-      fullWidth = false, 
+    {
+      children,
+      variant = 'elevated',
+      padding = 'medium',
+      fullWidth = false,
       elevation = 'medium',
-      ...props 
-    }, 
+      ...props
+    },
     ref
   ) => {
     return (

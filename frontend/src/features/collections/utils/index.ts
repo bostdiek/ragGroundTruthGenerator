@@ -1,6 +1,6 @@
 /**
  * Collection Utilities
- * 
+ *
  * This file contains utility functions for working with collections.
  */
 
@@ -18,15 +18,15 @@ export const getStatusCounts = (qaPairs: QAPair[]): Record<string, number> => {
     revision_requested: 0,
     rejected: 0,
     draft: 0,
-    total: qaPairs.length
+    total: qaPairs.length,
   };
-  
+
   qaPairs.forEach(qa => {
     if (qa.status in counts) {
       counts[qa.status]++;
     }
   });
-  
+
   return counts;
 };
 
@@ -39,7 +39,7 @@ export const formatDate = (dateString: string): string => {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   });
 };
 
@@ -49,13 +49,17 @@ export const formatDate = (dateString: string): string => {
  * @param searchTerm - Search term
  * @returns Filtered array of collections
  */
-export const filterCollections = (collections: Collection[], searchTerm: string): Collection[] => {
+export const filterCollections = (
+  collections: Collection[],
+  searchTerm: string
+): Collection[] => {
   if (!searchTerm) return collections;
-  
+
   const term = searchTerm.toLowerCase();
-  return collections.filter(collection => 
-    collection.name.toLowerCase().includes(term) || 
-    collection.description.toLowerCase().includes(term)
+  return collections.filter(
+    collection =>
+      collection.name.toLowerCase().includes(term) ||
+      collection.description.toLowerCase().includes(term)
   );
 };
 
@@ -65,23 +69,27 @@ export const filterCollections = (collections: Collection[], searchTerm: string)
  * @param filters - Filter criteria
  * @returns Filtered array of QA pairs
  */
-export const filterQAPairs = (qaPairs: QAPair[], filters: { search?: string, status?: string[] }): QAPair[] => {
+export const filterQAPairs = (
+  qaPairs: QAPair[],
+  filters: { search?: string; status?: string[] }
+): QAPair[] => {
   let filtered = [...qaPairs];
-  
+
   // Filter by search term
   if (filters.search) {
     const term = filters.search.toLowerCase();
-    filtered = filtered.filter(qa => 
-      qa.question.toLowerCase().includes(term) || 
-      qa.answer.toLowerCase().includes(term)
+    filtered = filtered.filter(
+      qa =>
+        qa.question.toLowerCase().includes(term) ||
+        qa.answer.toLowerCase().includes(term)
     );
   }
-  
+
   // Filter by status
   if (filters.status && filters.status.length > 0) {
     filtered = filtered.filter(qa => filters.status?.includes(qa.status));
   }
-  
+
   return filtered;
 };
 
@@ -93,35 +101,37 @@ export const filterQAPairs = (qaPairs: QAPair[], filters: { search?: string, sta
  * @returns Sorted array of collections
  */
 export const sortCollections = (
-  collections: Collection[], 
+  collections: Collection[],
   sortBy: keyof Collection = 'name',
   sortOrder: 'asc' | 'desc' = 'asc'
 ): Collection[] => {
   return [...collections].sort((a, b) => {
-    let valueA = a[sortBy as keyof Collection];
-    let valueB = b[sortBy as keyof Collection];
-    
+    const valueA = a[sortBy as keyof Collection];
+    const valueB = b[sortBy as keyof Collection];
+
     // Handle string comparison
     if (typeof valueA === 'string' && typeof valueB === 'string') {
-      return sortOrder === 'asc' 
+      return sortOrder === 'asc'
         ? valueA.localeCompare(valueB)
         : valueB.localeCompare(valueA);
     }
-    
+
     // Handle number comparison
     if (typeof valueA === 'number' && typeof valueB === 'number') {
-      return sortOrder === 'asc' 
-        ? valueA - valueB 
-        : valueB - valueA;
+      return sortOrder === 'asc' ? valueA - valueB : valueB - valueA;
     }
-    
+
     // Handle date comparison
-    if ((sortBy === 'created_at' || sortBy === 'updated_at') && valueA && valueB) {
+    if (
+      (sortBy === 'created_at' || sortBy === 'updated_at') &&
+      valueA &&
+      valueB
+    ) {
       const dateA = new Date(valueA as string).getTime();
       const dateB = new Date(valueB as string).getTime();
       return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     }
-    
+
     return 0;
   });
 };
@@ -134,28 +144,32 @@ export const sortCollections = (
  * @returns Sorted array of QA pairs
  */
 export const sortQAPairs = (
-  qaPairs: QAPair[], 
+  qaPairs: QAPair[],
   sortBy: keyof QAPair = 'question',
   sortOrder: 'asc' | 'desc' = 'asc'
 ): QAPair[] => {
   return [...qaPairs].sort((a, b) => {
-    let valueA = a[sortBy as keyof QAPair];
-    let valueB = b[sortBy as keyof QAPair];
-    
+    const valueA = a[sortBy as keyof QAPair];
+    const valueB = b[sortBy as keyof QAPair];
+
     // Handle string comparison
     if (typeof valueA === 'string' && typeof valueB === 'string') {
-      return sortOrder === 'asc' 
+      return sortOrder === 'asc'
         ? valueA.localeCompare(valueB)
         : valueB.localeCompare(valueA);
     }
-    
+
     // Handle date comparison
-    if ((sortBy === 'created_at' || sortBy === 'updated_at') && valueA && valueB) {
+    if (
+      (sortBy === 'created_at' || sortBy === 'updated_at') &&
+      valueA &&
+      valueB
+    ) {
       const dateA = new Date(valueA as string).getTime();
       const dateB = new Date(valueB as string).getTime();
       return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     }
-    
+
     return 0;
   });
 };

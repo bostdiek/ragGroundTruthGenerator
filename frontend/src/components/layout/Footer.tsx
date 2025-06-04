@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+
 import { colors, spacing, typography } from '../ui/theme';
 import Container from './Container';
 
@@ -69,10 +70,10 @@ export const Footer: React.FC<FooterProps> = ({
         <FooterContent>
           <TopSection>
             {logo && <LogoContainer>{logo}</LogoContainer>}
-            
+
             {links && <LinksContainer>{links}</LinksContainer>}
           </TopSection>
-          
+
           <BottomSection>
             <Copyright>{copyright}</Copyright>
           </BottomSection>

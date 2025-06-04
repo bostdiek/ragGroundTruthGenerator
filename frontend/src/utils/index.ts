@@ -1,15 +1,15 @@
 /**
  * AI Ground Truth Generator - Utilities
- * 
+ *
  * This file contains utility functions and custom hooks used throughout the application.
  * Add your own utilities here as needed.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 /**
  * Truncates a string to a specified length and adds an ellipsis if needed.
- * 
+ *
  * @param str - The string to truncate
  * @param length - Maximum length (default: 100)
  * @returns Truncated string
@@ -22,19 +22,35 @@ export const truncateString = (str: string, length = 100): string => {
 
 /**
  * Formats a date string into a human-readable format.
- * 
+ *
  * @param dateString - ISO date string
  * @param format - Format to use (default: 'MMM D, YYYY')
  * @returns Formatted date string
  */
-export const formatDate = (dateString: string, format = 'MMM D, YYYY'): string => {
+export const formatDate = (
+  dateString: string,
+  format = 'MMM D, YYYY'
+): string => {
   if (!dateString) return '';
-  
+
   const date = new Date(dateString);
-  
+
   // Simple format implementation - replace with date-fns or similar in production
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  
+  const monthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
   return format
     .replace('MMM', monthNames[date.getMonth()])
     .replace('D', date.getDate().toString())
@@ -43,24 +59,25 @@ export const formatDate = (dateString: string, format = 'MMM D, YYYY'): string =
 
 /**
  * Generates a random ID string.
- * 
+ *
  * @param length - Length of the ID (default: 8)
  * @returns Random ID string
  */
 export const generateId = (length = 8): string => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
-  
+
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  
+
   return result;
 };
 
 /**
  * Custom hook for debouncing values (e.g., search inputs).
- * 
+ *
  * @param value - The value to debounce
  * @param delay - Delay in milliseconds (default: 300)
  * @returns Debounced value
@@ -83,7 +100,7 @@ export const useDebounce = <T>(value: T, delay = 300): T => {
 
 /**
  * Custom hook for handling form state.
- * 
+ *
  * @param initialValues - Initial form values
  * @returns Form state and handlers
  */
@@ -92,15 +109,29 @@ export const useForm = <T extends Record<string, any>>(initialValues: T) => {
   const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
   const [touched, setTouched] = useState<Partial<Record<keyof T, boolean>>>({});
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setValues((prev) => ({ ...prev, [name]: value }));
-  }, []);
+  const handleChange = useCallback(
+    (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >
+    ) => {
+      const { name, value } = e.target;
+      setValues(prev => ({ ...prev, [name]: value }));
+    },
+    []
+  );
 
-  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name } = e.target;
-    setTouched((prev) => ({ ...prev, [name]: true }));
-  }, []);
+  const handleBlur = useCallback(
+    (
+      e: React.FocusEvent<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >
+    ) => {
+      const { name } = e.target;
+      setTouched(prev => ({ ...prev, [name]: true }));
+    },
+    []
+  );
 
   const reset = useCallback(() => {
     setValues(initialValues);
@@ -122,7 +153,7 @@ export const useForm = <T extends Record<string, any>>(initialValues: T) => {
 
 /**
  * Custom hook for local storage.
- * 
+ *
  * @param key - Storage key
  * @param initialValue - Initial value
  * @returns Stored value and setter
@@ -140,7 +171,8 @@ export const useLocalStorage = <T>(key: string, initialValue: T) => {
 
   const setValue = (value: T | ((val: T) => T)) => {
     try {
-      const valueToStore = value instanceof Function ? value(storedValue) : value;
+      const valueToStore =
+        value instanceof Function ? value(storedValue) : value;
       setStoredValue(valueToStore);
       window.localStorage.setItem(key, JSON.stringify(valueToStore));
     } catch (error) {
@@ -153,13 +185,17 @@ export const useLocalStorage = <T>(key: string, initialValue: T) => {
 
 /**
  * Custom hook for managing pagination.
- * 
+ *
  * @param totalItems - Total number of items
  * @param initialPage - Initial page (default: 1)
  * @param initialPageSize - Initial page size (default: 10)
  * @returns Pagination state and handlers
  */
-export const usePagination = (totalItems: number, initialPage = 1, initialPageSize = 10) => {
+export const usePagination = (
+  totalItems: number,
+  initialPage = 1,
+  initialPageSize = 10
+) => {
   const [page, setPage] = useState(initialPage);
   const [pageSize, setPageSize] = useState(initialPageSize);
 

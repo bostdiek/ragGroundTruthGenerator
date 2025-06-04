@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { truncateString, formatDate, generateId } from '../../utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { formatDate, generateId, truncateString } from '../../utils';
 
 describe('Utility Functions', () => {
   describe('truncateString', () => {
@@ -9,7 +10,10 @@ describe('Utility Functions', () => {
     });
 
     it('should truncate string with ellipsis if longer than max length', () => {
-      const result = truncateString('This is a long string that should be truncated', 10);
+      const result = truncateString(
+        'This is a long string that should be truncated',
+        10
+      );
       expect(result).toBe('This is a ...');
     });
 

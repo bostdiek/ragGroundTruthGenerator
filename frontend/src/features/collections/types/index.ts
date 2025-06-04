@@ -1,14 +1,18 @@
 /**
  * Collection Types
- * 
+ *
  * This file contains TypeScript types for collections-related data.
  */
 
 // Import base types from the core types
-import { Collection as CoreCollection, QAPair as CoreQAPair, Document } from '../../../types';
+import {
+  Collection as CoreCollection,
+  Document,
+  QAPair as CoreQAPair,
+} from '../../../types';
 
 // Re-export the core types
-export type { CoreCollection as Collection, CoreQAPair as QAPair, Document };
+export type { CoreCollection as Collection, Document, CoreQAPair as QAPair };
 
 /**
  * QA Pair status enum mapping to core status values
@@ -18,7 +22,7 @@ export enum QAPairStatus {
   REVIEW = 'ready_for_review',
   APPROVED = 'approved',
   REJECTED = 'rejected',
-  REVISION = 'revision_requested'
+  REVISION = 'revision_requested',
 }
 
 /**

@@ -40,27 +40,32 @@ const RetrievalService = {
     const response = await apiClient.get<Source[]>('/retrieval/data_sources');
     return response.data;
   },
-  
+
   /**
    * Search for documents
    * @param searchQuery - Search parameters
    * @returns Promise with array of documents
    */
   searchDocuments: async (searchQuery: SearchQuery): Promise<Document[]> => {
-    const response = await apiClient.post<Document[]>('/retrieval/search', searchQuery);
+    const response = await apiClient.post<Document[]>(
+      '/retrieval/search',
+      searchQuery
+    );
     return response.data;
   },
-  
+
   /**
    * Get a document by ID
    * @param id - Document ID
    * @returns Promise with document details
    */
   getDocument: async (id: string): Promise<Document> => {
-    const response = await apiClient.get<Document>(`/retrieval/documents/${id}`);
+    const response = await apiClient.get<Document>(
+      `/retrieval/documents/${id}`
+    );
     return response.data;
   },
-  
+
   /**
    * Get recommended documents based on a question
    * @param question - The question text
@@ -70,8 +75,8 @@ const RetrievalService = {
    * @returns Promise with array of recommended documents
    */
   getRecommendedDocuments: async (
-    question: string, 
-    sources?: string[], 
+    question: string,
+    sources?: string[],
     filters?: Record<string, any>,
     limit?: number
   ): Promise<Document[]> => {
@@ -79,14 +84,14 @@ const RetrievalService = {
       query: question,
       sources,
       filters,
-      max_results: limit || 10
+      max_results: limit || 10,
     });
     try {
       const response = await apiClient.post<Document[]>('/retrieval/search', {
         query: question,
         sources,
         filters,
-        max_results: limit || 10
+        max_results: limit || 10,
       });
       console.log('Retrieved documents:', response.data);
       return response.data;
@@ -94,7 +99,7 @@ const RetrievalService = {
       console.error('Error in getRecommendedDocuments:', error);
       throw error;
     }
-  }
+  },
 };
 
 export default RetrievalService;

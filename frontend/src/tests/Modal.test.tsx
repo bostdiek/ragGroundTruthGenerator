@@ -1,6 +1,7 @@
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
+
 import { Modal } from '../components/ui/Modal';
 
 // Mock test functions
@@ -12,7 +13,7 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     );
-    
+
     expect(screen.getByText('Test Modal')).toBeInTheDocument();
     expect(screen.getByText('Modal Content')).toBeInTheDocument();
   });
@@ -23,7 +24,7 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     );
-    
+
     expect(screen.queryByText('Test Modal')).not.toBeInTheDocument();
     expect(screen.queryByText('Modal Content')).not.toBeInTheDocument();
   });
@@ -35,11 +36,11 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     );
-    
+
     // Find the close button and click it
     const closeButton = screen.getByLabelText('Close modal');
     fireEvent.click(closeButton);
-    
+
     // Check that onClose was called
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
@@ -51,11 +52,11 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     );
-    
+
     // Find the overlay directly
     const overlay = container.firstChild;
     expect(overlay).toBeTruthy();
-    
+
     if (overlay) {
       // Click on the overlay (not the modal content)
       fireEvent.click(overlay);
@@ -70,12 +71,12 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     );
-    
+
     // Find the overlay (parent of the modal content)
     // Note: This is implementation-specific and might need adjustment
     const modalContent = screen.getByText('Modal Content');
     const overlay = modalContent.parentElement?.parentElement;
-    
+
     if (overlay) {
       fireEvent.click(overlay);
       expect(handleClose).not.toHaveBeenCalled();
@@ -88,37 +89,37 @@ describe('Modal Component', () => {
         <div>Small Modal</div>
       </Modal>
     );
-    
+
     expect(screen.getByText('Small Modal')).toBeInTheDocument();
-    
+
     rerender(
       <Modal isOpen={true} onClose={() => {}} size="medium">
         <div>Medium Modal</div>
       </Modal>
     );
-    
+
     expect(screen.getByText('Medium Modal')).toBeInTheDocument();
-    
+
     rerender(
       <Modal isOpen={true} onClose={() => {}} size="large">
         <div>Large Modal</div>
       </Modal>
     );
-    
+
     expect(screen.getByText('Large Modal')).toBeInTheDocument();
   });
 
   it('renders with footer content when provided', () => {
     render(
-      <Modal 
-        isOpen={true} 
-        onClose={() => {}} 
+      <Modal
+        isOpen={true}
+        onClose={() => {}}
         footer={<button>Save Changes</button>}
       >
         <div>Modal with Footer</div>
       </Modal>
     );
-    
+
     expect(screen.getByText('Modal with Footer')).toBeInTheDocument();
     expect(screen.getByText('Save Changes')).toBeInTheDocument();
   });

@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+
 import { breakpoints, spacing } from '../ui/theme';
 
 export interface ContainerProps {
@@ -17,8 +18,10 @@ const StyledContainer = styled.div<{
   margin-left: auto;
   margin-right: auto;
   box-sizing: border-box;
-  
-  ${({ padding }) => padding && `
+
+  ${({ padding }) =>
+    padding &&
+    `
     padding-left: ${spacing.md};
     padding-right: ${spacing.md};
     
@@ -27,7 +30,7 @@ const StyledContainer = styled.div<{
       padding-right: ${spacing.lg};
     }
   `}
-  
+
   max-width: ${({ maxWidth }) => {
     switch (maxWidth) {
       case 'xs':
@@ -55,9 +58,9 @@ export const Container: React.FC<ContainerProps> = ({
   ...rest
 }) => {
   return (
-    <StyledContainer 
-      maxWidth={maxWidth} 
-      padding={padding} 
+    <StyledContainer
+      maxWidth={maxWidth}
+      padding={padding}
       className={className}
       data-testid="container"
       {...rest}

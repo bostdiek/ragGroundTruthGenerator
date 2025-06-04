@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+
 import { LoginResponse, User } from '../types/authTypes';
 
 interface AuthState {
@@ -12,16 +13,17 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    set => ({
       token: null,
       user: null,
-      login: (data: LoginResponse) => set({ token: data.access_token, user: data.user }),
+      login: (data: LoginResponse) =>
+        set({ token: data.access_token, user: data.user }),
       logout: () => set({ token: null, user: null }),
       setUser: (user: User) => set({ user }),
     }),
     {
       name: 'auth', // storage key
-      partialize: (state) => ({ token: state.token, user: state.user }),
+      partialize: state => ({ token: state.token, user: state.user }),
     }
   )
 );

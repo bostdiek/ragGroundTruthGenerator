@@ -1,12 +1,13 @@
 /**
  * CollectionCard Component
- * 
+ *
  * This component displays a card representing a collection with key information.
  */
 
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+
 import Card from '../../../components/ui/Card';
 import { Collection } from '../types';
 import { formatDate } from '../utils';
@@ -18,7 +19,7 @@ interface CollectionCardProps {
 // Styled components
 const StyledCard = styled(Card)`
   transition: transform 0.2s;
-  
+
   &:hover {
     transform: translateY(-2px);
   }
@@ -97,9 +98,9 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ collection }) => {
           <CardHeader>
             <Title>{collection.name}</Title>
           </CardHeader>
-          
+
           <Description>{collection.description}</Description>
-          
+
           {collection.tags && collection.tags.length > 0 && (
             <TagsContainer>
               {collection.tags.map((tag, index) => (
@@ -107,10 +108,10 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ collection }) => {
               ))}
             </TagsContainer>
           )}
-          
+
           <MetaInfo>
             <div>Created: {formatDate(collection.created_at)}</div>
-            
+
             <StatusCount>
               {collection.status_counts && (
                 <>
@@ -120,7 +121,9 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ collection }) => {
                   </Status>
                   <Status>
                     <span>🟠</span>
-                    <span>{collection.status_counts.ready_for_review || 0}</span>
+                    <span>
+                      {collection.status_counts.ready_for_review || 0}
+                    </span>
                   </Status>
                 </>
               )}

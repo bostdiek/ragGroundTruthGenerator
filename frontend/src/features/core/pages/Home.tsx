@@ -37,7 +37,7 @@ const Button = styled(Link)`
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: 500;
-  
+
   &:hover {
     background-color: #106ebe;
   }
@@ -78,21 +78,22 @@ const Home: React.FC = () => {
       <Hero>
         <Title>AI Ground Truth Generator</Title>
         <Subtitle>
-          Create high-quality question-answer pairs for training and evaluating AI models.
-          Designed for subject matter experts to efficiently generate ground truth data.
+          Create high-quality question-answer pairs for training and evaluating
+          AI models. Designed for subject matter experts to efficiently generate
+          ground truth data.
         </Subtitle>
         <Button to="/collections">Get Started</Button>
       </Hero>
-      
+
       <FeaturesSection>
         <FeatureCard>
           <FeatureTitle>Organized Collections</FeatureTitle>
           <FeatureDescription>
-            Create and manage collections of Q&A pairs organized by theme or domain.
-            Keep your ground truth data structured and accessible.
+            Create and manage collections of Q&A pairs organized by theme or
+            domain. Keep your ground truth data structured and accessible.
           </FeatureDescription>
         </FeatureCard>
-        
+
         <FeatureCard>
           <FeatureTitle>Smart Document Retrieval</FeatureTitle>
           <FeatureDescription>
@@ -100,20 +101,21 @@ const Home: React.FC = () => {
             Filter and select the most important materials for your answers.
           </FeatureDescription>
         </FeatureCard>
-        
+
         <FeatureCard>
           <FeatureTitle>AI-Powered Generation</FeatureTitle>
           <FeatureDescription>
-            Generate draft answers using state-of-the-art AI models.
-            Apply custom rules to shape the responses according to your needs.
+            Generate draft answers using state-of-the-art AI models. Apply
+            custom rules to shape the responses according to your needs.
           </FeatureDescription>
         </FeatureCard>
-        
+
         <FeatureCard>
           <FeatureTitle>Collaborative Review</FeatureTitle>
           <FeatureDescription>
             Work together with team members to review and improve Q&A pairs.
-            Ensure high-quality ground truth data through collaborative validation.
+            Ensure high-quality ground truth data through collaborative
+            validation.
           </FeatureDescription>
         </FeatureCard>
       </FeaturesSection>

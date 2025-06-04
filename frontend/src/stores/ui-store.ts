@@ -16,19 +16,19 @@ interface UIState {
 
 /**
  * UI store
- * 
+ *
  * Provides global UI state using Zustand
  */
-export const useUIStore = create<UIState>()((set) => ({
+export const useUIStore = create<UIState>()(set => ({
   isSidebarOpen: false,
   isPageLoading: false,
 
   // Toggle sidebar visibility
-  toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
-  
+  toggleSidebar: () => set(state => ({ isSidebarOpen: !state.isSidebarOpen })),
+
   // Set sidebar visibility
-  setSidebarOpen: (isOpen) => set({ isSidebarOpen: isOpen }),
-  
+  setSidebarOpen: isOpen => set({ isSidebarOpen: isOpen }),
+
   // Set page loading state
-  setPageLoading: (isLoading) => set({ isPageLoading: isLoading }),
+  setPageLoading: isLoading => set({ isPageLoading: isLoading }),
 }));

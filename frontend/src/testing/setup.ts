@@ -1,8 +1,9 @@
 import '@testing-library/jest-dom';
-import { cleanup } from '@testing-library/react';
-import { afterEach, vi, beforeAll, afterAll, beforeEach } from 'vitest';
-import { setupServer } from 'msw/node';
+
 import { QueryClient } from '@tanstack/react-query';
+import { cleanup } from '@testing-library/react';
+import { setupServer } from 'msw/node';
+import { afterAll, afterEach, beforeAll, beforeEach, vi } from 'vitest';
 
 // Import handlers
 import { handlers } from './mocks/handlers';
@@ -11,19 +12,20 @@ import { handlers } from './mocks/handlers';
 export const server = setupServer(...handlers);
 
 // Create a function to get a fresh query client for tests
-export const getQueryClient = () => new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-      gcTime: Infinity,
-      staleTime: Infinity,
-      refetchOnWindowFocus: false,
+export const getQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: Infinity,
+        staleTime: Infinity,
+        refetchOnWindowFocus: false,
+      },
+      mutations: {
+        retry: false,
+      },
     },
-    mutations: {
-      retry: false,
-    },
-  },
-});
+  });
 
 // Create an initial query client for sharing
 export let queryClient = getQueryClient();
@@ -31,8 +33,8 @@ export let queryClient = getQueryClient();
 // Start the MSW server before all tests
 beforeAll(() => {
   // Use bypass to avoid logging unwanted requests
-  server.listen({ 
-    onUnhandledRequest: 'bypass'
+  server.listen({
+    onUnhandledRequest: 'bypass',
   });
 });
 

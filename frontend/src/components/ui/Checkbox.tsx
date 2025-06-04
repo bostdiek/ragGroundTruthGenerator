@@ -1,8 +1,16 @@
-import React, { InputHTMLAttributes, forwardRef, useState } from 'react';
+import React, { forwardRef, InputHTMLAttributes, useState } from 'react';
 import styled from 'styled-components';
-import { colors, typography, borderRadius, spacing, transitions } from './theme';
 
-export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
+import {
+  borderRadius,
+  colors,
+  spacing,
+  transitions,
+  typography,
+} from './theme';
+
+export interface CheckboxProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   label?: string;
   helperText?: string;
   error?: boolean;
@@ -25,25 +33,31 @@ const HiddenCheckbox = styled.input.attrs({ type: 'checkbox' })`
   padding: 0;
 `;
 
-const StyledCheckbox = styled.div<{ checked: boolean; error?: boolean; disabled?: boolean; indeterminate?: boolean }>`
+const StyledCheckbox = styled.div<{
+  checked: boolean;
+  error?: boolean;
+  disabled?: boolean;
+  indeterminate?: boolean;
+}>`
   display: flex;
   align-items: center;
   justify-content: center;
   width: 18px;
   height: 18px;
-  background-color: ${({ checked, indeterminate }) => 
+  background-color: ${({ checked, indeterminate }) =>
     checked || indeterminate ? colors.primary.main : colors.common.white};
-  border: 1px solid ${({ checked, error, indeterminate }) => 
-    checked || indeterminate
-      ? colors.primary.main
-      : error
-      ? colors.error.main
-      : colors.grey[400]};
+  border: 1px solid
+    ${({ checked, error, indeterminate }) =>
+      checked || indeterminate
+        ? colors.primary.main
+        : error
+          ? colors.error.main
+          : colors.grey[400]};
   border-radius: ${borderRadius.sm};
   transition: all ${transitions.duration.short} ${transitions.easing.easeInOut};
   box-sizing: border-box;
   flex-shrink: 0;
-  
+
   ${({ disabled }) =>
     disabled &&
     `
@@ -51,7 +65,7 @@ const StyledCheckbox = styled.div<{ checked: boolean; error?: boolean; disabled?
     border-color: ${colors.grey[300]};
     cursor: not-allowed;
   `}
-  
+
   &:hover {
     ${({ disabled }) =>
       !disabled &&
@@ -59,17 +73,22 @@ const StyledCheckbox = styled.div<{ checked: boolean; error?: boolean; disabled?
       border-color: ${colors.primary.main};
     `}
   }
-  
+
   /* Checkmark icon */
   &::after {
     content: '';
-    display: ${({ checked, indeterminate }) => (checked || indeterminate ? 'block' : 'none')};
+    display: ${({ checked, indeterminate }) =>
+      checked || indeterminate ? 'block' : 'none'};
     width: ${({ indeterminate }) => (indeterminate ? '10px' : '5px')};
     height: ${({ indeterminate }) => (indeterminate ? '2px' : '10px')};
-    border: solid ${({ disabled }) => (disabled ? colors.grey[500] : colors.common.white)};
-    border-width: ${({ indeterminate }) => (indeterminate ? '0 0 2px 0' : '0 2px 2px 0')};
-    transform: ${({ indeterminate }) => 
-      indeterminate ? 'translateY(-50%)' : 'rotate(45deg) translate(-1px, -1px)'};
+    border: solid
+      ${({ disabled }) => (disabled ? colors.grey[500] : colors.common.white)};
+    border-width: ${({ indeterminate }) =>
+      indeterminate ? '0 0 2px 0' : '0 2px 2px 0'};
+    transform: ${({ indeterminate }) =>
+      indeterminate
+        ? 'translateY(-50%)'
+        : 'rotate(45deg) translate(-1px, -1px)'};
     position: relative;
     top: ${({ indeterminate }) => (indeterminate ? '0' : '-2px')};
   }
@@ -78,7 +97,8 @@ const StyledCheckbox = styled.div<{ checked: boolean; error?: boolean; disabled?
 const LabelText = styled.label<{ disabled?: boolean }>`
   font-family: ${typography.fontFamily.primary};
   font-size: ${typography.fontSize.md};
-  color: ${({ disabled }) => (disabled ? colors.text.disabled : colors.text.primary)};
+  color: ${({ disabled }) =>
+    disabled ? colors.text.disabled : colors.text.primary};
   padding-left: ${spacing.sm};
   cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
   user-select: none;
@@ -107,8 +127,10 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     ref
   ) => {
     // Generate a unique ID for the checkbox if not provided
-    const [checkboxId] = useState(() => id || `checkbox-${Math.random().toString(36).substring(2, 9)}`);
-    
+    const [checkboxId] = useState(
+      () => id || `checkbox-${Math.random().toString(36).substring(2, 9)}`
+    );
+
     // Use React's useEffect to set the indeterminate property
     // since it can't be set via HTML attributes
     React.useEffect(() => {
@@ -128,8 +150,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             aria-invalid={error}
             {...props}
           />
-          <StyledCheckbox 
-            checked={!!checked} 
+          <StyledCheckbox
+            checked={!!checked}
             error={error}
             disabled={disabled}
             indeterminate={indeterminate && !checked}

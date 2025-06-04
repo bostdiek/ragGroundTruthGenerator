@@ -1,6 +1,7 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
-import { colors, borderRadius, spacing } from './theme';
+
+import { borderRadius, colors, spacing } from './theme';
 
 // Skeleton shimmer animation
 const shimmer = keyframes`
@@ -136,12 +137,17 @@ const SpinnerContainer = styled.div<SpinnerProps>`
     }
   }};
   border: ${({ thickness }) => thickness || 2}px solid ${colors.grey[300]};
-  border-top: ${({ thickness }) => thickness || 2}px solid ${({ color }) => color || colors.primary.main};
+  border-top: ${({ thickness }) => thickness || 2}px solid
+    ${({ color }) => color || colors.primary.main};
   border-radius: 50%;
   animation: ${spin} 1s linear infinite;
 `;
 
-export const Spinner: React.FC<SpinnerProps> = ({ size = 'medium', color, thickness }) => {
+export const Spinner: React.FC<SpinnerProps> = ({
+  size = 'medium',
+  color,
+  thickness,
+}) => {
   return <SpinnerContainer size={size} color={color} thickness={thickness} />;
 };
 
@@ -186,7 +192,13 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
     <div style={{ position: 'relative' }}>
       {children}
       <OverlayContainer>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
           <Spinner size={spinnerSize} color={spinnerColor} />
           {text && <LoadingText>{text}</LoadingText>}
         </div>
@@ -196,7 +208,9 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
 };
 
 // Simple loader component for inline loading states
-export const Loader: React.FC<{ text?: string }> = ({ text = 'Loading...' }) => {
+export const Loader: React.FC<{ text?: string }> = ({
+  text = 'Loading...',
+}) => {
   return (
     <div
       style={{

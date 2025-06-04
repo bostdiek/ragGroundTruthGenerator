@@ -1,10 +1,14 @@
 import { apiClient } from '../../../lib/api/client';
-import { Collection as CoreCollection, Document, QAPair as CoreQAPair } from '../../../types';
+import {
+  Collection as CoreCollection,
+  Document,
+  QAPair as CoreQAPair,
+} from '../../../types';
 
 // Types
-export interface Collection extends CoreCollection {}
+export type Collection = CoreCollection;
 
-export interface QAPair extends CoreQAPair {}
+export type QAPair = CoreQAPair;
 
 export interface CollectionCreateRequest {
   name: string;
@@ -24,7 +28,7 @@ const CollectionsService = {
     const response = await apiClient.get<Collection[]>('/collections');
     return response.data;
   },
-  
+
   /**
    * Get a specific collection by ID
    * @param id - Collection ID
@@ -34,28 +38,39 @@ const CollectionsService = {
     const response = await apiClient.get<Collection>(`/collections/${id}`);
     return response.data;
   },
-  
+
   /**
    * Create a new collection
    * @param collection - Collection data
    * @returns Promise with created collection
    */
-  createCollection: async (collection: CollectionCreateRequest): Promise<Collection> => {
-    const response = await apiClient.post<Collection>('/collections', collection);
+  createCollection: async (
+    collection: CollectionCreateRequest
+  ): Promise<Collection> => {
+    const response = await apiClient.post<Collection>(
+      '/collections',
+      collection
+    );
     return response.data;
   },
-  
+
   /**
    * Update an existing collection
    * @param id - Collection ID
    * @param collection - Updated collection data
    * @returns Promise with updated collection
    */
-  updateCollection: async (id: string, collection: Partial<CollectionCreateRequest>): Promise<Collection> => {
-    const response = await apiClient.put<Collection>(`/collections/${id}`, collection);
+  updateCollection: async (
+    id: string,
+    collection: Partial<CollectionCreateRequest>
+  ): Promise<Collection> => {
+    const response = await apiClient.put<Collection>(
+      `/collections/${id}`,
+      collection
+    );
     return response.data;
   },
-  
+
   /**
    * Delete a collection
    * @param id - Collection ID
@@ -64,7 +79,7 @@ const CollectionsService = {
   deleteCollection: async (id: string): Promise<void> => {
     await apiClient.delete(`/collections/${id}`);
   },
-  
+
   /**
    * Get Q&A pairs for a collection
    * @param collectionId - Collection ID
@@ -73,7 +88,9 @@ const CollectionsService = {
   getQAPairs: async (collectionId: string): Promise<QAPair[]> => {
     console.log(`Fetching QA pairs for collection: ${collectionId}`);
     try {
-      const response = await apiClient.get<QAPair[]>(`/collections/${collectionId}/qa-pairs`);
+      const response = await apiClient.get<QAPair[]>(
+        `/collections/${collectionId}/qa-pairs`
+      );
       console.log('QA pairs response:', response.data);
       return response.data;
     } catch (error) {
@@ -81,7 +98,7 @@ const CollectionsService = {
       throw error;
     }
   },
-  
+
   /**
    * Get a specific Q&A pair by ID
    * @param id - Q&A pair ID
@@ -91,49 +108,63 @@ const CollectionsService = {
     const response = await apiClient.get<QAPair>(`/collections/qa-pairs/${id}`);
     return response.data;
   },
-  
+
   /**
    * Create a new Q&A pair
    * @param collectionId - Collection ID
    * @param qaPair - Q&A pair data
    * @returns Promise with created Q&A pair
    */
-  createQAPair: async (collectionId: string, qaPair: Partial<QAPair>): Promise<QAPair> => {
-    const response = await apiClient.post<QAPair>(`/collections/${collectionId}/qa-pairs`, qaPair);
+  createQAPair: async (
+    collectionId: string,
+    qaPair: Partial<QAPair>
+  ): Promise<QAPair> => {
+    const response = await apiClient.post<QAPair>(
+      `/collections/${collectionId}/qa-pairs`,
+      qaPair
+    );
     return response.data;
   },
-  
+
   /**
    * Update an existing Q&A pair
    * @param id - Q&A pair ID
    * @param qaPair - Updated Q&A pair data
    * @returns Promise with updated Q&A pair
    */
-  updateQAPair: async (id: string, qaPair: Partial<QAPair>): Promise<QAPair> => {
-    console.log("CollectionsService.updateQAPair called with id:", id, "and data:", qaPair);
+  updateQAPair: async (
+    id: string,
+    qaPair: Partial<QAPair>
+  ): Promise<QAPair> => {
+    console.log(
+      'CollectionsService.updateQAPair called with id:',
+      id,
+      'and data:',
+      qaPair
+    );
     try {
       // Add timeout to prevent request hanging indefinitely
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-      
+
       const response = await apiClient.put<QAPair>(
-        `/collections/qa-pairs/${id}`, 
+        `/collections/qa-pairs/${id}`,
         qaPair,
         { signal: controller.signal }
       );
-      
+
       clearTimeout(timeoutId);
-      console.log("CollectionsService.updateQAPair response:", response.data);
+      console.log('CollectionsService.updateQAPair response:', response.data);
       return response.data;
     } catch (error) {
-      console.error("CollectionsService.updateQAPair error:", error);
+      console.error('CollectionsService.updateQAPair error:', error);
       if (error instanceof Error) {
-        console.error("Error details:", error.message);
+        console.error('Error details:', error.message);
       }
       throw error;
     }
   },
-  
+
   /**
    * Update the status of a Q&A pair
    * @param id - Q&A pair ID
@@ -141,10 +172,13 @@ const CollectionsService = {
    * @returns Promise with updated Q&A pair
    */
   updateQAPairStatus: async (id: string, status: string): Promise<QAPair> => {
-    const response = await apiClient.patch<QAPair>(`/collections/qa-pairs/${id}`, { status });
+    const response = await apiClient.patch<QAPair>(
+      `/collections/qa-pairs/${id}`,
+      { status }
+    );
     return response.data;
   },
-  
+
   /**
    * Update the status of a Q&A pair with revision comments
    * @param id - Q&A pair ID
@@ -152,27 +186,38 @@ const CollectionsService = {
    * @param revisionComments - Comments explaining the revision request
    * @returns Promise with updated Q&A pair
    */
-  updateQAPairStatusWithComments: async (id: string, status: string, revisionComments: string): Promise<QAPair> => {
-    console.log(`Updating QA pair ${id} status to ${status} with comments: ${revisionComments}`);
-    
+  updateQAPairStatusWithComments: async (
+    id: string,
+    status: string,
+    revisionComments: string
+  ): Promise<QAPair> => {
+    console.log(
+      `Updating QA pair ${id} status to ${status} with comments: ${revisionComments}`
+    );
+
     try {
       // First get the current QA pair to preserve existing metadata
-      const currentQA = await apiClient.get<QAPair>(`/collections/qa-pairs/${id}`);
+      const currentQA = await apiClient.get<QAPair>(
+        `/collections/qa-pairs/${id}`
+      );
       const currentMetadata = currentQA.data.metadata || {};
-      
+
       // Merge existing metadata with new revision comments
-      const response = await apiClient.patch<QAPair>(`/collections/qa-pairs/${id}`, { 
-        status,
-        metadata: {
-          ...currentMetadata,
-          revision_comments: revisionComments
+      const response = await apiClient.patch<QAPair>(
+        `/collections/qa-pairs/${id}`,
+        {
+          status,
+          metadata: {
+            ...currentMetadata,
+            revision_comments: revisionComments,
+          },
         }
-      });
-      
-      console.log("Update with comments response:", response.data);
+      );
+
+      console.log('Update with comments response:', response.data);
       return response.data;
     } catch (error) {
-      console.error("Error updating QA pair with comments:", error);
+      console.error('Error updating QA pair with comments:', error);
       throw error;
     }
   },
@@ -184,7 +229,7 @@ const CollectionsService = {
    */
   deleteQAPair: async (id: string): Promise<void> => {
     await apiClient.delete(`/collections/qa-pairs/${id}`);
-  }
+  },
 };
 
 export default CollectionsService;

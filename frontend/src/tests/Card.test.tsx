@@ -1,5 +1,6 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
+import React from 'react';
+
 import Card from '../components/ui/Card';
 
 describe('Card Component', () => {
@@ -9,7 +10,7 @@ describe('Card Component', () => {
         <div data-testid="card-content">Card Content</div>
       </Card>
     );
-    
+
     expect(screen.getByTestId('card-content')).toBeInTheDocument();
     expect(screen.getByText('Card Content')).toBeInTheDocument();
   });
@@ -20,16 +21,16 @@ describe('Card Component', () => {
         Elevated Card
       </Card>
     );
-    
+
     let card = screen.getByTestId('card');
     expect(card).toBeInTheDocument();
-    
+
     rerender(
       <Card variant="outlined" data-testid="card">
         Outlined Card
       </Card>
     );
-    
+
     card = screen.getByTestId('card');
     expect(card).toBeInTheDocument();
   });
@@ -40,34 +41,34 @@ describe('Card Component', () => {
         Small Padding
       </Card>
     );
-    
+
     let card = screen.getByTestId('card');
     expect(card).toBeInTheDocument();
-    
+
     rerender(
       <Card padding="medium" data-testid="card">
         Medium Padding
       </Card>
     );
-    
+
     card = screen.getByTestId('card');
     expect(card).toBeInTheDocument();
-    
+
     rerender(
       <Card padding="large" data-testid="card">
         Large Padding
       </Card>
     );
-    
+
     card = screen.getByTestId('card');
     expect(card).toBeInTheDocument();
-    
+
     rerender(
       <Card padding="none" data-testid="card">
         No Padding
       </Card>
     );
-    
+
     card = screen.getByTestId('card');
     expect(card).toBeInTheDocument();
   });
@@ -79,16 +80,14 @@ describe('Card Component', () => {
           <Card.Title>Card Title</Card.Title>
           <Card.Subtitle>Card Subtitle</Card.Subtitle>
         </Card.Header>
-        <Card.Content>
-          Card Content
-        </Card.Content>
+        <Card.Content>Card Content</Card.Content>
         <Card.Actions>
           <button>Action 1</button>
           <button>Action 2</button>
         </Card.Actions>
       </Card>
     );
-    
+
     expect(screen.getByText('Card Title')).toBeInTheDocument();
     expect(screen.getByText('Card Subtitle')).toBeInTheDocument();
     expect(screen.getByText('Card Content')).toBeInTheDocument();
@@ -102,7 +101,7 @@ describe('Card Component', () => {
         Full Width Card
       </Card>
     );
-    
+
     const card = screen.getByTestId('card');
     // Check for full width styles (would depend on implementation)
     expect(card).toBeInTheDocument();

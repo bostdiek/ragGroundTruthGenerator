@@ -1,6 +1,13 @@
-import React, { SelectHTMLAttributes, forwardRef, useState } from 'react';
+import React, { forwardRef, SelectHTMLAttributes, useState } from 'react';
 import styled from 'styled-components';
-import { colors, typography, borderRadius, spacing, transitions } from './theme';
+
+import {
+  borderRadius,
+  colors,
+  spacing,
+  transitions,
+  typography,
+} from './theme';
 
 export type SelectSize = 'small' | 'medium' | 'large';
 
@@ -10,7 +17,8 @@ export interface SelectOption {
   disabled?: boolean;
 }
 
-export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
+export interface SelectProps
+  extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   label?: string;
   helperText?: string;
   error?: boolean;
@@ -41,7 +49,8 @@ const StyledSelect = styled.select<{
 }>`
   font-family: ${typography.fontFamily.primary};
   background-color: ${colors.common.white};
-  border: 1px solid ${({ error }) => (error ? colors.error.main : colors.grey[300])};
+  border: 1px solid
+    ${({ error }) => (error ? colors.error.main : colors.grey[300])};
   border-radius: ${borderRadius.md};
   padding: ${({ size }) => {
     switch (size) {
@@ -86,13 +95,15 @@ const StyledSelect = styled.select<{
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23616161' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right ${spacing.md} center;
-  
+
   &:focus {
     outline: none;
-    border-color: ${({ error }) => (error ? colors.error.main : colors.primary.main)};
-    box-shadow: 0 0 0 1px ${({ error }) => (error ? colors.error.main : colors.primary.main)};
+    border-color: ${({ error }) =>
+      error ? colors.error.main : colors.primary.main};
+    box-shadow: 0 0 0 1px
+      ${({ error }) => (error ? colors.error.main : colors.primary.main)};
   }
-  
+
   &:disabled {
     background-color: ${colors.grey[100]};
     cursor: not-allowed;
@@ -122,12 +133,18 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     ref
   ) => {
     // Generate a unique ID for the select if not provided
-    const [selectId] = useState(() => id || `select-${Math.random().toString(36).substring(2, 9)}`);
+    const [selectId] = useState(
+      () => id || `select-${Math.random().toString(36).substring(2, 9)}`
+    );
 
     return (
       <SelectContainer fullWidth={fullWidth}>
-        {label && <SelectLabel htmlFor={selectId} error={error}>{label}</SelectLabel>}
-        
+        {label && (
+          <SelectLabel htmlFor={selectId} error={error}>
+            {label}
+          </SelectLabel>
+        )}
+
         <StyledSelect
           ref={ref}
           id={selectId}
@@ -141,17 +158,17 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               {placeholder}
             </option>
           )}
-          {options.map((option) => (
-            <option 
-              key={option.value} 
-              value={option.value} 
+          {options.map(option => (
+            <option
+              key={option.value}
+              value={option.value}
               disabled={option.disabled}
             >
               {option.label}
             </option>
           ))}
         </StyledSelect>
-        
+
         {helperText && <HelperText error={error}>{helperText}</HelperText>}
       </SelectContainer>
     );

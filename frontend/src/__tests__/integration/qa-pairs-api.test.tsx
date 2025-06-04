@@ -1,10 +1,11 @@
 import { screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { server } from '../../testing/setup';
-import { render } from '../../testing/utils/test-utils';
+
 import { useQAPairs } from '../../features/qa_pairs/hooks/useQAPairs';
 import { ReactQueryProvider } from '../../lib/react-query/ReactQueryProvider';
 import { mockQAPairs } from '../../testing/mocks/qa-pairs-handlers';
+import { server } from '../../testing/setup';
+import { render } from '../../testing/utils/test-utils';
 
 // Test component that uses the QA pairs hook
 function TestComponent({ collectionId }: { collectionId: string }) {
@@ -18,7 +19,7 @@ function TestComponent({ collectionId }: { collectionId: string }) {
     <div>
       <h1>QA Pairs</h1>
       <ul>
-        {data.map((qaPair) => (
+        {data.map(qaPair => (
           <li key={qaPair.id} data-testid={`qa-pair-${qaPair.id}`}>
             <h2>{qaPair.question}</h2>
             <p>{qaPair.answer}</p>
@@ -54,7 +55,9 @@ describe('QA Pairs API Integration', () => {
         expect(element).toBeInTheDocument();
         expect(screen.getByText(qaPair.question)).toBeInTheDocument();
         expect(screen.getByText(qaPair.answer)).toBeInTheDocument();
-        expect(screen.getByText(`Status: ${qaPair.status}`)).toBeInTheDocument();
+        expect(
+          screen.getByText(`Status: ${qaPair.status}`)
+        ).toBeInTheDocument();
       }
     }
   });
@@ -62,12 +65,15 @@ describe('QA Pairs API Integration', () => {
   it('should handle API errors gracefully', async () => {
     // Mock an error response
     server.use(
-      http.get('http://localhost:8000/collections/:collectionId/qa-pairs', () => {
-        return new HttpResponse(
-          JSON.stringify({ detail: 'Internal server error' }),
-          { status: 500 }
-        );
-      })
+      http.get(
+        'http://localhost:8000/collections/:collectionId/qa-pairs',
+        () => {
+          return new HttpResponse(
+            JSON.stringify({ detail: 'Internal server error' }),
+            { status: 500 }
+          );
+        }
+      )
     );
 
     // Render the test component with a collection ID
@@ -89,9 +95,12 @@ describe('QA Pairs API Integration', () => {
   it('should handle empty data gracefully', async () => {
     // Mock an empty response
     server.use(
-      http.get('http://localhost:8000/collections/:collectionId/qa-pairs', () => {
-        return HttpResponse.json([]);
-      })
+      http.get(
+        'http://localhost:8000/collections/:collectionId/qa-pairs',
+        () => {
+          return HttpResponse.json([]);
+        }
+      )
     );
 
     // Render the test component with a collection ID

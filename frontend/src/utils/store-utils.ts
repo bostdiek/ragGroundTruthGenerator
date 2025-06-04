@@ -3,7 +3,7 @@ import { persist, PersistOptions } from 'zustand/middleware';
 
 /**
  * Create a Zustand store with persistence
- * 
+ *
  * @param name Name of the store in local storage
  * @param config Configuration options for the store
  * @param options Persistence options
@@ -30,7 +30,7 @@ export const StorageTypes = {
   SESSION_STORAGE: 'sessionStorage',
 } as const;
 
-export type StorageType = typeof StorageTypes[keyof typeof StorageTypes];
+export type StorageType = (typeof StorageTypes)[keyof typeof StorageTypes];
 
 /**
  * Default persistence options

@@ -1,5 +1,6 @@
 import React from 'react';
 import styled, { css } from 'styled-components';
+
 import { breakpoints, spacing } from '../ui/theme';
 
 // Grid component
@@ -12,7 +13,13 @@ export interface GridProps {
   lg?: number; // 1-12 columns for large screens
   xl?: number; // 1-12 columns for extra large screens
   spacing?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'none';
-  justifyContent?: 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly';
+  justifyContent?:
+    | 'flex-start'
+    | 'center'
+    | 'flex-end'
+    | 'space-between'
+    | 'space-around'
+    | 'space-evenly';
   alignItems?: 'flex-start' | 'center' | 'flex-end' | 'stretch' | 'baseline';
   direction?: 'row' | 'row-reverse' | 'column' | 'column-reverse';
   wrap?: 'nowrap' | 'wrap' | 'wrap-reverse';
@@ -44,8 +51,8 @@ const getColumnWidth = (size: number) => {
 
 const StyledGrid = styled.div<GridProps>`
   box-sizing: border-box;
-  
-  ${(props) =>
+
+  ${props =>
     props.container &&
     css`
       display: flex;
@@ -57,15 +64,15 @@ const StyledGrid = styled.div<GridProps>`
       margin: ${props.spacing && props.spacing !== 'none'
         ? `-${getSpacingValue(props.spacing)}`
         : '0'};
-      
+
       & > * {
         padding: ${props.spacing && props.spacing !== 'none'
           ? getSpacingValue(props.spacing)
           : '0'};
       }
     `}
-  
-  ${(props) =>
+
+  ${props =>
     props.item &&
     props.xs &&
     css`
@@ -73,7 +80,7 @@ const StyledGrid = styled.div<GridProps>`
       max-width: ${getColumnWidth(props.xs)};
     `}
   
-  ${(props) =>
+  ${props =>
     props.item &&
     props.sm &&
     css`
@@ -83,7 +90,7 @@ const StyledGrid = styled.div<GridProps>`
       }
     `}
   
-  ${(props) =>
+  ${props =>
     props.item &&
     props.md &&
     css`
@@ -93,7 +100,7 @@ const StyledGrid = styled.div<GridProps>`
       }
     `}
   
-  ${(props) =>
+  ${props =>
     props.item &&
     props.lg &&
     css`
@@ -103,7 +110,7 @@ const StyledGrid = styled.div<GridProps>`
       }
     `}
   
-  ${(props) =>
+  ${props =>
     props.item &&
     props.xl &&
     css`
@@ -114,16 +121,28 @@ const StyledGrid = styled.div<GridProps>`
     `}
 `;
 
-export const Grid: React.FC<GridProps> = (props) => {
+export const Grid: React.FC<GridProps> = props => {
   return <StyledGrid {...props} />;
 };
 
 // Flex component
 export interface FlexProps {
   direction?: 'row' | 'row-reverse' | 'column' | 'column-reverse';
-  justifyContent?: 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly';
+  justifyContent?:
+    | 'flex-start'
+    | 'center'
+    | 'flex-end'
+    | 'space-between'
+    | 'space-around'
+    | 'space-evenly';
   alignItems?: 'flex-start' | 'center' | 'flex-end' | 'stretch' | 'baseline';
-  alignContent?: 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | 'stretch';
+  alignContent?:
+    | 'flex-start'
+    | 'center'
+    | 'flex-end'
+    | 'space-between'
+    | 'space-around'
+    | 'stretch';
   wrap?: 'nowrap' | 'wrap' | 'wrap-reverse';
   gap?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'none';
   className?: string;
@@ -140,7 +159,7 @@ const StyledFlex = styled.div<FlexProps>`
   gap: ${({ gap }) => (gap && gap !== 'none' ? getSpacingValue(gap) : '0')};
 `;
 
-export const Flex: React.FC<FlexProps> = (props) => {
+export const Flex: React.FC<FlexProps> = props => {
   return <StyledFlex {...props} />;
 };
 

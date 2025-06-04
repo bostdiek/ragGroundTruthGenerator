@@ -1,10 +1,18 @@
-import React, { InputHTMLAttributes, forwardRef, useState } from 'react';
+import React, { forwardRef, InputHTMLAttributes, useState } from 'react';
 import styled, { css } from 'styled-components';
-import { colors, typography, borderRadius, spacing, transitions } from './theme';
+
+import {
+  borderRadius,
+  colors,
+  spacing,
+  transitions,
+  typography,
+} from './theme';
 
 export type InputSize = 'small' | 'medium' | 'large';
 
-export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
+export interface InputProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
   helperText?: string;
   error?: boolean;
@@ -37,7 +45,8 @@ const StyledInput = styled.input<{
 }>`
   font-family: ${typography.fontFamily.primary};
   background-color: ${colors.common.white};
-  border: 1px solid ${({ error }) => (error ? colors.error.main : colors.grey[300])};
+  border: 1px solid
+    ${({ error }) => (error ? colors.error.main : colors.grey[300])};
   border-radius: ${borderRadius.md};
   padding: ${({ size }) => {
     switch (size) {
@@ -76,20 +85,24 @@ const StyledInput = styled.input<{
         return '40px';
     }
   }};
-  padding-left: ${({ hasStartAdornment }) => hasStartAdornment ? '36px' : spacing.md};
-  padding-right: ${({ hasEndAdornment }) => hasEndAdornment ? '36px' : spacing.md};
-  
+  padding-left: ${({ hasStartAdornment }) =>
+    hasStartAdornment ? '36px' : spacing.md};
+  padding-right: ${({ hasEndAdornment }) =>
+    hasEndAdornment ? '36px' : spacing.md};
+
   &:focus {
     outline: none;
-    border-color: ${({ error }) => (error ? colors.error.main : colors.primary.main)};
-    box-shadow: 0 0 0 1px ${({ error }) => (error ? colors.error.main : colors.primary.main)};
+    border-color: ${({ error }) =>
+      error ? colors.error.main : colors.primary.main};
+    box-shadow: 0 0 0 1px
+      ${({ error }) => (error ? colors.error.main : colors.primary.main)};
   }
-  
+
   &:disabled {
     background-color: ${colors.grey[100]};
     cursor: not-allowed;
   }
-  
+
   &::placeholder {
     color: ${colors.grey[400]};
   }
@@ -110,7 +123,7 @@ const Adornment = styled.div<{ position: 'start' | 'end' }>`
   align-items: center;
   justify-content: center;
   color: ${colors.grey[500]};
-  
+
   ${({ position }) =>
     position === 'start'
       ? css`
@@ -137,16 +150,22 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     ref
   ) => {
     // Generate a unique ID for the input if not provided
-    const [inputId] = useState(() => id || `input-${Math.random().toString(36).substring(2, 9)}`);
+    const [inputId] = useState(
+      () => id || `input-${Math.random().toString(36).substring(2, 9)}`
+    );
 
     return (
       <InputContainer fullWidth={fullWidth}>
-        {label && <InputLabel htmlFor={inputId} error={error}>{label}</InputLabel>}
-        
+        {label && (
+          <InputLabel htmlFor={inputId} error={error}>
+            {label}
+          </InputLabel>
+        )}
+
         {startAdornment && (
           <Adornment position="start">{startAdornment}</Adornment>
         )}
-        
+
         <StyledInput
           ref={ref}
           id={inputId}
@@ -157,11 +176,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           aria-invalid={error}
           {...props}
         />
-        
-        {endAdornment && (
-          <Adornment position="end">{endAdornment}</Adornment>
-        )}
-        
+
+        {endAdornment && <Adornment position="end">{endAdornment}</Adornment>}
+
         {helperText && <HelperText error={error}>{helperText}</HelperText>}
       </InputContainer>
     );

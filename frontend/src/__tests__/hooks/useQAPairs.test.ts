@@ -1,7 +1,16 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useQAPairs, useQAPair, useCreateQAPair, useUpdateQAPair, useDeleteQAPair, useUpdateQAPairStatus, useUpdateQAPairStatusWithComments } from '../../features/qa_pairs/hooks/useQAPairs';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import QAPairsService from '../../features/qa_pairs/api/qa-pairs.service';
+import {
+  useCreateQAPair,
+  useDeleteQAPair,
+  useQAPair,
+  useQAPairs,
+  useUpdateQAPair,
+  useUpdateQAPairStatus,
+  useUpdateQAPairStatusWithComments,
+} from '../../features/qa_pairs/hooks/useQAPairs';
 import { TestQueryProvider } from '../../testing/utils/test-utils';
 
 // Mock the QA pairs service
@@ -15,7 +24,7 @@ vi.mock('../../features/qa_pairs/api/qa-pairs.service', () => {
       updateQAPairStatus: vi.fn(),
       updateQAPairStatusWithComments: vi.fn(),
       deleteQAPair: vi.fn(),
-    }
+    },
   };
 });
 
@@ -30,7 +39,7 @@ const mockQAPair = {
   updated_at: '2023-01-01T00:00:00Z',
   created_by: 'user-1',
   status: 'ready_for_review' as const,
-  metadata: {}
+  metadata: {},
 };
 
 const mockQAPairs = [mockQAPair];
@@ -47,7 +56,7 @@ describe('QA Pairs Hooks', () => {
 
       // Render the hook
       const { result } = renderHook(() => useQAPairs('collection-1'), {
-        wrapper: TestQueryProvider
+        wrapper: TestQueryProvider,
       });
 
       // Initial state should be loading
@@ -66,7 +75,7 @@ describe('QA Pairs Hooks', () => {
     it('should not fetch if collection ID is not provided', async () => {
       // Render the hook with no collection ID
       const { result } = renderHook(() => useQAPairs(''), {
-        wrapper: TestQueryProvider
+        wrapper: TestQueryProvider,
       });
 
       // Query should be disabled and not loading
@@ -85,7 +94,7 @@ describe('QA Pairs Hooks', () => {
 
       // Render the hook
       const { result } = renderHook(() => useQAPair('qa-1'), {
-        wrapper: TestQueryProvider
+        wrapper: TestQueryProvider,
       });
 
       // Initial state should be loading
@@ -104,7 +113,7 @@ describe('QA Pairs Hooks', () => {
     it('should not fetch if ID is not provided', async () => {
       // Render the hook with no ID
       const { result } = renderHook(() => useQAPair(''), {
-        wrapper: TestQueryProvider
+        wrapper: TestQueryProvider,
       });
 
       // Query should be disabled and not loading
@@ -123,7 +132,7 @@ describe('QA Pairs Hooks', () => {
 
       // Render the hook
       const { result } = renderHook(() => useCreateQAPair('collection-1'), {
-        wrapper: TestQueryProvider
+        wrapper: TestQueryProvider,
       });
 
       // Create a new QA pair
@@ -131,7 +140,7 @@ describe('QA Pairs Hooks', () => {
         question: 'Test question?',
         answer: 'Test answer',
         status: 'ready_for_review' as const,
-        metadata: {}
+        metadata: {},
       });
 
       // Wait for the mutation to complete
@@ -144,7 +153,7 @@ describe('QA Pairs Hooks', () => {
           question: 'Test question?',
           answer: 'Test answer',
           status: 'ready_for_review',
-          metadata: {}
+          metadata: {},
         }
       );
 
@@ -160,24 +169,21 @@ describe('QA Pairs Hooks', () => {
 
       // Render the hook
       const { result } = renderHook(() => useUpdateQAPair('qa-1'), {
-        wrapper: TestQueryProvider
+        wrapper: TestQueryProvider,
       });
 
       // Update the QA pair
       result.current.mutate({
-        answer: 'Updated answer'
+        answer: 'Updated answer',
       });
 
       // Wait for the mutation to complete
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
       // Check that the service was called correctly
-      expect(mockedQAPairsService.updateQAPair).toHaveBeenCalledWith(
-        'qa-1',
-        {
-          answer: 'Updated answer'
-        }
-      );
+      expect(mockedQAPairsService.updateQAPair).toHaveBeenCalledWith('qa-1', {
+        answer: 'Updated answer',
+      });
 
       // Check that the data is correct
       expect(result.current.data).toEqual(mockQAPair);
@@ -189,12 +195,12 @@ describe('QA Pairs Hooks', () => {
       // Mock the service response
       mockedQAPairsService.updateQAPairStatus.mockResolvedValue({
         ...mockQAPair,
-        status: 'approved' as const
+        status: 'approved' as const,
       });
 
       // Render the hook
       const { result } = renderHook(() => useUpdateQAPairStatus('qa-1'), {
-        wrapper: TestQueryProvider
+        wrapper: TestQueryProvider,
       });
 
       // Update the QA pair status
@@ -204,12 +210,15 @@ describe('QA Pairs Hooks', () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
       // Check that the service was called correctly
-      expect(mockedQAPairsService.updateQAPairStatus).toHaveBeenCalledWith('qa-1', 'approved');
+      expect(mockedQAPairsService.updateQAPairStatus).toHaveBeenCalledWith(
+        'qa-1',
+        'approved'
+      );
 
       // Check that the data is correct
       expect(result.current.data).toEqual({
         ...mockQAPair,
-        status: 'approved'
+        status: 'approved',
       });
     });
   });
@@ -218,33 +227,40 @@ describe('QA Pairs Hooks', () => {
     it('should update a QA pair status with revision comments', async () => {
       // Mock the getQAPair service response (for getting current metadata)
       mockedQAPairsService.getQAPair.mockResolvedValue(mockQAPair);
-      
+
       // Mock the updateQAPairStatusWithComments service response
       const updatedQAPair = {
         ...mockQAPair,
         status: 'revision_requested' as const,
         metadata: {
-          revision_comments: 'Please fix this answer'
-        }
+          revision_comments: 'Please fix this answer',
+        },
       };
-      mockedQAPairsService.updateQAPairStatusWithComments.mockResolvedValue(updatedQAPair);
+      mockedQAPairsService.updateQAPairStatusWithComments.mockResolvedValue(
+        updatedQAPair
+      );
 
       // Render the hook
-      const { result } = renderHook(() => useUpdateQAPairStatusWithComments('qa-1'), {
-        wrapper: TestQueryProvider
-      });
+      const { result } = renderHook(
+        () => useUpdateQAPairStatusWithComments('qa-1'),
+        {
+          wrapper: TestQueryProvider,
+        }
+      );
 
       // Update the QA pair status with comments
       result.current.mutate({
         status: 'revision_requested',
-        revisionComments: 'Please fix this answer'
+        revisionComments: 'Please fix this answer',
       });
 
       // Wait for the mutation to complete
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
       // Check that the service was called correctly
-      expect(mockedQAPairsService.updateQAPairStatusWithComments).toHaveBeenCalledWith(
+      expect(
+        mockedQAPairsService.updateQAPairStatusWithComments
+      ).toHaveBeenCalledWith(
         'qa-1',
         'revision_requested',
         'Please fix this answer'
@@ -262,7 +278,7 @@ describe('QA Pairs Hooks', () => {
 
       // Render the hook
       const { result } = renderHook(() => useDeleteQAPair('collection-1'), {
-        wrapper: TestQueryProvider
+        wrapper: TestQueryProvider,
       });
 
       // Delete the QA pair

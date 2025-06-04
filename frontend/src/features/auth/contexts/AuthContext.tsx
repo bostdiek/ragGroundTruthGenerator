@@ -1,9 +1,16 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+
 import AuthService from '../../auth/api/auth.service';
 
 /**
  * Authentication Context
- * 
+ *
  * This context provides authentication state and methods to the application.
  */
 
@@ -38,11 +45,13 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 // Provider component
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   /**
    * Check if user is already authenticated on component mount
    */
@@ -61,37 +70,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsLoading(false);
       }
     };
-    
+
     checkAuthStatus();
   }, []);
-  
+
   /**
    * Login function
    */
   const login = async (username: string, password: string): Promise<void> => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const response = await AuthService.login({ username, password });
       const userData = response.user;
       setUser(userData);
     } catch (err: any) {
       console.error('Login failed:', err);
-      
+
       // Set appropriate error message
       if (err.response && err.response.status === 401) {
         setError('Invalid username or password');
       } else {
         setError('Login failed. Please try again later.');
       }
-      
+
       throw err;
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   /**
    * Logout function
    */
@@ -99,10 +108,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     AuthService.logout();
     setUser(null);
   };
-  
+
   // Compute authentication state
   const isAuthenticated = !!user;
-  
+
   // Provide auth context to children
   return (
     <AuthContext.Provider

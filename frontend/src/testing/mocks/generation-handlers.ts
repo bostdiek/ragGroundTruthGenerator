@@ -1,4 +1,4 @@
-import { http, HttpResponse, delay } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 
 // Define Document type for testing
 interface Document {
@@ -16,15 +16,15 @@ export const mockDocuments: Document[] = [
     title: 'Test Document 1',
     content: 'This is test document 1 content.',
     source: { id: 'source-1', name: 'Test Source 1' },
-    metadata: {}
+    metadata: {},
   },
   {
     id: 'doc-2',
     title: 'Test Document 2',
     content: 'This is test document 2 content.',
     source: { id: 'source-1', name: 'Test Source 1' },
-    metadata: {}
-  }
+    metadata: {},
+  },
 ];
 
 // Mock generation response
@@ -34,8 +34,8 @@ export const mockGenerationResponse = {
   token_usage: {
     prompt_tokens: 100,
     completion_tokens: 50,
-    total_tokens: 150
-  }
+    total_tokens: 150,
+  },
 };
 
 // Define generation request handlers
@@ -44,13 +44,13 @@ export const generationHandlers = [
   http.post('http://localhost:8000/generation/answer', async ({ request }) => {
     // Add a small delay to simulate network latency
     await delay(100);
-    
-    const body = await request.json() as { 
-      question: string; 
+
+    const body = (await request.json()) as {
+      question: string;
       documents: Document[];
-      rules?: Record<string, any>; 
+      rules?: Record<string, any>;
     };
-    
+
     // Check if request has the required fields
     if (!body.question || !body.documents || body.documents.length === 0) {
       return new HttpResponse(null, {
@@ -58,31 +58,31 @@ export const generationHandlers = [
         statusText: 'Bad Request',
       });
     }
-    
+
     return HttpResponse.json(mockGenerationResponse);
   }),
-  
+
   // Error scenario - server error
   http.post('http://localhost:8000/generation/error', async () => {
     await delay(50);
-    
+
     return new HttpResponse(null, {
       status: 500,
       statusText: 'Internal Server Error',
     });
   }),
-  
+
   // Get available rules
   http.get('http://localhost:8000/generation/rules', async () => {
     await delay(50);
-    
+
     return HttpResponse.json([
       {
         id: 'rule-1',
         name: 'Fact Check',
         description: 'Verify all facts against the document content',
         enabled: true,
-        parameters: {}
+        parameters: {},
       },
       {
         id: 'rule-2',
@@ -90,9 +90,9 @@ export const generationHandlers = [
         description: 'Make the answer more readable',
         enabled: true,
         parameters: {
-          complexity_level: 'medium'
-        }
-      }
+          complexity_level: 'medium',
+        },
+      },
     ]);
-  })
+  }),
 ];

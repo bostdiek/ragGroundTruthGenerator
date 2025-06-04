@@ -1,12 +1,17 @@
 /**
  * Collection Hooks
- * 
+ *
  * This file contains React Query hooks for collection-related API calls.
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { apiClient } from '../../../lib/api/client';
-import { Collection, CollectionCreateRequest, QAPair } from '../api/collections.service';
+import {
+  Collection,
+  CollectionCreateRequest,
+  QAPair,
+} from '../api/collections.service';
 
 // Query keys
 export const collectionKeys = {
@@ -15,7 +20,8 @@ export const collectionKeys = {
   list: (filters: string) => [...collectionKeys.lists(), { filters }] as const,
   details: () => [...collectionKeys.all, 'detail'] as const,
   detail: (id: string) => [...collectionKeys.details(), id] as const,
-  qaPairs: (collectionId: string) => [...collectionKeys.detail(collectionId), 'qa-pairs'] as const,
+  qaPairs: (collectionId: string) =>
+    [...collectionKeys.detail(collectionId), 'qa-pairs'] as const,
   qaPair: (id: string) => [...collectionKeys.all, 'qa-pairs', id] as const,
 };
 
@@ -51,7 +57,7 @@ export const useCollection = (id: string) => {
  */
 export const useCreateCollection = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (data: CollectionCreateRequest) => {
       const response = await apiClient.post<Collection>('/collections', data);
@@ -69,13 +75,16 @@ export const useCreateCollection = () => {
  */
 export const useUpdateCollection = (id: string) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (data: Partial<CollectionCreateRequest>) => {
-      const response = await apiClient.put<Collection>(`/collections/${id}`, data);
+      const response = await apiClient.put<Collection>(
+        `/collections/${id}`,
+        data
+      );
       return response.data;
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Update the collection in the cache
       queryClient.setQueryData(collectionKeys.detail(id), data);
       // Invalidate the collections list to refetch
@@ -89,13 +98,13 @@ export const useUpdateCollection = (id: string) => {
  */
 export const useDeleteCollection = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (id: string) => {
       await apiClient.delete(`/collections/${id}`);
       return id;
     },
-    onSuccess: (id) => {
+    onSuccess: id => {
       // Remove the collection from the cache
       queryClient.removeQueries({ queryKey: collectionKeys.detail(id) });
       // Invalidate the collections list to refetch
@@ -111,7 +120,9 @@ export const useQAPairs = (collectionId: string) => {
   return useQuery({
     queryKey: collectionKeys.qaPairs(collectionId),
     queryFn: async () => {
-      const response = await apiClient.get<QAPair[]>(`/collections/${collectionId}/qa-pairs`);
+      const response = await apiClient.get<QAPair[]>(
+        `/collections/${collectionId}/qa-pairs`
+      );
       return response.data;
     },
     enabled: !!collectionId, // Only run query if collection ID is provided
@@ -125,7 +136,9 @@ export const useQAPair = (id: string) => {
   return useQuery({
     queryKey: collectionKeys.qaPair(id),
     queryFn: async () => {
-      const response = await apiClient.get<QAPair>(`/collections/qa-pairs/${id}`);
+      const response = await apiClient.get<QAPair>(
+        `/collections/qa-pairs/${id}`
+      );
       return response.data;
     },
     enabled: !!id, // Only run query if ID is provided

@@ -2,7 +2,7 @@ import { apiClient } from '../../../lib/api/client';
 
 /**
  * Authentication Service
- * 
+ *
  * This service handles authentication-related API calls.
  */
 
@@ -32,7 +32,7 @@ const AUTH_PROVIDER = process.env.REACT_APP_AUTH_PROVIDER || 'simple';
 
 /**
  * Authentication Service Factory
- * 
+ *
  * Factory function to create an authentication service based on the environment configuration.
  */
 const createAuthService = () => {
@@ -41,24 +41,27 @@ const createAuthService = () => {
     return {
       /**
        * Login with username and password
-       * 
+       *
        * @param credentials - The login credentials
        * @returns Promise with token response
        */
       login: async (credentials: LoginRequest): Promise<TokenResponse> => {
-        const response = await apiClient.post<TokenResponse>('/auth/login', credentials);
-        
+        const response = await apiClient.post<TokenResponse>(
+          '/auth/login',
+          credentials
+        );
+
         if (response.data.access_token) {
           localStorage.setItem('auth_token', response.data.access_token);
           localStorage.setItem('auth_user', JSON.stringify(response.data.user));
         }
-        
+
         return response.data;
       },
-      
+
       /**
        * Get current user information
-       * 
+       *
        * @returns Promise with user information
        */
       getCurrentUser: async (): Promise<UserInfo> => {
@@ -67,12 +70,12 @@ const createAuthService = () => {
         if (cachedUser) {
           return JSON.parse(cachedUser);
         }
-        
+
         // If not in localStorage, fetch from API
         const response = await apiClient.get<UserInfo>('/auth/me');
         return response.data;
       },
-      
+
       /**
        * Logout the current user
        */
@@ -80,10 +83,10 @@ const createAuthService = () => {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('auth_user');
       },
-      
+
       /**
        * Check if user is authenticated
-       * 
+       *
        * @returns boolean indicating if the user is authenticated
        */
       isAuthenticated: (): boolean => {
@@ -91,35 +94,38 @@ const createAuthService = () => {
       },
     };
   }
-  
+
   // Default to simple auth if no provider specified
   return {
     login: async (credentials: LoginRequest): Promise<TokenResponse> => {
-      const response = await apiClient.post<TokenResponse>('/auth/login', credentials);
-      
+      const response = await apiClient.post<TokenResponse>(
+        '/auth/login',
+        credentials
+      );
+
       if (response.data.access_token) {
         localStorage.setItem('auth_token', response.data.access_token);
         localStorage.setItem('auth_user', JSON.stringify(response.data.user));
       }
-      
+
       return response.data;
     },
-    
+
     getCurrentUser: async (): Promise<UserInfo> => {
       const cachedUser = localStorage.getItem('auth_user');
       if (cachedUser) {
         return JSON.parse(cachedUser);
       }
-      
+
       const response = await apiClient.get<UserInfo>('/auth/me');
       return response.data;
     },
-    
+
     logout: (): void => {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('auth_user');
     },
-    
+
     isAuthenticated: (): boolean => {
       return !!localStorage.getItem('auth_token');
     },

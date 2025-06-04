@@ -1,6 +1,7 @@
-import React from 'react';
-import { ToastContainer, toast, ToastOptions } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+import React from 'react';
+import { toast, ToastContainer, ToastOptions } from 'react-toastify';
 
 /**
  * Toast types
@@ -21,7 +22,7 @@ const defaultOptions: ToastOptions = {
 
 /**
  * Toast service
- * 
+ *
  * Provides methods to show toast notifications
  */
 export const toastService = {
@@ -56,10 +57,12 @@ export const toastService = {
 
 /**
  * Toast Container component
- * 
+ *
  * Renders the toast container for the application
  */
-export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   return (
     <>
       {children}

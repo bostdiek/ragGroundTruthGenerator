@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+
 import { useUIStore } from '../../stores/ui-store';
 
 describe('UI Store', () => {
@@ -19,7 +20,7 @@ describe('UI Store', () => {
   it('should toggle sidebar state', () => {
     useUIStore.getState().toggleSidebar();
     expect(useUIStore.getState().isSidebarOpen).toBe(true);
-    
+
     useUIStore.getState().toggleSidebar();
     expect(useUIStore.getState().isSidebarOpen).toBe(false);
   });
@@ -27,7 +28,7 @@ describe('UI Store', () => {
   it('should set sidebar state directly', () => {
     useUIStore.getState().setSidebarOpen(true);
     expect(useUIStore.getState().isSidebarOpen).toBe(true);
-    
+
     useUIStore.getState().setSidebarOpen(false);
     expect(useUIStore.getState().isSidebarOpen).toBe(false);
   });
@@ -35,7 +36,7 @@ describe('UI Store', () => {
   it('should set page loading state', () => {
     useUIStore.getState().setPageLoading(true);
     expect(useUIStore.getState().isPageLoading).toBe(true);
-    
+
     useUIStore.getState().setPageLoading(false);
     expect(useUIStore.getState().isPageLoading).toBe(false);
   });

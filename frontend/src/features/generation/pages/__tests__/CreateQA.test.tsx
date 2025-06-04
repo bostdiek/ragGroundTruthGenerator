@@ -1,8 +1,9 @@
-import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { queryClient } from '../../../../testing/setup';
 import CreateQA from '../CreateQA';
 
@@ -65,42 +66,50 @@ describe('CreateQA Page', () => {
         <CreateQA />
       </TestWrapper>
     );
-    
+
     // Check that the question step is visible
     expect(screen.getByText('Define Question')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Enter your question here...')).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText('Enter your question here...')
+    ).toBeInTheDocument();
   });
-  
+
   it('allows navigation between steps', async () => {
     render(
       <TestWrapper>
         <CreateQA />
       </TestWrapper>
     );
-    
+
     // Enter a question
-    const questionInput = screen.getByPlaceholderText('Enter your question here...');
+    const questionInput = screen.getByPlaceholderText(
+      'Enter your question here...'
+    );
     fireEvent.change(questionInput, { target: { value: 'Test question?' } });
-    
+
     // Move to the next step
     const nextButton = screen.getByText('Next: Select Documents');
     fireEvent.click(nextButton);
-    
+
     // Wait for the documents step to be visible
     await waitFor(() => {
-      expect(screen.getByText('Select relevant documents for your answer')).toBeInTheDocument();
+      expect(
+        screen.getByText('Select relevant documents for your answer')
+      ).toBeInTheDocument();
     });
-    
+
     // Go back to the question step
     const backButton = screen.getByText('Back: Edit Question');
     fireEvent.click(backButton);
-    
+
     // Check that we're back at the question step
     await waitFor(() => {
-      expect(screen.getByPlaceholderText('Enter your question here...')).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('Enter your question here...')
+      ).toBeInTheDocument();
     });
   });
-  
+
   // More tests could be added for:
   // - Document selection
   // - Search functionality

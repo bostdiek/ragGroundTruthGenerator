@@ -1,6 +1,6 @@
 /**
  * Test data factories
- * 
+ *
  * These factories help generate test data consistently
  * and allow tests to focus only on the relevant parts of the data.
  */
@@ -42,23 +42,25 @@ export interface QAPair {
  */
 export const createUser = (overrides: Partial<User> = {}): User => {
   const defaultUsername = `user_${Math.floor(Math.random() * 10000)}`;
-  
+
   return {
     id: uuidv4(),
     username: defaultUsername,
     email: `${defaultUsername}@example.com`,
     full_name: `Test User ${defaultUsername}`,
-    ...overrides
+    ...overrides,
   };
 };
 
 /**
  * Collection factory
  */
-export const createCollection = (overrides: Partial<Collection> = {}): Collection => {
+export const createCollection = (
+  overrides: Partial<Collection> = {}
+): Collection => {
   const id = overrides.id || uuidv4();
   const now = new Date().toISOString();
-  
+
   return {
     id,
     name: `Test Collection ${id.substring(0, 4)}`,
@@ -67,7 +69,7 @@ export const createCollection = (overrides: Partial<Collection> = {}): Collectio
     updated_at: now,
     owner_id: uuidv4(),
     qa_count: 0,
-    ...overrides
+    ...overrides,
   };
 };
 
@@ -77,7 +79,7 @@ export const createCollection = (overrides: Partial<Collection> = {}): Collectio
 export const createQAPair = (overrides: Partial<QAPair> = {}): QAPair => {
   const id = overrides.id || uuidv4();
   const now = new Date().toISOString();
-  
+
   return {
     id,
     collection_id: overrides.collection_id || uuidv4(),
@@ -86,20 +88,26 @@ export const createQAPair = (overrides: Partial<QAPair> = {}): QAPair => {
     created_at: now,
     updated_at: now,
     metadata: {},
-    ...overrides
+    ...overrides,
   };
 };
 
 /**
  * Create multiple collections
  */
-export const createCollections = (count: number, overrides: Partial<Collection> = {}): Collection[] => {
+export const createCollections = (
+  count: number,
+  overrides: Partial<Collection> = {}
+): Collection[] => {
   return Array.from({ length: count }).map(() => createCollection(overrides));
 };
 
 /**
  * Create multiple QA pairs
  */
-export const createQAPairs = (count: number, overrides: Partial<QAPair> = {}): QAPair[] => {
+export const createQAPairs = (
+  count: number,
+  overrides: Partial<QAPair> = {}
+): QAPair[] => {
   return Array.from({ length: count }).map(() => createQAPair(overrides));
 };

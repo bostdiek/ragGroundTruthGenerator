@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+
 import { useAuth } from '../contexts/AuthContext';
 
 const LoginContainer = styled.div`
@@ -68,7 +69,7 @@ const Button = styled.button`
   font-weight: 500;
   cursor: pointer;
   width: 100%;
-  
+
   &:hover {
     background-color: #106ebe;
   }
@@ -91,13 +92,13 @@ const ErrorMessage = styled.div`
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login, error, isLoading } = useAuth();
-  
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       await login(username, password);
       navigate('/');
@@ -105,48 +106,50 @@ const Login: React.FC = () => {
       console.error('Login failed:', error);
     }
   };
-  
+
   return (
     <LoginContainer>
       <LoginCard>
         <Title>Welcome to AI Ground Truth Generator</Title>
         <Description>
-          Log in to create and manage ground truth question-answer pairs
-          for AI training and evaluation.
+          Log in to create and manage ground truth question-answer pairs for AI
+          training and evaluation.
         </Description>
 
         <Form onSubmit={handleSubmit} data-testid="login-form">
           {error && <ErrorMessage>{error}</ErrorMessage>}
-          
+
           <InputGroup>
             <Label htmlFor="username">Username</Label>
             <Input
               id="username"
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={e => setUsername(e.target.value)}
               required
             />
           </InputGroup>
-          
+
           <InputGroup>
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               required
             />
           </InputGroup>
-          
+
           <Button type="submit" disabled={isLoading}>
             {isLoading ? 'Signing in...' : 'Sign in'}
           </Button>
         </Form>
-        
+
         <Description>
-          <small>Demo credentials: username = "demo", password = "password"</small>
+          <small>
+            Demo credentials: username = "demo", password = "password"
+          </small>
         </Description>
       </LoginCard>
     </LoginContainer>

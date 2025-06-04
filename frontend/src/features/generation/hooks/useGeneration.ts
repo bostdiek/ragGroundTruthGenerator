@@ -1,7 +1,12 @@
-import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
+
 import GenerationService from '../api/generation.service';
-import { GenerationRequest, GenerationResponse, GenerationState } from '../types';
+import {
+  GenerationRequest,
+  GenerationResponse,
+  GenerationState,
+} from '../types';
 
 /**
  * Custom hook for answer generation functionality
@@ -11,42 +16,44 @@ export const useGeneration = () => {
   const [state, setState] = useState<GenerationState>({
     isGenerating: false,
     generationError: null,
-    generationInfo: null
+    generationInfo: null,
   });
 
   // Use React Query for the generation mutation
   const mutation = useMutation<GenerationResponse, Error, GenerationRequest>({
-    mutationFn: (request) => GenerationService.generateAnswer(request),
+    mutationFn: request => GenerationService.generateAnswer(request),
     onMutate: () => {
       setState(prev => ({
         ...prev,
         isGenerating: true,
-        generationError: null
+        generationError: null,
       }));
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       setState(prev => ({
         ...prev,
         isGenerating: false,
         generationInfo: {
           model: data.model_used,
-          tokens: data.token_usage
-        }
+          tokens: data.token_usage,
+        },
       }));
     },
-    onError: (error) => {
+    onError: error => {
       setState(prev => ({
         ...prev,
         isGenerating: false,
-        generationError: error.message
+        generationError: error.message,
       }));
-    }
+    },
   });
 
   /**
    * Generate an answer based on the provided question and documents
    */
-  const generateAnswer = async (request: GenerationRequest): Promise<GenerationResponse | null> => {
+  const generateAnswer = async (
+    request: GenerationRequest
+  ): Promise<GenerationResponse | null> => {
     try {
       return await mutation.mutateAsync(request);
     } catch (error) {
@@ -63,8 +70,8 @@ export const useGeneration = () => {
       setState({
         isGenerating: false,
         generationError: null,
-        generationInfo: null
+        generationInfo: null,
       });
-    }
+    },
   };
 };

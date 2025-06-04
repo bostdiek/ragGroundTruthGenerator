@@ -53,7 +53,7 @@ const TextArea = styled.textarea`
   font-size: 1rem;
   resize: vertical;
   font-family: inherit;
-  
+
   &:focus {
     outline: none;
     border-color: #0078d4;
@@ -75,11 +75,11 @@ const Button = styled.button`
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   cursor: pointer;
-  
+
   &:hover {
     background-color: #106ebe;
   }
-  
+
   &:disabled {
     background-color: #ccc;
     cursor: not-allowed;
@@ -90,21 +90,26 @@ const CancelButton = styled(Button)`
   background-color: transparent;
   color: #333;
   border: 1px solid #ddd;
-  
+
   &:hover {
     background-color: #f5f5f5;
   }
 `;
 
-const RevisionModal: React.FC<RevisionModalProps> = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
+const RevisionModal: React.FC<RevisionModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  isSubmitting,
+}) => {
   const [comments, setComments] = useState('');
-  
+
   const handleSubmit = () => {
     onSubmit(comments);
   };
-  
+
   if (!isOpen) return null;
-  
+
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={e => e.stopPropagation()}>
@@ -112,10 +117,12 @@ const RevisionModal: React.FC<RevisionModalProps> = ({ isOpen, onClose, onSubmit
           <ModalTitle>Request Revision</ModalTitle>
         </ModalHeader>
         <ModalBody>
-          <p>Please provide specific directions for what needs to be revised:</p>
+          <p>
+            Please provide specific directions for what needs to be revised:
+          </p>
           <TextArea
             value={comments}
-            onChange={(e) => setComments(e.target.value)}
+            onChange={e => setComments(e.target.value)}
             placeholder="Enter revision instructions here..."
             autoFocus
           />
@@ -124,7 +131,10 @@ const RevisionModal: React.FC<RevisionModalProps> = ({ isOpen, onClose, onSubmit
           <CancelButton onClick={onClose} disabled={isSubmitting}>
             Cancel
           </CancelButton>
-          <Button onClick={handleSubmit} disabled={isSubmitting || !comments.trim()}>
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting || !comments.trim()}
+          >
             {isSubmitting ? 'Submitting...' : 'Submit Request'}
           </Button>
         </ModalFooter>

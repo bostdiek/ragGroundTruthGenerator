@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+
 import { useAuth } from '../../features/auth/contexts/AuthContext';
 
 const NavContainer = styled.nav`
@@ -26,7 +27,7 @@ const NavLink = styled(Link)`
   color: white;
   text-decoration: none;
   font-weight: 500;
-  
+
   &:hover {
     text-decoration: underline;
   }
@@ -40,7 +41,7 @@ const Button = styled.button`
   padding: 0.5rem 1rem;
   cursor: pointer;
   font-weight: 500;
-  
+
   &:hover {
     background-color: #106ebe;
   }
@@ -63,20 +64,20 @@ const UserName = styled.span`
 const NavBar: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
-  
+
   const handleLogin = () => {
     navigate('/login');
   };
-  
+
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
-  
+
   return (
     <NavContainer>
       <Logo>AI Ground Truth Generator</Logo>
-      
+
       <NavLinks>
         <NavLink to="/">Home</NavLink>
         {isAuthenticated && (
@@ -85,11 +86,13 @@ const NavBar: React.FC = () => {
           </>
         )}
       </NavLinks>
-      
+
       {isAuthenticated ? (
         <UserInfo>
           {user && <UserName>{user.username}</UserName>}
-          <Button onClick={handleLogout} data-testid="sign-out-button">Sign Out</Button>
+          <Button onClick={handleLogout} data-testid="sign-out-button">
+            Sign Out
+          </Button>
         </UserInfo>
       ) : (
         <Button onClick={handleLogin}>Sign In</Button>

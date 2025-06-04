@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+
 import { colors, spacing } from '../ui/theme';
 import Container from './Container';
 
@@ -78,7 +79,7 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
             {showBreadcrumbs && breadcrumbs && (
               <BreadcrumbsContainer>{breadcrumbs}</BreadcrumbsContainer>
             )}
-            
+
             <PageTitleRow>
               {(title || subtitle) && (
                 <TitleArea>
@@ -86,12 +87,12 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
                   {subtitle && <PageSubtitle>{subtitle}</PageSubtitle>}
                 </TitleArea>
               )}
-              
+
               {actions && <ActionsArea>{actions}</ActionsArea>}
             </PageTitleRow>
           </PageHeader>
         )}
-        
+
         <PageContent>{children}</PageContent>
       </Container>
     </PageContainer>

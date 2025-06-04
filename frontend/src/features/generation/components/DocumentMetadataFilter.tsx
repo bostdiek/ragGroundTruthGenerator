@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+
 import { Document } from '../../../types';
 
 interface MetadataField {
@@ -59,7 +60,7 @@ const FilterInput = styled.input`
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 0.9rem;
-  
+
   &:focus {
     outline: none;
     border-color: #0078d4;
@@ -73,7 +74,7 @@ const FilterSelect = styled.select`
   border-radius: 4px;
   font-size: 0.9rem;
   background-color: white;
-  
+
   &:focus {
     outline: none;
     border-color: #0078d4;
@@ -87,7 +88,7 @@ const ResetButton = styled.button`
   font-size: 0.9rem;
   cursor: pointer;
   padding: 0;
-  
+
   &:hover {
     text-decoration: underline;
   }
@@ -112,7 +113,7 @@ const DocumentMetadataFilter: React.FC<MetadataFilterProps> = ({
 
     // Auto-detect metadata fields from documents
     const fieldsMap = new Map<string, Set<any>>();
-    
+
     documents.forEach(doc => {
       if (doc.metadata) {
         Object.entries(doc.metadata).forEach(([key, value]) => {
@@ -123,23 +124,23 @@ const DocumentMetadataFilter: React.FC<MetadataFilterProps> = ({
         });
       }
     });
-    
+
     return Array.from(fieldsMap.entries()).map(([key, values]) => {
       const valuesArray = Array.from(values);
-      
+
       // Determine field type based on values
       let type: 'text' | 'number' | 'date' | 'boolean' | 'select' = 'text';
       let options: string[] | undefined = undefined;
-      
+
       if (valuesArray.length > 0) {
         const firstValue = valuesArray[0];
-        
+
         if (typeof firstValue === 'number') {
           type = 'number';
         } else if (typeof firstValue === 'boolean') {
           type = 'boolean';
         } else if (
-          typeof firstValue === 'string' && 
+          typeof firstValue === 'string' &&
           /^\d{4}-\d{2}-\d{2}/.test(firstValue)
         ) {
           type = 'date';
@@ -149,36 +150,36 @@ const DocumentMetadataFilter: React.FC<MetadataFilterProps> = ({
           options = valuesArray.map(v => String(v));
         }
       }
-      
+
       return {
         key,
         label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
         type,
-        options
+        options,
       };
     });
   };
-  
+
   const availableFields = getAvailableMetadataFields();
-  
+
   const handleFilterChange = (key: string, value: any) => {
     const newFilters = { ...filters };
-    
+
     if (value === '' || value === undefined) {
       delete newFilters[key];
     } else {
       newFilters[key] = value;
     }
-    
+
     setFilters(newFilters);
     onFilterChange(newFilters);
   };
-  
+
   const resetFilters = () => {
     setFilters({});
     onFilterChange({});
   };
-  
+
   if (availableFields.length === 0) {
     return null;
   }
@@ -188,24 +189,22 @@ const DocumentMetadataFilter: React.FC<MetadataFilterProps> = ({
       <FilterHeader>
         <FilterTitle>Filter by Metadata</FilterTitle>
         {Object.keys(filters).length > 0 && (
-          <ResetButton onClick={resetFilters}>
-            Reset Filters
-          </ResetButton>
+          <ResetButton onClick={resetFilters}>Reset Filters</ResetButton>
         )}
       </FilterHeader>
-      
+
       <FilterControls>
         {availableFields.map(field => (
           <FilterField key={field.key}>
             <FilterLabel htmlFor={`filter-${field.key}`}>
               {field.label}
             </FilterLabel>
-            
+
             {field.type === 'select' && field.options ? (
               <FilterSelect
                 id={`filter-${field.key}`}
                 value={filters[field.key] || ''}
-                onChange={(e) => handleFilterChange(field.key, e.target.value)}
+                onChange={e => handleFilterChange(field.key, e.target.value)}
               >
                 <option value="">All</option>
                 {field.options.map(option => (
@@ -218,9 +217,12 @@ const DocumentMetadataFilter: React.FC<MetadataFilterProps> = ({
               <FilterSelect
                 id={`filter-${field.key}`}
                 value={filters[field.key] || ''}
-                onChange={(e) => {
+                onChange={e => {
                   const value = e.target.value;
-                  handleFilterChange(field.key, value === '' ? '' : value === 'true');
+                  handleFilterChange(
+                    field.key,
+                    value === '' ? '' : value === 'true'
+                  );
                 }}
               >
                 <option value="">All</option>
@@ -232,7 +234,7 @@ const DocumentMetadataFilter: React.FC<MetadataFilterProps> = ({
                 id={`filter-${field.key}`}
                 type={field.type}
                 value={filters[field.key] || ''}
-                onChange={(e) => handleFilterChange(field.key, e.target.value)}
+                onChange={e => handleFilterChange(field.key, e.target.value)}
                 placeholder={`Filter by ${field.label.toLowerCase()}...`}
               />
             )}

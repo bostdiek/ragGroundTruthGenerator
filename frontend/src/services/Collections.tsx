@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import axios from 'axios';
 
 // API endpoint (would be configured from environment in real app)
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
@@ -15,7 +15,7 @@ interface Collection {
   created_at: string;
   updated_at: string;
   document_count: number;
-  status_counts?: {[key: string]: number};
+  status_counts?: { [key: string]: number };
 }
 
 // Styled Components
@@ -44,7 +44,7 @@ const CreateButton = styled(Link)`
   border-radius: 4px;
   padding: 0.5rem 1rem;
   font-weight: 500;
-  
+
   &:hover {
     background-color: #106ebe;
   }
@@ -64,8 +64,10 @@ const CollectionCard = styled(Link)`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   text-decoration: none;
   color: inherit;
-  transition: transform 0.2s, box-shadow 0.2s;
-  
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -144,7 +146,7 @@ const StatusBadge = styled.span<{ status: string }>`
   font-weight: 500;
   display: inline-flex;
   align-items: center;
-  
+
   background-color: ${props => {
     switch (props.status) {
       case 'approved':
@@ -158,7 +160,7 @@ const StatusBadge = styled.span<{ status: string }>`
         return '#e3f2fd';
     }
   }};
-  
+
   color: ${props => {
     switch (props.status) {
       case 'approved':
@@ -172,7 +174,7 @@ const StatusBadge = styled.span<{ status: string }>`
         return '#1976d2';
     }
   }};
-  
+
   &::before {
     content: '';
     display: inline-block;
@@ -204,7 +206,7 @@ const Collections: React.FC = () => {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   useEffect(() => {
     const fetchCollections = async () => {
       try {
@@ -218,25 +220,25 @@ const Collections: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     fetchCollections();
   }, []);
-  
+
   if (loading) {
     return <CollectionsContainer>Loading collections...</CollectionsContainer>;
   }
-  
+
   if (error) {
     return <CollectionsContainer>{error}</CollectionsContainer>;
   }
-  
+
   return (
     <CollectionsContainer>
       <Header>
         <Title>Collections</Title>
         <CreateButton to="/collections/new">Create Collection</CreateButton>
       </Header>
-      
+
       {collections.length === 0 ? (
         <EmptyState>
           <EmptyStateTitle>No Collections Yet</EmptyStateTitle>
@@ -247,34 +249,43 @@ const Collections: React.FC = () => {
         </EmptyState>
       ) : (
         <CollectionGrid>
-          {collections.map((collection) => (
-            <CollectionCard key={collection.id} to={`/collections/${collection.id}`}>
+          {collections.map(collection => (
+            <CollectionCard
+              key={collection.id}
+              to={`/collections/${collection.id}`}
+            >
               <CollectionName>{collection.name}</CollectionName>
-              <CollectionDescription>{collection.description}</CollectionDescription>
-              
+              <CollectionDescription>
+                {collection.description}
+              </CollectionDescription>
+
               <TagsContainer>
                 {collection.tags.map((tag, index) => (
                   <Tag key={index}>{tag}</Tag>
                 ))}
               </TagsContainer>
-              
+
               <CollectionMeta>
                 <CollectionStats>
                   <span>{collection.document_count} Q&A Pairs</span>
                   {collection.status_counts && (
                     <StatusBadgesContainer>
                       {/* Display statuses in order: draft, pending, approved, rejected */}
-                      {['draft', 'pending', 'approved', 'rejected'].map(status => 
-                        collection.status_counts && collection.status_counts[status] ? (
-                          <StatusBadge key={status} status={status}>
-                            {collection.status_counts[status]} {status}
-                          </StatusBadge>
-                        ) : null
+                      {['draft', 'pending', 'approved', 'rejected'].map(
+                        status =>
+                          collection.status_counts &&
+                          collection.status_counts[status] ? (
+                            <StatusBadge key={status} status={status}>
+                              {collection.status_counts[status]} {status}
+                            </StatusBadge>
+                          ) : null
                       )}
                     </StatusBadgesContainer>
                   )}
                 </CollectionStats>
-                <span>Updated {new Date(collection.updated_at).toLocaleDateString()}</span>
+                <span>
+                  Updated {new Date(collection.updated_at).toLocaleDateString()}
+                </span>
               </CollectionMeta>
             </CollectionCard>
           ))}

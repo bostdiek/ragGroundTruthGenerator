@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
+
 import CollectionsService from '../api/collections.service';
 
 // Styled Components
@@ -47,7 +48,7 @@ const Input = styled.input`
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
-  
+
   &:focus {
     outline: none;
     border-color: #0078d4;
@@ -63,7 +64,7 @@ const Textarea = styled.textarea`
   font-size: 1rem;
   min-height: 120px;
   resize: vertical;
-  
+
   &:focus {
     outline: none;
     border-color: #0078d4;
@@ -99,7 +100,7 @@ const RemoveTagButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   &:hover {
     color: #d13438;
   }
@@ -122,11 +123,11 @@ const AddTagButton = styled.button`
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
-  
+
   &:hover {
     background-color: #e6e6e6;
   }
-  
+
   &:disabled {
     background-color: #f3f3f3;
     color: #ccc;
@@ -150,11 +151,11 @@ const Button = styled.button`
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  
+
   &:hover {
     background-color: #106ebe;
   }
-  
+
   &:disabled {
     background-color: #ccc;
     cursor: not-allowed;
@@ -170,7 +171,7 @@ const CancelButton = styled.button`
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  
+
   &:hover {
     background-color: #e6e6e6;
   }
@@ -195,16 +196,16 @@ const ErrorMessage = styled.div`
 const EditCollection: React.FC = () => {
   const navigate = useNavigate();
   const params = useParams<{ collectionId?: string }>();
-  
+
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
-  
+
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Fetch collection data
   useEffect(() => {
     const fetchCollection = async () => {
@@ -212,10 +213,12 @@ const EditCollection: React.FC = () => {
         navigate('/collections');
         return;
       }
-      
+
       setIsLoading(true);
       try {
-        const collection = await CollectionsService.getCollection(params.collectionId);
+        const collection = await CollectionsService.getCollection(
+          params.collectionId
+        );
         setName(collection.name);
         setDescription(collection.description);
         setTags(collection.tags || []);
@@ -223,124 +226,133 @@ const EditCollection: React.FC = () => {
       } catch (error) {
         console.error('Error fetching collection:', error);
         setErrors({
-          fetch: 'Failed to load collection data. Please try again.'
+          fetch: 'Failed to load collection data. Please try again.',
         });
         setIsLoading(false);
       }
     };
-    
+
     fetchCollection();
   }, [params.collectionId, navigate]);
-  
+
   const handleAddTag = () => {
     if (tagInput.trim() === '') return;
-    
+
     // Don't add duplicate tags
     if (tags.includes(tagInput.trim())) {
       setTagInput('');
       return;
     }
-    
+
     setTags([...tags, tagInput.trim()]);
     setTagInput('');
   };
-  
+
   const handleRemoveTag = (index: number) => {
     const newTags = [...tags];
     newTags.splice(index, 1);
     setTags(newTags);
   };
-  
+
   const handleTagInputKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault(); // Prevent form submission
       handleAddTag();
     }
   };
-  
+
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
-    
+
     if (name.trim() === '') {
       newErrors.name = 'Collection name is required';
     }
-    
+
     if (description.trim() === '') {
       newErrors.description = 'Description is required';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setIsSubmitting(true);
-    
+
     try {
       // Update existing collection
-      const updatedCollection = await CollectionsService.updateCollection(params.collectionId!, {
-        name,
-        description,
-        tags
-      });
-      
+      const updatedCollection = await CollectionsService.updateCollection(
+        params.collectionId!,
+        {
+          name,
+          description,
+          tags,
+        }
+      );
+
       console.log('Updated collection:', updatedCollection);
       navigate(`/collections/${updatedCollection.id}`);
     } catch (error) {
       console.error('Error updating collection:', error);
       setErrors({
-        submit: 'Failed to update collection. Please try again.'
+        submit: 'Failed to update collection. Please try again.',
       });
       setIsSubmitting(false);
     }
   };
-  
+
   const handleCancel = () => {
     navigate(`/collections/${params.collectionId}`);
   };
-  
+
   return (
     <EditContainer>
       <Header>
         <Title>Edit Collection</Title>
         <Subtitle>Update your collection details</Subtitle>
       </Header>
-      
+
       {isLoading ? (
         <div>Loading collection data...</div>
       ) : (
         <Form onSubmit={handleSubmit}>
           {errors.fetch && <ErrorMessage>{errors.fetch}</ErrorMessage>}
-          
+
           <FormGroup>
             <Label htmlFor="name">Collection Name</Label>
             <Input
               id="name"
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={e => setName(e.target.value)}
               placeholder="Enter a name for your collection"
             />
             {errors.name && <ErrorMessage>{errors.name}</ErrorMessage>}
-            <HelpText>Choose a clear, descriptive name for your collection</HelpText>
+            <HelpText>
+              Choose a clear, descriptive name for your collection
+            </HelpText>
           </FormGroup>
-          
+
           <FormGroup>
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={e => setDescription(e.target.value)}
               placeholder="Describe the purpose and content of this collection"
             />
-            {errors.description && <ErrorMessage>{errors.description}</ErrorMessage>}
-            <HelpText>Explain what types of Q&A pairs will be included</HelpText>
+            {errors.description && (
+              <ErrorMessage>{errors.description}</ErrorMessage>
+            )}
+            <HelpText>
+              Explain what types of Q&A pairs will be included
+            </HelpText>
           </FormGroup>
-          
+
           <FormGroup>
             <Label htmlFor="tags">Tags</Label>
             <TagInput>
@@ -348,7 +360,7 @@ const EditCollection: React.FC = () => {
                 id="tags"
                 type="text"
                 value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
+                onChange={e => setTagInput(e.target.value)}
                 placeholder="Add tags to categorize your collection"
                 onKeyDown={handleTagInputKeyDown}
               />
@@ -361,7 +373,7 @@ const EditCollection: React.FC = () => {
               </AddTagButton>
             </TagInput>
             <HelpText>Press Enter or click Add to add a tag</HelpText>
-            
+
             {tags.length > 0 && (
               <TagsContainer>
                 {tags.map((tag, index) => (
@@ -379,9 +391,9 @@ const EditCollection: React.FC = () => {
               </TagsContainer>
             )}
           </FormGroup>
-          
+
           {errors.submit && <ErrorMessage>{errors.submit}</ErrorMessage>}
-          
+
           <ButtonGroup>
             <CancelButton type="button" onClick={handleCancel}>
               Cancel

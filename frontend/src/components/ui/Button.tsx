@@ -1,8 +1,20 @@
 import React, { ButtonHTMLAttributes } from 'react';
 import styled, { css } from 'styled-components';
-import { colors, typography, borderRadius, transitions, spacing } from './theme';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'text' | 'outline' | 'danger';
+import {
+  borderRadius,
+  colors,
+  spacing,
+  transitions,
+  typography,
+} from './theme';
+
+export type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'text'
+  | 'outline'
+  | 'danger';
 export type ButtonSize = 'small' | 'medium' | 'large';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -32,10 +44,10 @@ const StyledButton = styled.button<ButtonProps>`
   text-decoration: none;
   user-select: none;
   overflow: hidden;
-  
+
   /* Handle width */
   width: ${({ fullWidth }) => (fullWidth ? '100%' : 'auto')};
-  
+
   /* Handle size variants */
   ${({ size }) => {
     switch (size) {
@@ -68,12 +80,12 @@ const StyledButton = styled.button<ButtonProps>`
         return css`
           background-color: ${colors.secondary.light};
           color: ${colors.secondary.main};
-          
+
           &:hover:not(:disabled) {
             background-color: ${colors.secondary.light};
             filter: brightness(0.95);
           }
-          
+
           &:active:not(:disabled) {
             background-color: ${colors.secondary.light};
             filter: brightness(0.9);
@@ -85,11 +97,11 @@ const StyledButton = styled.button<ButtonProps>`
           color: ${colors.primary.main};
           padding-left: ${spacing.sm};
           padding-right: ${spacing.sm};
-          
+
           &:hover:not(:disabled) {
             background-color: rgba(0, 120, 212, 0.08);
           }
-          
+
           &:active:not(:disabled) {
             background-color: rgba(0, 120, 212, 0.12);
           }
@@ -99,11 +111,11 @@ const StyledButton = styled.button<ButtonProps>`
           background-color: transparent;
           color: ${colors.primary.main};
           border: 1px solid ${colors.primary.main};
-          
+
           &:hover:not(:disabled) {
             background-color: rgba(0, 120, 212, 0.08);
           }
-          
+
           &:active:not(:disabled) {
             background-color: rgba(0, 120, 212, 0.12);
           }
@@ -112,11 +124,11 @@ const StyledButton = styled.button<ButtonProps>`
         return css`
           background-color: ${colors.error.main};
           color: ${colors.error.contrastText};
-          
+
           &:hover:not(:disabled) {
             background-color: ${colors.error.dark};
           }
-          
+
           &:active:not(:disabled) {
             background-color: ${colors.error.dark};
             filter: brightness(0.9);
@@ -127,11 +139,11 @@ const StyledButton = styled.button<ButtonProps>`
         return css`
           background-color: ${colors.primary.main};
           color: ${colors.primary.contrastText};
-          
+
           &:hover:not(:disabled) {
             background-color: ${colors.primary.dark};
           }
-          
+
           &:active:not(:disabled) {
             background-color: ${colors.primary.dark};
             filter: brightness(0.9);
@@ -153,7 +165,7 @@ const StyledButton = styled.button<ButtonProps>`
     css`
       color: transparent;
       pointer-events: none;
-      
+
       &::after {
         content: '';
         position: absolute;
@@ -166,10 +178,14 @@ const StyledButton = styled.button<ButtonProps>`
         border-color: currentColor transparent currentColor transparent;
         animation: buttonLoader 1.2s linear infinite;
       }
-      
+
       @keyframes buttonLoader {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
     `}
 `;

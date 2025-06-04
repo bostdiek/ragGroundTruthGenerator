@@ -1,6 +1,12 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { login, logout, getUserProfile, refreshToken } from '../api/authService';
+
+import {
+  getUserProfile,
+  login,
+  logout,
+  refreshToken,
+} from '../api/authService';
 import { useAuthStore } from '../stores/authStore';
 import type { LoginRequest, LoginResponse, User } from '../types/authTypes';
 
@@ -8,10 +14,10 @@ import type { LoginRequest, LoginResponse, User } from '../types/authTypes';
  * Hook to perform login and store credentials
  */
 export function useLogin() {
-  const doLogin = useAuthStore((state) => state.login);
+  const doLogin = useAuthStore(state => state.login);
   return useMutation<LoginResponse, Error, LoginRequest>({
-    mutationFn: (data) => login(data),
-    onSuccess: (data) => {
+    mutationFn: data => login(data),
+    onSuccess: data => {
       doLogin(data);
     },
   });
@@ -21,7 +27,7 @@ export function useLogin() {
  * Hook to perform logout and clear store
  */
 export function useLogout() {
-  const doLogout = useAuthStore((state) => state.logout);
+  const doLogout = useAuthStore(state => state.logout);
   return useMutation<void, Error, void>({
     mutationFn: () => logout(),
     onSuccess: () => {
@@ -34,8 +40,8 @@ export function useLogout() {
  * Hook to fetch and cache user profile
  */
 export function useUser() {
-  const token = useAuthStore((state) => state.token);
-  const setUser = useAuthStore((state) => state.setUser);
+  const token = useAuthStore(state => state.token);
+  const setUser = useAuthStore(state => state.setUser);
 
   // Fetch user profile
   const query = useQuery<User, Error>({
@@ -56,10 +62,10 @@ export function useUser() {
  * Hook to refresh authentication token
  */
 export function useRefreshToken() {
-  const doLogin = useAuthStore((state) => state.login);
+  const doLogin = useAuthStore(state => state.login);
   return useMutation<LoginResponse, Error, void>({
     mutationFn: () => refreshToken(),
-    onSuccess: (data) => {
+    onSuccess: data => {
       doLogin(data);
     },
   });

@@ -1,11 +1,12 @@
 /**
  * AI Ground Truth Generator - Global Styles
- * 
+ *
  * This file contains global style definitions and styled component helpers.
  * Import and use these styles in your components for consistent styling.
  */
 
 import styled from 'styled-components';
+
 import theme from './theme';
 
 /**
@@ -80,11 +81,11 @@ export const Button = styled.button`
   font-weight: ${theme.typography.fontWeightSemibold};
   cursor: pointer;
   transition: background-color ${theme.transitions.fast};
-  
+
   &:hover {
     background-color: ${theme.colors.primaryDark};
   }
-  
+
   &:disabled {
     background-color: ${theme.colors.borderLight};
     color: ${theme.colors.textDisabled};
@@ -96,12 +97,12 @@ export const SecondaryButton = styled(Button)`
   background-color: transparent;
   color: ${theme.colors.primary};
   border: 1px solid ${theme.colors.primary};
-  
+
   &:hover {
     background-color: ${theme.colors.primaryLight};
     color: ${theme.colors.primary};
   }
-  
+
   &:disabled {
     border-color: ${theme.colors.borderLight};
     color: ${theme.colors.textDisabled};
@@ -117,11 +118,11 @@ export const LinkButton = styled.button`
   cursor: pointer;
   padding: 0;
   text-decoration: underline;
-  
+
   &:hover {
     color: ${theme.colors.primaryDark};
   }
-  
+
   &:disabled {
     color: ${theme.colors.textDisabled};
     cursor: not-allowed;
@@ -144,7 +145,7 @@ export const Input = styled.input`
   border-radius: ${theme.borderRadius.md};
   font-size: ${theme.typography.fontSize.base};
   transition: border-color ${theme.transitions.fast};
-  
+
   &:focus {
     border-color: ${theme.colors.primary};
     outline: none;
@@ -159,7 +160,7 @@ export const TextArea = styled.textarea`
   font-size: ${theme.typography.fontSize.base};
   min-height: 120px;
   transition: border-color ${theme.transitions.fast};
-  
+
   &:focus {
     border-color: ${theme.colors.primary};
     outline: none;
@@ -173,7 +174,7 @@ export const Select = styled.select`
   border-radius: ${theme.borderRadius.md};
   font-size: ${theme.typography.fontSize.base};
   transition: border-color ${theme.transitions.fast};
-  
+
   &:focus {
     border-color: ${theme.colors.primary};
     outline: none;
@@ -201,14 +202,16 @@ export const Center = styled(FlexRow)`
 `;
 
 // Utility components
-export const Badge = styled.span<{ variant?: 'primary' | 'success' | 'warning' | 'error' | 'info' }>`
+export const Badge = styled.span<{
+  variant?: 'primary' | 'success' | 'warning' | 'error' | 'info';
+}>`
   display: inline-block;
   padding: ${theme.spacing.xxs} ${theme.spacing.xs};
   border-radius: ${theme.borderRadius.sm};
   font-size: ${theme.typography.fontSize.tiny};
   font-weight: ${theme.typography.fontWeightSemibold};
   text-transform: uppercase;
-  
+
   ${props => {
     switch (props.variant) {
       case 'success':
@@ -264,7 +267,9 @@ export const ErrorMessage = styled.div`
 
 // Responsive helpers
 export const Hide = styled.div<{ below?: keyof typeof theme.breakpoints }>`
-  ${props => props.below && `
+  ${props =>
+    props.below &&
+    `
     @media (max-width: ${theme.breakpoints[props.below]}) {
       display: none;
     }
@@ -273,8 +278,10 @@ export const Hide = styled.div<{ below?: keyof typeof theme.breakpoints }>`
 
 export const Show = styled.div<{ below?: keyof typeof theme.breakpoints }>`
   display: none;
-  
-  ${props => props.below && `
+
+  ${props =>
+    props.below &&
+    `
     @media (max-width: ${theme.breakpoints[props.below]}) {
       display: block;
     }
