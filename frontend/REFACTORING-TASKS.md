@@ -237,7 +237,7 @@ This document outlines the tasks for refactoring the frontend according to the B
 
 Note: The goal is to maintain the current functionality with cleaner code organization, not to add complexity. The feature should remain simple and focused on its core purpose: letting users select documents, ask questions, apply rules, and generate/edit answers.
 
-### Task 8: Refactor Document Retrieval Feature
+### Task 8: Refactor Document Retrieval Feature with Improved Architecture
 
 1. Create feature directory structure:
    - [ ] `features/retrieval/api` - Retrieval API functions
@@ -246,28 +246,43 @@ Note: The goal is to maintain the current functionality with cleaner code organi
    - [ ] `features/retrieval/stores` - Retrieval state management
    - [ ] `features/retrieval/types` - Retrieval type definitions
    - [ ] `features/retrieval/utils` - Retrieval utilities
+   - [ ] `features/retrieval/context` - Shared context for retrieval state
 
-2. Implement retrieval API services:
-   - [ ] Create document search service
-   - [ ] Create document retrieval service
+2. Implement clear separation of concerns:
+   - [ ] Move source selection functionality from generation to retrieval feature
+   - [ ] Move document discovery functionality from generation to retrieval feature
+   - [ ] Move document selection functionality from generation to retrieval feature
+   - [ ] Create proper interfaces between retrieval and generation features
+
+3. Implement retrieval API services:
+   - [ ] Create/refactor source listing service
+   - [ ] Create/refactor document search service
+   - [ ] Create/refactor document retrieval service
    - [ ] Implement filtering and sorting
    - [ ] Add pagination functionality
 
-3. Create retrieval state management:
-   - [ ] Set up React Query for document data
-   - [ ] Create search state management with Zustand
-   - [ ] Implement pagination state
+4. Create retrieval state management:
+   - [ ] Set up React Query for source and document data
+   - [ ] Create retrieval workflow state management with Zustand
+   - [ ] Implement shared state for selected sources and documents
+   - [ ] Create state interface for other features to consume retrieval results
 
-4. Refactor retrieval components:
-   - [ ] Create search interface component
-   - [ ] Create document list component
-   - [ ] Create document detail view
-   - [ ] Implement document selection functionality
+5. Refactor/Create retrieval components:
+   - [ ] Create/Move SourceSelector component
+   - [ ] Create DocumentDiscovery component for automatic document retrieval
+   - [ ] Refactor DocumentSelector component
+   - [ ] Create RetrievalWorkflow component to manage the overall retrieval process
 
-5. Run tests to verify retrieval functionality:
-   - [ ] Test document search
-   - [ ] Test document filtering
-   - [ ] Test pagination
+6. Update generation feature to use retrieval feature:
+   - [ ] Modify CreateQA to use the retrieval workflow
+   - [ ] Update generation components to consume selected documents from retrieval
+   - [ ] Ensure proper state synchronization between features
+
+7. Run tests to verify functionality:
+   - [ ] Test source selection
+   - [ ] Test document discovery based on question
+   - [ ] Test document selection
+   - [ ] Test integration with generation feature
    - [ ] Test document selection
 
 ## Phase 3: Refinement and Integration
@@ -417,7 +432,7 @@ Note: The goal is to maintain the current functionality with cleaner code organi
 | Task 5: Refactor Authentication Feature | Not Started | | |
 | Task 6: Refactor Collections Feature | Not Started | | |
 | Task 7: Refactor Answer Generation Feature | Not Started | | |
-| Task 8: Refactor Document Retrieval Feature | Not Started | | |
+| Task 8: Refactor Document Retrieval Feature with Improved Architecture | Not Started | | |
 | Task 9: Create Application Router | Not Started | | |
 | Task 10: Integrate Features | Not Started | | |
 | Task 11: Optimize Performance | Not Started | | |
