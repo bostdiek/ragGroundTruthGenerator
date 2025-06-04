@@ -6,6 +6,7 @@ import styled from 'styled-components';
 
 import DocumentCard from '../../../components/ui/DocumentCard';
 import RevisionModal from '../../../components/ui/RevisionModal';
+import { Document } from '../../../types';
 import CollectionsService from '../../collections/api/collections.service';
 
 // Types
@@ -19,20 +20,6 @@ interface QAPair {
   created_by?: string;
   updated_at?: string;
   metadata?: Record<string, any>;
-}
-
-interface Document {
-  id: string;
-  title: string;
-  content: string;
-  source: {
-    id: string;
-    name: string;
-    type?: string;
-  };
-  url?: string;
-  metadata?: Record<string, unknown>;
-  relevance_score?: number;
 }
 
 // Styled Components

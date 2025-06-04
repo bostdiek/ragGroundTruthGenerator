@@ -4,7 +4,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import styled from 'styled-components';
 
 import GenerationService from '../api/generation.service';
-import { GenerationRequest } from '../types';
+import { GenerationRequest } from '../types/index';
 
 interface AnswerEditorProps {
   question: string;

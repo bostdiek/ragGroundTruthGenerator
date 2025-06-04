@@ -60,6 +60,9 @@ const ErrorMessage = styled.div`
 
 /**
  * Component for displaying and selecting data sources
+ *
+ * This component is part of the retrieval workflow and allows users to
+ * select which data sources to search for relevant documents.
  */
 const SourceSelector: React.FC<SourceSelectorProps> = ({
   sources,
@@ -69,15 +72,40 @@ const SourceSelector: React.FC<SourceSelectorProps> = ({
   error = null,
 }) => {
   if (isLoading) {
-    return <div>Loading sources...</div>;
+    return (
+      <SourceSelectorContainer>
+        <h2>Select Data Sources</h2>
+        <p>Loading available data sources...</p>
+        <SourceList>
+          {[1, 2, 3].map(i => (
+            <SourceCard key={i} selected={false} style={{ opacity: 0.5 }}>
+              <SourceTitle>Loading...</SourceTitle>
+              <SourceDescription>Please wait</SourceDescription>
+            </SourceCard>
+          ))}
+        </SourceList>
+      </SourceSelectorContainer>
+    );
   }
 
   if (error) {
-    return <ErrorMessage>{error}</ErrorMessage>;
+    return (
+      <SourceSelectorContainer>
+        <h2>Select Data Sources</h2>
+        <ErrorMessage>
+          <strong>Error loading data sources:</strong> {error}
+        </ErrorMessage>
+      </SourceSelectorContainer>
+    );
   }
 
   if (sources.length === 0) {
-    return <div>No data sources available</div>;
+    return (
+      <SourceSelectorContainer>
+        <h2>Select Data Sources</h2>
+        <p>No data sources are currently available.</p>
+      </SourceSelectorContainer>
+    );
   }
 
   return (

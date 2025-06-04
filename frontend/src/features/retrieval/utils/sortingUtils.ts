@@ -1,7 +1,7 @@
 /**
  * Sorting utilities for documents
  */
-import { Document, SortConfig } from '../types';
+import { Document, SortConfig } from '../types/index';
 
 /**
  * Sort documents by a specific field and direction
@@ -22,14 +22,14 @@ export const sortDocumentsByField = (
 
     // Handle special case for relevance score
     if (field === 'relevance_score') {
-      valueA = a.relevance_score || 0;
-      valueB = b.relevance_score || 0;
+      valueA = a.relevance_score ?? 0;
+      valueB = b.relevance_score ?? 0;
     }
     // Handle sorting by metadata fields
     else if (field.startsWith('metadata.')) {
       const metadataField = field.replace('metadata.', '');
-      valueA = a.metadata[metadataField];
-      valueB = b.metadata[metadataField];
+      valueA = a.metadata?.[metadataField];
+      valueB = b.metadata?.[metadataField];
     }
     // Handle sorting by document fields
     else {
@@ -52,7 +52,9 @@ export const sortDocumentsByField = (
     }
 
     // Handle numeric comparison
-    return direction === 'asc' ? valueA - valueB : valueB - valueA;
+    return direction === 'asc'
+      ? (valueA ?? 0) - (valueB ?? 0)
+      : (valueB ?? 0) - (valueA ?? 0);
   });
 };
 

@@ -2,7 +2,7 @@
  * Utility functions for document filtering and sorting
  */
 
-import { Document } from '../../../types';
+import { Document } from '../types/index';
 
 /**
  * Filter documents based on metadata criteria
@@ -10,7 +10,7 @@ import { Document } from '../../../types';
  * @param filters Object with filter criteria
  * @returns Filtered array of documents
  */
-export const filterDocuments = (
+export const filterDocumentsByMetadata = (
   documents: Document[],
   filters: Record<string, any>
 ): Document[] => {
@@ -26,7 +26,7 @@ export const filterDocuments = (
         return true;
       }
 
-      const documentValue = document.metadata[key];
+      const documentValue = document.metadata?.[key];
 
       // Handle array values (includes any match)
       if (Array.isArray(value)) {
@@ -62,14 +62,15 @@ export const sortDocuments = (
 
     // Handle special case for relevance score
     if (sortBy === 'relevance_score') {
-      valueA = a.relevance_score || 0;
-      valueB = b.relevance_score || 0;
+      // Use optional chaining with nullish coalescing for safety
+      valueA = a.relevance_score ?? 0;
+      valueB = b.relevance_score ?? 0;
     }
     // Handle sorting by metadata fields
     else if (sortBy.startsWith('metadata.')) {
       const metadataField = sortBy.replace('metadata.', '');
-      valueA = a.metadata[metadataField];
-      valueB = b.metadata[metadataField];
+      valueA = a.metadata?.[metadataField];
+      valueB = b.metadata?.[metadataField];
     }
     // Handle sorting by document fields
     else {

@@ -1,13 +1,5 @@
 import { delay, http, HttpResponse } from 'msw';
-
-// Define Document type for testing
-interface Document {
-  id: string;
-  title: string;
-  content: string;
-  source: { id: string; name: string };
-  metadata: Record<string, any>;
-}
+import { Document } from '../../types';
 
 // Mock documents
 export const mockDocuments: Document[] = [

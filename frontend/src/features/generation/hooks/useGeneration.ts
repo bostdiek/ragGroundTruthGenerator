@@ -6,7 +6,7 @@ import {
   GenerationRequest,
   GenerationResponse,
   GenerationState,
-} from '../types';
+} from '../types/index';
 
 /**
  * Custom hook for answer generation functionality

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
-import { Document, Source } from '../../../types';
+import { Document as AppDocument, Source } from '../../../types';
 import RetrievalService from '../../retrieval/api/retrieval.service';
-import { DocumentSelector as SimpleDocumentSelector } from '.';
+import GenerationDocumentSelector from './GenerationDocumentSelector';
 
 interface AdvancedDocumentSelectorProps {
-  selectedDocuments: Document[];
-  onDocumentSelectionChange: (documents: Document[]) => void;
+  selectedDocuments: AppDocument[];
+  onDocumentSelectionChange: (documents: AppDocument[]) => void;
   onNextStep: () => void;
   onPreviousStep: () => void;
 }
@@ -118,7 +118,7 @@ const AdvancedDocumentSelector: React.FC<AdvancedDocumentSelectorProps> = ({
   onPreviousStep,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Document[]>([]);
+  const [searchResults, setSearchResults] = useState<AppDocument[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [sources, setSources] = useState<Source[]>([]);
@@ -131,8 +131,9 @@ const AdvancedDocumentSelector: React.FC<AdvancedDocumentSelectorProps> = ({
   useEffect(() => {
     const fetchSources = async () => {
       try {
-        const fetchedSources = await RetrievalService.getSources();
-        setSources(fetchedSources);
+        const response = await RetrievalService.getSources();
+        // Since we're using the same types now, no conversion needed
+        setSources(response.data);
       } catch (error) {
         console.error('Error fetching sources:', error);
       }
@@ -149,19 +150,26 @@ const AdvancedDocumentSelector: React.FC<AdvancedDocumentSelectorProps> = ({
     setSearchError(null);
 
     try {
-      let sourcesToSearch = undefined;
+      let filtersToUse: Record<string, any> = {};
+
+      // Add source filter if not 'all'
       if (activeSource !== 'all') {
-        sourcesToSearch = [activeSource];
+        filtersToUse.sourceIds = [activeSource];
+      }
+
+      // Add any other metadata filters
+      if (Object.keys(metadataFilters).length > 0) {
+        filtersToUse = { ...filtersToUse, ...metadataFilters };
       }
 
       const results = await RetrievalService.searchDocuments({
         query: searchQuery,
-        sources: sourcesToSearch,
-        filters:
-          Object.keys(metadataFilters).length > 0 ? metadataFilters : undefined,
+        filters: filtersToUse,
       });
 
-      setSearchResults(results);
+      // Since we now have the correct type in our search results,
+      // we can simply assign it without explicit conversion
+      setSearchResults(results.documents);
     } catch (error) {
       console.error('Error searching documents:', error);
       setSearchError('Failed to search documents. Please try again.');
@@ -171,7 +179,7 @@ const AdvancedDocumentSelector: React.FC<AdvancedDocumentSelectorProps> = ({
   };
 
   // Handle document selection toggle
-  const handleSelectDocument = (document: Document) => {
+  const handleSelectDocument = (document: AppDocument) => {
     const isSelected = selectedDocuments.some(doc => doc.id === document.id);
 
     if (isSelected) {
@@ -225,8 +233,8 @@ const AdvancedDocumentSelector: React.FC<AdvancedDocumentSelectorProps> = ({
 
       {searchError && <ErrorMessage>{searchError}</ErrorMessage>}
 
-      {/* Use our simple DocumentSelector component for displaying search results */}
-      <SimpleDocumentSelector
+      {/* Use our GenerationDocumentSelector component for displaying search results */}
+      <GenerationDocumentSelector
         documents={searchResults}
         selectedDocuments={selectedDocuments}
         onSelectDocument={handleSelectDocument}
@@ -240,7 +248,7 @@ const AdvancedDocumentSelector: React.FC<AdvancedDocumentSelectorProps> = ({
           <SectionTitle>
             Selected Documents ({selectedDocuments.length})
           </SectionTitle>
-          <SimpleDocumentSelector
+          <GenerationDocumentSelector
             documents={selectedDocuments}
             selectedDocuments={selectedDocuments}
             onSelectDocument={handleSelectDocument}

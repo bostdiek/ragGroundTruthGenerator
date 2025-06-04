@@ -103,6 +103,7 @@ export interface Source {
   id: string;
   name: string;
   description: string;
+  type?: string;
 
   // Extensible metadata - Add custom fields here
   metadata?: Record<string, any>;

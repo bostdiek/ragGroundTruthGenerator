@@ -1,7 +1,7 @@
 /**
  * Filtering utilities for documents
  */
-import { Document, RetrievalFilters } from '../types';
+import { Document, RetrievalFilters } from '../types/index';
 
 /**
  * Filter documents based on filter criteria
@@ -21,7 +21,11 @@ export const filterDocuments = (
   return documents.filter(doc => {
     // Filter by source IDs
     if (filters.sourceIds && filters.sourceIds.length > 0) {
-      if (!doc.source.id || !filters.sourceIds.includes(doc.source.id)) {
+      if (
+        !doc.source ||
+        !doc.source.id ||
+        !filters.sourceIds.includes(doc.source.id)
+      ) {
         return false;
       }
     }

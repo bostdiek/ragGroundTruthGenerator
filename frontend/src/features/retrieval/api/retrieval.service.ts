@@ -5,7 +5,7 @@ import {
   SearchParams,
   SearchResult,
   Source,
-} from '../types';
+} from '../types/index';
 
 /**
  * Service for document retrieval API calls

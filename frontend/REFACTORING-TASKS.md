@@ -268,15 +268,15 @@ Note: The goal is to maintain the current functionality with cleaner code organi
    - [x] Create state interface for other features to consume retrieval results
 
 5. Refactor/Create retrieval components:
-   - [ ] Create/Move SourceSelector component
+   - [x] Create/Move SourceSelector component
    - [ ] Create DocumentDiscovery component for automatic document retrieval
-   - [ ] Refactor DocumentSelector component
+   - [x] Refactor DocumentSelector component
    - [ ] Create RetrievalWorkflow component to manage the overall retrieval process
 
 6. Update generation feature to use retrieval feature:
-   - [ ] Modify CreateQA to use the retrieval workflow
-   - [ ] Update generation components to consume selected documents from retrieval
-   - [ ] Ensure proper state synchronization between features
+   - [x] Modify CreateQA to use the retrieval workflow
+   - [x] Update generation components to consume selected documents from retrieval
+   - [x] Ensure proper state synchronization between features
 
 7. Run tests to verify functionality:
    - [ ] Test source selection
@@ -432,7 +432,7 @@ Note: The goal is to maintain the current functionality with cleaner code organi
 | Task 5: Refactor Authentication Feature | Not Started | | |
 | Task 6: Refactor Collections Feature | Not Started | | |
 | Task 7: Refactor Answer Generation Feature | Not Started | | |
-| Task 8: Refactor Document Retrieval Feature with Improved Architecture | Not Started | | |
+| Task 8: Refactor Document Retrieval Feature with Improved Architecture | In Progress | 2025-06-04 | Made significant progress with Document type unification. Merged types between retrieval and generation features. Integration between retrieval and generation features is now working properly. Still need to create DocumentDiscovery and RetrievalWorkflow components, and implement tests. |
 | Task 9: Create Application Router | Not Started | | |
 | Task 10: Integrate Features | Not Started | | |
 | Task 11: Optimize Performance | Not Started | | |

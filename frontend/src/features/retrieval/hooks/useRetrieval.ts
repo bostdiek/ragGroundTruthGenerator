@@ -6,7 +6,7 @@ import type {
   SearchParams,
   SearchResult,
   Source,
-} from '../types';
+} from '../types/index';
 
 /**
  * Hook for fetching available data sources with pagination

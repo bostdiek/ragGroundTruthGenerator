@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 import GenerationService from '../api/generation.service';
-import { GenerationRequest, GenerationResponse, Rule } from '../types';
+import { GenerationRequest, GenerationResponse, Rule } from '../types/index';
 
 /**
  * Query key for generation queries

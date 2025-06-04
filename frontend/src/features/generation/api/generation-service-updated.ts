@@ -1,5 +1,5 @@
 import { apiClient } from '../../../lib/api/client';
-import { GenerationRequest, GenerationResponse, Rule } from '../types';
+import { GenerationRequest, GenerationResponse, Rule } from '../types/index';
 
 /**
  * Service for answer generation API calls

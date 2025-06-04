@@ -1,21 +1,9 @@
 // Retrieval feature type definitions
 
-/**
- * Document representation
- */
-export interface Document {
-  id: string;
-  title: string;
-  content: string;
-  source: {
-    id: string;
-    name: string;
-    type?: string;
-  };
-  url?: string;
-  metadata: Record<string, any>;
-  relevance_score?: number;
-}
+// Re-export shared types from the app level
+import { Document as AppDocument, Source } from '../../../types';
+
+export type { Document, Source } from '../../../types';
 
 /**
  * Search parameters
@@ -27,26 +15,35 @@ export interface SearchParams {
   sortDirection?: 'asc' | 'desc';
   page?: number;
   limit?: number;
+  offset?: number;
 }
 
 /**
  * Search result with pagination
  */
 export interface SearchResult {
-  documents: Document[];
+  documents: AppDocument[];
   totalCount: number;
   page: number;
   totalPages: number;
 }
 
 /**
- * Data source
+ * Pagination interface for API responses
  */
-export interface Source {
-  id: string;
-  name: string;
-  description: string;
-  type?: string;
+export interface Pagination {
+  page: number;
+  limit: number;
+  totalCount: number;
+  totalPages: number;
+}
+
+/**
+ * Paginated response wrapper
+ */
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: Pagination;
 }
 
 /**
@@ -63,20 +60,7 @@ export interface RetrievalFilters {
 }
 
 /**
- * Generic pagination response wrapper
- */
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    totalCount: number;
-    totalPages: number;
-  };
-}
-
-/**
- * Sorting configuration
+ * Sort configuration
  */
 export interface SortConfig {
   field: string;
