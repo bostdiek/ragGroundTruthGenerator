@@ -39,26 +39,34 @@ class Document(DocumentBase):
     model_config = {"from_attributes": True}
 
 
+class SearchResult(BaseModel):
+    """Model for search results with pagination."""
+
+    documents: list[Document]
+    totalCount: int
+    page: int
+    totalPages: int
+
+
 class RetrievalRequest(BaseModel):
     """Model for retrieval request data."""
 
     query: str
     sources: list[str] = []
-    filters: dict[str, Any] | None = None
     max_results: int = 10
 
 
 # Define retrieval endpoints
-@router.post("/search", response_model=list[Document])
+@router.post("/search", response_model=SearchResult)
 async def search_documents(request: RetrievalRequest):
     """
     Search for documents based on a query.
 
     Args:
-        request: The retrieval request containing the query and filters.
+        request: The retrieval request containing the query and sources.
 
     Returns:
-        List[Document]: A list of retrieved documents.
+        SearchResult: Search results with pagination metadata.
     """
     results = []
 
@@ -68,29 +76,52 @@ async def search_documents(request: RetrievalRequest):
             try:
                 provider = get_data_source_provider(source_id)
                 source_results = await provider.retrieve_documents(
-                    request.query, request.filters
+                    request.query, {}, limit=request.max_results
                 )
                 results.extend(source_results)
             except ValueError:
                 # Skip invalid sources
                 continue
     else:
-        # Otherwise use all available sources
+        # Use all available data sources
         providers = get_all_data_source_providers()
         for provider_id, provider in providers.items():
-            source_results = await provider.retrieve_documents(
-                request.query, request.filters
+            try:
+                source_results = await provider.retrieve_documents(
+                    request.query, {}, limit=request.max_results
+                )
+                results.extend(source_results)
+            except ValueError:
+                # Skip invalid sources
+                continue
+
+    # Convert results to Document objects
+    documents = []
+    for result in results:
+        documents.append(
+            Document(
+                id=result.get("id", ""),
+                title=result.get("title", ""),
+                content=result.get("content", ""),
+                source=result.get("source", {}),
+                url=result.get("url"),
+                metadata=result.get("metadata", {}),
+                relevance_score=result.get("relevance_score"),
             )
-            results.extend(source_results)
+        )
 
-    # Sort by relevance if available, otherwise preserve order
-    results.sort(key=lambda x: x.get("relevance_score", 0), reverse=True)
+    # Limit results
+    documents = documents[: request.max_results]
 
-    # Limit results if requested
-    if request.max_results:
-        results = results[: request.max_results]
-
-    return results
+    # Calculate pagination (simplified - just return page 1 for now)
+    total_count = len(documents)
+    
+    return SearchResult(
+        documents=documents,
+        totalCount=total_count,
+        page=1,
+        totalPages=1 if total_count > 0 else 0,
+    )
 
 
 @router.get("/search", response_model=list[Document])

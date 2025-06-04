@@ -46,22 +46,17 @@ const RetrievalService = {
     searchParams: SearchParams
   ): Promise<SearchResult> => {
     try {
-      const {
-        query,
-        filters,
-        sort,
-        sortDirection,
-        page = 1,
-        limit = 10,
-      } = searchParams;
+      const { query, filters, limit = 10 } = searchParams;
+
+      // Extract source IDs from filters if present
+      const sources = filters?.sourceIds || [];
+
       const response = await apiClient.post<SearchResult>('/retrieval/search', {
         query,
-        filters,
-        sort,
-        sort_direction: sortDirection,
-        page,
-        limit,
+        sources,
+        max_results: limit,
       });
+
       return response.data;
     } catch (error: any) {
       throw createApiError(error);
@@ -95,21 +90,15 @@ const RetrievalService = {
     searchParams: Omit<SearchParams, 'query'> = {}
   ): Promise<SearchResult> => {
     try {
-      const {
-        filters,
-        sort = 'relevance_score',
-        sortDirection = 'desc',
-        page = 1,
-        limit = 10,
-      } = searchParams;
+      const { filters, limit = 10 } = searchParams;
+
+      // Extract source IDs from filters if present
+      const sources = filters?.sourceIds || [];
 
       const response = await apiClient.post<SearchResult>('/retrieval/search', {
         query: question,
-        filters,
-        sort,
-        sort_direction: sortDirection,
-        page,
-        limit,
+        sources,
+        max_results: limit,
       });
 
       return response.data;

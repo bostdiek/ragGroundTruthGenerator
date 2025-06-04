@@ -271,7 +271,7 @@ Note: The goal is to maintain the current functionality with cleaner code organi
    - [x] Create/Move SourceSelector component
    - [x] Create DocumentDiscovery component for automatic document retrieval
    - [x] Refactor DocumentSelector component
-   - [ ] Create RetrievalWorkflow component to manage the overall retrieval process
+   - [x] Create RetrievalWorkflow component to manage the overall retrieval process
 
 6. Update generation feature to use retrieval feature:
    - [x] Modify CreateQA to use the retrieval workflow

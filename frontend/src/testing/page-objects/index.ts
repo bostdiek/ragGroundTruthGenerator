@@ -6,17 +6,31 @@
 export class LoginPage {
   async fillLoginForm() {}
   async clickSignIn() {}
-  async isDisplayed() { return false; }
-  async hasErrorMessage() { return false; }
-  async isLoggedIn() { return false; }
+  async isDisplayed() {
+    return false;
+  }
+  async hasErrorMessage() {
+    return false;
+  }
+  async isLoggedIn() {
+    return false;
+  }
   async clickLogout() {}
-  async hasLogoutButton() { return false; }
-  async getUserInfo() { return ''; }
+  async hasLogoutButton() {
+    return false;
+  }
+  async getUserInfo() {
+    return '';
+  }
 }
 
 export class CollectionsPage {
-  async isDisplayed() { return false; }
-  async getCollectionItems() { return []; }
+  async isDisplayed() {
+    return false;
+  }
+  async getCollectionItems() {
+    return [];
+  }
   async clickCollection() {}
   async clickCreateCollection() {}
   async navigateTo() {}

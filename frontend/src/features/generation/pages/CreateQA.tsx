@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import { Document } from '../../../types';
 import CollectionsService from '../../collections/api/collections.service';
-import { RetrievalProvider, RetrievalSelector } from '../../retrieval';
+import { RetrievalProvider, RetrievalWorkflow } from '../../retrieval';
 import { AnswerEditor, QuestionInput } from '../components';
 
 // Types
@@ -332,7 +332,7 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
       {currentStep === 2 && (
         <RetrievalProvider>
           <div>
-            <RetrievalSelector
+            <RetrievalWorkflow
               question={question}
               onDocumentsSelected={handleDocumentsSelected}
             />

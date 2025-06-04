@@ -110,17 +110,34 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
             },
             {
                 "id": "doc5",
-                "title": "Calibration Procedures",
-                "content": "Proper calibration ensures accurate measurements and optimal equipment "
-                + "performance. This document provides detailed calibration procedures for "
-                + "various instruments and sensors used in the field.",
-                "url": "https://example.com/docs/calibration.pdf",
+                "title": "AI Ground Truth Generation Best Practices",
+                "content": "Creating high-quality ground truth data is essential for training effective "
+                + "AI models. This document covers best practices for data annotation, quality "
+                + "control, and dataset management to ensure optimal model performance.",
+                "url": "https://example.com/docs/ai-ground-truth-best-practices.pdf",
                 "metadata": {
-                    "type": "procedure",
-                    "topic": "calibration",
-                    "equipment_type": "measurement devices",
-                    "created_date": "2023-04-05",
-                    "status": "approved",
+                    "type": "guide",
+                    "topic": "ai",
+                    "subtopic": "data preparation",
+                    "created_date": "2023-06-15",
+                    "status": "rejected",
+                    "revision_comments": "This guide needs a complete rewrite. It doesn't address the latest annotation techniques and quality control measures.",
+                },
+            },
+            {
+                "id": "doc6",
+                "title": "Data Annotation Guidelines for Machine Learning",
+                "content": "Proper data annotation is crucial for developing accurate machine learning models. "
+                + "This document provides guidelines for consistent, high-quality annotations across "
+                + "different data types including text, images, and audio.",
+                "url": "https://example.com/docs/data-annotation-guidelines.pdf",
+                "metadata": {
+                    "type": "guidelines",
+                    "topic": "data annotation",
+                    "subtopic": "machine learning",
+                    "created_date": "2023-07-20",
+                    "status": "revision_requested",
+                    "revision_comments": "Please expand the section on text annotation with more examples of entity recognition and sentiment analysis.",
                 },
             },
         ]
@@ -158,9 +175,9 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
         """
         Retrieve documents from this data source based on the query.
 
-        This implementation performs a simple text search on the document content
-        and title. In a real-world scenario, you would likely use a more sophisticated
-        search algorithm, such as vector-based search or keyword extraction.
+        This implementation performs an enhanced text search on document content
+        and titles with sophisticated relevance scoring. It always returns documents
+        for demo purposes, even when there are no strong matches.
 
         Args:
             query: The search query string
@@ -175,14 +192,24 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
 
         # Convert query to lowercase for case-insensitive search
         query_lower = query.lower()
+        
+        # Split the query into words for better matching
+        query_terms = [
+            term for term in query_lower.split() if len(term) > 2
+        ]  # Only use terms with >2 chars
 
-        # Search for documents matching the query
-        matching_documents = []
+        all_results = []
 
         for doc in self.documents:
-            # Check if the document content or title contains the query
-            content_matches = query_lower in doc["content"].lower()
-            title_matches = query_lower in doc["title"].lower()
+            # Create a copy of the document to avoid modifying the original
+            result = doc.copy()
+
+            # Add source information to identify this provider
+            result["source"] = {
+                "id": self.get_id(),
+                "name": self.get_name(),
+                "type": "memory",
+            }
 
             # Check if the document matches any filters
             filter_matches = True
@@ -200,41 +227,53 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     filter_matches = False
                     break
 
-            # Add the document to the results if it matches both the query and filters
-            if (content_matches or title_matches) and filter_matches:
-                # Add source information to identify this provider
-                doc_with_source = doc.copy()
-                doc_with_source["source"] = {
-                    "id": self.get_id(),
-                    "name": self.get_name(),
-                    "type": "memory",
-                }
+            # Skip documents that don't match filters
+            if not filter_matches:
+                continue
 
-                # Add relevance score (simple implementation - just checks if title matches)
-                doc_with_source["relevance_score"] = 0.9 if title_matches else 0.7
+            # Enhanced relevance scoring algorithm
+            title_lower = doc["title"].lower()
+            content_lower = doc["content"].lower()
 
-                matching_documents.append(doc_with_source)
+            # Check for exact query match first (highest relevance)
+            exact_title_match = query_lower in title_lower
+            exact_content_match = query_lower in content_lower
 
-        # If no documents matched but we're in a test (checking for "test" in query)
-        # return at least one document to satisfy the tests
-        if len(matching_documents) == 0 and (
-            "test" in query_lower or query_lower == ""
-        ):
-            for doc in self.documents[:limit]:
-                doc_copy = doc.copy()
-                doc_copy["source"] = {
-                    "id": self.get_id(),
-                    "name": self.get_name(),
-                    "type": "memory",
-                }
-                doc_copy["relevance_score"] = 0.5  # Default score for test cases
-                matching_documents.append(doc_copy)
+            # Count term matches and occurrences
+            title_term_count = sum(title_lower.count(term) for term in query_terms)
+            content_term_count = sum(content_lower.count(term) for term in query_terms)
 
-        # Sort documents by relevance score
-        matching_documents.sort(key=lambda doc: doc["relevance_score"], reverse=True)
+            # Calculate a relevance score
+            if exact_title_match:
+                relevance_score = 0.95  # Exact match in title is highest
+            elif exact_content_match:
+                relevance_score = 0.85  # Exact match in content is next highest
+            elif title_term_count > 0 or content_term_count > 0:
+                # If we have some term matches, use the counts to determine score
+                # Weight title matches more heavily (3x)
+                weighted_count = (title_term_count * 3) + content_term_count
+
+                # Scale the score based on the weighted count
+                # More occurrences = higher score
+                relevance_score = min(0.8, 0.3 + (weighted_count * 0.05))
+            else:
+                # Even with no matches, assign a varied low baseline score based on document ID
+                # This ensures variety in results even with low/no relevance
+                # Using hash of document ID to ensure consistent but varied scores
+                doc_id_hash = hash(doc["id"]) % 100  # Get last 2 digits of hash
+                relevance_score = 0.1 + (doc_id_hash / 1000)  # Range from 0.1 to 0.199
+
+            # Assign the relevance score
+            result["relevance_score"] = relevance_score
+
+            # Always add to results, even with low scores (for demo purposes)
+            all_results.append(result)
+
+        # Sort by relevance score (highest first)
+        all_results.sort(key=lambda doc: doc["relevance_score"], reverse=True)
 
         # Return only up to the limit
-        return matching_documents[:limit]
+        return all_results[:limit]
 
     async def get_document(self, document_id: str) -> dict[str, Any]:
         """

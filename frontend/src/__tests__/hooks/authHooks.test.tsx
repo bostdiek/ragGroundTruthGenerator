@@ -1,13 +1,16 @@
-import { describe, it, expect, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
-import { useRefreshToken } from '../../features/auth/hooks/authHooks';
-import { AuthProvider } from '../../features/auth/contexts/AuthContext';
+import { act, renderHook } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+
 import * as authService from '../../features/auth/api/authService';
+import { AuthProvider } from '../../features/auth/contexts/AuthContext';
+import { useRefreshToken } from '../../features/auth/hooks/authHooks';
 import { useAuthStore } from '../../features/auth/stores/authStore';
 
 // Mock the refreshToken API
 vi.mock('../../features/auth/api/authService', async () => {
-  const actual: any = await vi.importActual('../../features/auth/api/authService');
+  const actual: any = await vi.importActual(
+    '../../features/auth/api/authService'
+  );
   return {
     ...actual,
     refreshToken: vi.fn(),
@@ -27,7 +30,9 @@ describe('useRefreshToken', () => {
       <AuthProvider>{children}</AuthProvider>
     );
 
-    const { result, waitFor } = renderHook(() => useRefreshToken(), { wrapper });
+    const { result, waitFor } = renderHook(() => useRefreshToken(), {
+      wrapper,
+    });
 
     act(() => {
       result.current.mutate();
