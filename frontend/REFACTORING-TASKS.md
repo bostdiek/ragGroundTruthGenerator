@@ -262,10 +262,10 @@ Note: The goal is to maintain the current functionality with cleaner code organi
    - [x] Add pagination functionality
 
 4. Create retrieval state management:
-   - [ ] Set up React Query for source and document data
-   - [ ] Create retrieval workflow state management with Zustand
-   - [ ] Implement shared state for selected sources and documents
-   - [ ] Create state interface for other features to consume retrieval results
+   - [x] Set up React Query for source and document data
+   - [x] Create retrieval workflow state management with Zustand
+   - [x] Implement shared state for selected sources and documents
+   - [x] Create state interface for other features to consume retrieval results
 
 5. Refactor/Create retrieval components:
    - [ ] Create/Move SourceSelector component

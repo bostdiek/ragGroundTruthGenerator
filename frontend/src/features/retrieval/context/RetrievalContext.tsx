@@ -1,16 +1,30 @@
 import React, {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
 } from 'react';
 
 import { Document, Source } from '../../../types';
-import { useRecommendedDocuments, useSources } from '../hooks';
-import { useRetrievalStore } from '../stores';
+import {
+  useDocumentSearch,
+  useRecommendedDocuments,
+  useSources,
+} from '../hooks';
+import { RetrievalStatus, useRetrievalStore } from '../stores';
 
+/**
+ * Extended context type to support the full retrieval workflow
+ */
 interface RetrievalContextType {
+  // Workflow state
+  status: RetrievalStatus;
+  setStatus: (status: RetrievalStatus) => void;
+  error: string | null;
+  isReady: boolean; // Whether retrieval process is ready for consumption
+
   // Source-related
   sources: Source[];
   isLoadingSources: boolean;
@@ -32,8 +46,12 @@ interface RetrievalContextType {
   setFilter: (key: string, value: any) => void;
   clearFilters: () => void;
 
-  // Actions
+  // Workflow actions
+  startWorkflow: () => void;
+  completeWorkflow: () => void;
+  resetWorkflow: () => void;
   fetchRecommendedDocuments: (question: string) => Promise<Document[]>;
+  searchDocuments: (query: string) => Promise<Document[]>;
   clearSelections: () => void;
 }
 
@@ -52,25 +70,53 @@ export const RetrievalProvider: React.FC<RetrievalProviderProps> = ({
 }) => {
   // Use the retrieval store for state management
   const {
+    // Workflow state
+    status,
+    setStatus,
+    error,
+    setError,
+    isReady,
+
+    // Selections
     selectedSources,
     selectSource,
     clearSelectedSources,
     selectedDocuments,
     selectDocument: selectDocumentInStore,
     clearSelectedDocuments,
+
+    // Search state
     searchQuery,
     setSearchQuery,
+    setLastSearchedQuery,
+
+    // Results cache
+    setSourceResults,
+    setDocumentResults,
+
+    // Filters
     filters,
     setFilter,
     clearFilters,
+
+    // Workflow actions
+    startWorkflow,
+    completeWorkflow,
+    resetWorkflow,
   } = useRetrievalStore();
 
   // Use custom hooks for data fetching
   const {
-    data: sources = [],
+    data: sourcesData,
     isLoading: isLoadingSources,
     error: sourcesError,
-  } = useSources();
+  } = useSources(1, 50, {
+    onSuccess: (data: any) => {
+      setSourceResults(data);
+    },
+  });
+
+  const sources = sourcesData?.data || [];
 
   // State for documents
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -83,31 +129,116 @@ export const RetrievalProvider: React.FC<RetrievalProviderProps> = ({
     refetch: refetchRecommendedDocuments,
     isLoading: isRecommendationLoading,
     error: recommendationError,
-  } = useRecommendedDocuments(currentQuestion, selectedSources, filters, false);
+  } = useRecommendedDocuments(
+    currentQuestion,
+    {
+      filters: {
+        ...filters,
+        sourceIds: selectedSources,
+      },
+    },
+    { enabled: false }
+  );
+
+  // Document search query (disabled by default, will be triggered by searchDocuments)
+  const {
+    refetch: refetchDocumentSearch,
+    isLoading: isSearchLoading,
+    error: searchError,
+  } = useDocumentSearch(
+    {
+      query: searchQuery,
+      filters: {
+        ...filters,
+        sourceIds: selectedSources,
+      },
+    },
+    { enabled: false }
+  );
 
   // Fetch recommended documents based on the question and selected sources
   const fetchRecommendedDocuments = async (
     question: string
   ): Promise<Document[]> => {
     if (!question.trim() || selectedSources.length === 0) {
+      setError('Please enter a question and select at least one source');
       return [];
     }
 
     setIsLoadingDocuments(true);
     setDocumentsError(null);
     setCurrentQuestion(question);
+    setStatus('searching');
 
     try {
       const result = await refetchRecommendedDocuments();
-      const documents = result.data || [];
-      setDocuments(documents);
-      return documents;
+      const fetchedDocuments = result.data?.documents || [];
+      // Use type assertion to handle the type incompatibility
+      setDocuments(fetchedDocuments as unknown as Document[]);
+      setDocumentResults(result.data as any);
+
+      if (fetchedDocuments.length === 0) {
+        setError(
+          'No relevant documents found. Try a different question or select different sources.'
+        );
+      } else {
+        setError(null);
+        setStatus('selecting_documents');
+      }
+
+      return fetchedDocuments as unknown as Document[];
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
           : 'Failed to fetch relevant documents';
       setDocumentsError(errorMessage);
+      setError(errorMessage);
+      setStatus('error');
+      return [];
+    } finally {
+      setIsLoadingDocuments(false);
+    }
+  };
+
+  // Search for documents with the given query
+  const searchDocuments = async (query: string): Promise<Document[]> => {
+    if (!query.trim() || selectedSources.length === 0) {
+      setError('Please enter a search query and select at least one source');
+      return [];
+    }
+
+    setIsLoadingDocuments(true);
+    setDocumentsError(null);
+    setSearchQuery(query);
+    setLastSearchedQuery(query);
+    setStatus('searching');
+
+    try {
+      const result = await refetchDocumentSearch();
+      const fetchedDocuments = result.data?.documents || [];
+      // Use type assertion to handle the type incompatibility
+      setDocuments(fetchedDocuments as unknown as Document[]);
+      setDocumentResults(result.data as any);
+
+      if (fetchedDocuments.length === 0) {
+        setError(
+          'No documents found. Try a different search or select different sources.'
+        );
+      } else {
+        setError(null);
+        setStatus('selecting_documents');
+      }
+
+      return fetchedDocuments as unknown as Document[];
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to search for documents';
+      setDocumentsError(errorMessage);
+      setError(errorMessage);
+      setStatus('error');
       return [];
     } finally {
       setIsLoadingDocuments(false);
@@ -115,27 +246,60 @@ export const RetrievalProvider: React.FC<RetrievalProviderProps> = ({
   };
 
   // Handle document selection
-  const selectDocument = (document: Document, isSelected: boolean) => {
-    selectDocumentInStore(document, isSelected);
-  };
+  const selectDocument = useCallback(
+    (document: Document, isSelected: boolean) => {
+      selectDocumentInStore(document, isSelected);
 
-  // Clear all selections
-  const clearSelections = () => {
+      // If we have at least one document selected, we're ready to complete the workflow
+      if (isSelected || selectedDocuments.length > 0) {
+        setStatus('completed');
+      } else if (selectedDocuments.length === 0) {
+        setStatus('selecting_documents');
+      }
+    },
+    [selectDocumentInStore, selectedDocuments.length, setStatus]
+  );
+
+  // Clear all selections and reset the workflow
+  const clearSelections = useCallback(() => {
     clearSelectedSources();
     clearSelectedDocuments();
     clearFilters();
     setDocuments([]);
-  };
+    resetWorkflow();
+  }, [
+    clearSelectedSources,
+    clearSelectedDocuments,
+    clearFilters,
+    resetWorkflow,
+  ]);
 
   // Update loading and error states based on query state
   useEffect(() => {
-    setIsLoadingDocuments(isRecommendationLoading);
-    if (recommendationError) {
-      setDocumentsError('Failed to fetch documents. Please try again.');
-    }
-  }, [isRecommendationLoading, recommendationError]);
+    setIsLoadingDocuments(isRecommendationLoading || isSearchLoading);
 
+    if (recommendationError || searchError) {
+      const errorMessage = 'Failed to fetch documents. Please try again.';
+      setDocumentsError(errorMessage);
+      setError(errorMessage);
+    }
+  }, [
+    isRecommendationLoading,
+    recommendationError,
+    isSearchLoading,
+    searchError,
+    setError,
+  ]);
+
+  // Provide the complete context value
   const value = {
+    // Workflow state
+    status,
+    setStatus,
+    error,
+    isReady,
+
+    // Source-related
     sources,
     isLoadingSources,
     sourcesError: sourcesError
@@ -144,19 +308,26 @@ export const RetrievalProvider: React.FC<RetrievalProviderProps> = ({
     selectedSources,
     selectSource,
 
+    // Document-related
     documents,
     isLoadingDocuments,
     documentsError,
     selectedDocuments,
     selectDocument,
 
+    // Search and filtering
     searchQuery,
     setSearchQuery,
     filters,
     setFilter,
     clearFilters,
 
+    // Workflow actions
+    startWorkflow,
+    completeWorkflow,
+    resetWorkflow,
     fetchRecommendedDocuments,
+    searchDocuments,
     clearSelections,
   };
 
