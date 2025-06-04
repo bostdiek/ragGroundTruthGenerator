@@ -240,13 +240,13 @@ Note: The goal is to maintain the current functionality with cleaner code organi
 ### Task 8: Refactor Document Retrieval Feature with Improved Architecture
 
 1. Create feature directory structure:
-   - [ ] `features/retrieval/api` - Retrieval API functions
-   - [ ] `features/retrieval/components` - Retrieval-specific components
-   - [ ] `features/retrieval/hooks` - Retrieval-specific hooks
-   - [ ] `features/retrieval/stores` - Retrieval state management
-   - [ ] `features/retrieval/types` - Retrieval type definitions
-   - [ ] `features/retrieval/utils` - Retrieval utilities
-   - [ ] `features/retrieval/context` - Shared context for retrieval state
+   - [x] `features/retrieval/api` - Retrieval API functions
+   - [x] `features/retrieval/components` - Retrieval-specific components
+   - [x] `features/retrieval/hooks` - Retrieval-specific hooks
+   - [x] `features/retrieval/stores` - Retrieval state management
+   - [x] `features/retrieval/types` - Retrieval type definitions
+   - [x] `features/retrieval/utils` - Retrieval utilities
+   - [x] `features/retrieval/context` - Shared context for retrieval state
 
 2. Implement clear separation of concerns:
    - [ ] Move source selection functionality from generation to retrieval feature

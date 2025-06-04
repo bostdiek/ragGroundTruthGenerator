@@ -1,3 +1,4 @@
+/* global console */
 import { apiClient } from '../../../lib/api/client';
 
 // Types
@@ -80,6 +81,7 @@ const RetrievalService = {
     filters?: Record<string, any>,
     limit?: number
   ): Promise<Document[]> => {
+    // eslint-disable-next-line no-console
     console.log('Retrieving documents with params:', {
       query: question,
       sources,
@@ -93,9 +95,11 @@ const RetrievalService = {
         filters,
         max_results: limit || 10,
       });
+      // eslint-disable-next-line no-console
       console.log('Retrieved documents:', response.data);
       return response.data;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error in getRecommendedDocuments:', error);
       throw error;
     }
