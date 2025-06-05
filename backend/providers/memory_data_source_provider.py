@@ -74,8 +74,6 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "topic": "troubleshooting",
                     "component": "air filter",
                     "created_date": "2023-03-22",
-                    "status": "revision_requested",
-                    "revision_comments": "Please add more details about HEPA filters and their maintenance requirements.",
                 },
             },
             {
@@ -90,7 +88,6 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "topic": "safety",
                     "importance": "critical",
                     "created_date": "2023-05-10",
-                    "status": "ready_for_review",
                 },
             },
             {
@@ -105,8 +102,6 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "topic": "technical",
                     "model": "Model X",
                     "created_date": "2023-02-07",
-                    "status": "revision_requested",
-                    "revision_comments": "The voltage specifications need to be updated to match the latest model revisions. Please verify all electrical requirements.",
                 },
             },
             {
@@ -121,8 +116,6 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "topic": "ai",
                     "subtopic": "data preparation",
                     "created_date": "2023-06-15",
-                    "status": "rejected",
-                    "revision_comments": "This guide needs a complete rewrite. It doesn't address the latest annotation techniques and quality control measures.",
                 },
             },
             {
@@ -137,8 +130,6 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "topic": "data annotation",
                     "subtopic": "machine learning",
                     "created_date": "2023-07-20",
-                    "status": "revision_requested",
-                    "revision_comments": "Please expand the section on text annotation with more examples of entity recognition and sentiment analysis.",
                 },
             },
         ]

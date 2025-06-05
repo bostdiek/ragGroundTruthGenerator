@@ -115,7 +115,7 @@ async def search_documents(request: RetrievalRequest):
 
     # Calculate pagination (simplified - just return page 1 for now)
     total_count = len(documents)
-    
+
     return SearchResult(
         documents=documents,
         totalCount=total_count,
@@ -165,7 +165,7 @@ async def search_documents_get(
 
 class PaginatedResponse(BaseModel):
     """Model for paginated responses."""
-    
+
     data: list[dict[str, str]]
     pagination: dict[str, int]
 
@@ -175,7 +175,7 @@ class PaginatedResponse(BaseModel):
 @router.get("/data_sources", response_model=PaginatedResponse)
 async def get_sources(
     page: int = Query(1, ge=1, description="Page number (1-indexed)"),
-    limit: int = Query(20, ge=1, le=100, description="Number of sources per page")
+    limit: int = Query(20, ge=1, le=100, description="Number of sources per page"),
 ):
     """
     Get all available data sources with pagination.
@@ -200,7 +200,7 @@ async def get_sources(
     start_index = (page - 1) * limit
     end_index = start_index + limit
     paginated_sources = sources[start_index:end_index]
-    
+
     total_pages = (total_count + limit - 1) // limit  # Ceiling division
 
     return PaginatedResponse(
@@ -210,7 +210,7 @@ async def get_sources(
             "limit": limit,
             "totalCount": total_count,
             "totalPages": total_pages,
-        }
+        },
     )
 
 

@@ -1,5 +1,10 @@
 """
-Memory-based data source provider for the AI Ground Truth Generator.
+Memory-based data source provider for the AI Ground                 "metadata": {
+                    "type": "manual",
+                    "topic": "installation",
+                    "equipment_type": "general",
+                    "created_date": "2023-01-15",
+                },enerator.
 
 This module provides a simple in-memory data source provider for development and demonstration.
 It serves as a reference implementation for creating new data source providers.
@@ -74,8 +79,6 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "topic": "troubleshooting",
                     "component": "air filter",
                     "created_date": "2023-03-22",
-                    "status": "revision_requested",
-                    "revision_comments": "Please add more details about HEPA filters and their maintenance requirements.",
                 },
             },
             {
@@ -90,7 +93,6 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "topic": "safety",
                     "importance": "critical",
                     "created_date": "2023-05-10",
-                    "status": "ready_for_review",
                 },
             },
             {
@@ -105,7 +107,6 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "topic": "technical",
                     "product": "Model X",
                     "created_date": "2023-02-18",
-                    "status": "approved",
                 },
             },
             {
@@ -120,8 +121,6 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "topic": "ai",
                     "subtopic": "data preparation",
                     "created_date": "2023-06-15",
-                    "status": "rejected",
-                    "revision_comments": "This guide needs a complete rewrite. It doesn't address the latest annotation techniques and quality control measures.",
                 },
             },
             {
@@ -136,8 +135,6 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
                     "topic": "data annotation",
                     "subtopic": "machine learning",
                     "created_date": "2023-07-20",
-                    "status": "revision_requested",
-                    "revision_comments": "Please expand the section on text annotation with more examples of entity recognition and sentiment analysis.",
                 },
             },
         ]
@@ -192,7 +189,7 @@ class MemoryDataSourceProvider(BaseDataSourceProvider):
 
         # Convert query to lowercase for case-insensitive search
         query_lower = query.lower()
-        
+
         # Split the query into words for better matching
         query_terms = [
             term for term in query_lower.split() if len(term) > 2

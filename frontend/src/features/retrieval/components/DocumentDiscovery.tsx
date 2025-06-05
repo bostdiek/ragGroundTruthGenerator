@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 import { Alert, Button, Card, Form } from '../../../components';
+import DocumentCard from '../../../components/ui/DocumentCard';
 import {
   borderRadius,
   colors,
@@ -21,6 +22,13 @@ interface DocumentDiscoveryProps {
   hideSearchButton?: boolean;
   showSourceTabs?: boolean;
   onDocumentTabsVisible?: (visible: boolean) => void;
+}
+
+// Props interface for SelectableDocumentCard
+interface SelectableDocumentCardProps {
+  document: Document;
+  selected: boolean;
+  onClick: () => void;
 }
 
 // Styled components using the design system
@@ -99,43 +107,32 @@ const DocumentList = styled.div`
   gap: ${spacing.md};
 `;
 
-const DocumentItem = styled(Card)<{ selected: boolean }>`
-  cursor: pointer;
-  transition: all ${transitions.duration.short} ${transitions.easing.easeInOut};
-  border: 2px solid
-    ${props => (props.selected ? colors.primary.main : 'transparent')};
-  background-color: ${props =>
-    props.selected ? colors.primary.light : colors.background.paper};
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: ${shadows.md};
-    border-color: ${colors.primary.main};
-  }
+const EmptyState = styled.div`
+  text-align: center;
+  padding: ${spacing.xl};
+  color: ${colors.text.secondary};
+  font-family: ${typography.fontFamily.primary};
+  font-size: ${typography.fontSize.md};
+  background-color: ${colors.background.paper};
+  border-radius: ${borderRadius.md};
+  border: 1px solid ${colors.grey[200]};
 `;
 
-const DocumentHeader = styled.div`
+const RelevanceHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: ${spacing.sm};
-`;
-
-const DocumentTitle = styled.h4`
-  margin: 0;
-  font-family: ${typography.fontFamily.primary};
-  font-size: ${typography.fontSize.lg};
-  font-weight: ${typography.fontWeight.semiBold};
-  color: ${colors.text.primary};
-  flex: 1;
-  margin-right: ${spacing.md};
+  padding: ${spacing.sm} ${spacing.md};
+  background-color: ${colors.background.paper};
+  border-radius: ${borderRadius.md} ${borderRadius.md} 0 0;
+  border-bottom: 1px solid ${colors.grey[200]};
 `;
 
 const RelevanceContainer = styled.div`
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: ${spacing.xs};
+  align-items: center;
+  gap: ${spacing.sm};
 `;
 
 const RelevanceIndicator = styled.div<{ score: number }>`
@@ -158,38 +155,54 @@ const RelevanceScore = styled.span`
   font-weight: ${typography.fontWeight.medium};
 `;
 
-const DocumentSource = styled.div`
-  color: ${colors.text.secondary};
-  font-size: ${typography.fontSize.sm};
-  margin-bottom: ${spacing.sm};
-  font-family: ${typography.fontFamily.primary};
-`;
-
-const DocumentPreview = styled.div`
-  color: ${colors.text.primary};
-  font-size: ${typography.fontSize.sm};
-  line-height: ${typography.lineHeight.md};
-  font-family: ${typography.fontFamily.primary};
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: ${spacing.xl};
-  color: ${colors.text.secondary};
-  font-family: ${typography.fontFamily.primary};
-  font-size: ${typography.fontSize.md};
-  background-color: ${colors.background.paper};
+const SelectableDocumentCard = styled.div<{ selected: boolean }>`
+  cursor: pointer;
+  transition: all ${transitions.duration.short} ${transitions.easing.easeInOut};
+  border: 2px solid
+    ${props => (props.selected ? colors.primary.main : 'transparent')};
   border-radius: ${borderRadius.md};
-  border: 1px solid ${colors.grey[200]};
+  background-color: ${props =>
+    props.selected ? colors.primary.light : 'transparent'};
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${shadows.md};
+    border-color: ${colors.primary.main};
+  }
+
+  .document-card {
+    margin: 0;
+  }
 `;
 
-/**
- * Component for automatically discovering relevant documents based on a question
- *
- * This component is part of the retrieval workflow and allows users to
- * input a question and automatically retrieve relevant documents based on
- * selected sources.
- */
+const SelectableDocumentCardComponent: React.FC<
+  SelectableDocumentCardProps
+> = ({ document, selected, onClick }) => {
+  return (
+    <SelectableDocumentCard selected={selected} onClick={onClick}>
+      <RelevanceHeader>
+        <span
+          style={{
+            fontSize: typography.fontSize.sm,
+            color: colors.text.secondary,
+          }}
+        >
+          Source: {document.source?.name || 'Unknown'}
+        </span>
+        <RelevanceContainer>
+          <RelevanceIndicator score={document.relevance_score || 0} />
+          <RelevanceScore>
+            {Math.round((document.relevance_score || 0) * 100)}% match
+          </RelevanceScore>
+        </RelevanceContainer>
+      </RelevanceHeader>
+      <div className="document-card">
+        <DocumentCard doc={document} />
+      </div>
+    </SelectableDocumentCard>
+  );
+};
+
 const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
   autoSearch = false,
   hideSearchButton = false,
@@ -211,13 +224,11 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
   const [isDiscovering, setIsDiscovering] = useState(false);
   const [activeSourceTab, setActiveSourceTab] = useState<string>('all');
 
-  // Query to fetch recommended documents based on the question and selected sources
   const { refetch, isLoading, error, isError } = useQuery({
     queryKey: ['recommendedDocuments', searchQuery, selectedSources],
     queryFn: async () => {
       setIsDiscovering(true);
       try {
-        // Only include the 'sources' filter if we have selected sources
         const filters =
           selectedSources.length > 0
             ? { sourceIds: selectedSources }
@@ -234,7 +245,6 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
           }
         );
 
-        // Update store with results
         setDocumentResults(result);
         setLastSearchedQuery(searchQuery);
         setStatus('selecting_documents');
@@ -244,7 +254,7 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
         setIsDiscovering(false);
       }
     },
-    enabled: false, // Don't run automatically, only on button click
+    enabled: false,
   });
 
   const handleDiscoverDocuments = () => {
@@ -263,7 +273,6 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
     return selectedDocuments.some(doc => doc.id === documentId);
   };
 
-  // Add useEffect to run search automatically when component mounts if autoSearch is true
   useEffect(() => {
     const runInitialSearch = async () => {
       if (
@@ -278,20 +287,14 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
     runInitialSearch();
   }, [autoSearch, searchQuery, selectedSources, refetch]);
 
-  // Effect to ensure the status is set correctly when documents are found
   useEffect(() => {
     if (documentResults?.documents && documentResults.documents.length > 0) {
-      // If we have documents, make sure we set the status correctly
       setStatus('selecting_documents');
-    }
-    // Clear the loading state if we're done processing
-    else if (!isLoading && !isDiscovering && searchQuery && documentResults) {
-      // We finished searching but found no documents
+    } else if (!isLoading && !isDiscovering && searchQuery && documentResults) {
       setStatus('error');
     }
   }, [documentResults, isLoading, isDiscovering, searchQuery, setStatus]);
 
-  // Notify parent component when tabs with documents are visible
   useEffect(() => {
     if (
       onDocumentTabsVisible &&
@@ -335,20 +338,15 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
       ) : null;
     }
 
-    // Group documents by source for tab display
     if (showSourceTabs && documentResults.documents.length > 0) {
-      // Inform parent that tabs are visible with documents
       if (onDocumentTabsVisible) {
         onDocumentTabsVisible(true);
       }
 
-      // Group documents by source
       const docsBySource: Record<string, Document[]> = {};
 
-      // Initialize "All" category
       docsBySource['all'] = documentResults.documents;
 
-      // Group by source
       documentResults.documents.forEach(doc => {
         const sourceId = doc.source?.id || 'unknown';
 
@@ -359,7 +357,6 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
         docsBySource[sourceId].push(doc);
       });
 
-      // Create tabs for each source
       const tabs = [
         { id: 'all', label: 'All Documents' },
         ...Object.keys(docsBySource)
@@ -372,7 +369,6 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
           }),
       ];
 
-      // If we have unknown sources, add as last tab
       if (docsBySource['unknown']?.length > 0) {
         tabs.push({ id: 'unknown', label: 'Unknown Source' });
       }
@@ -383,27 +379,12 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
         return (
           <DocumentList>
             {docsToShow.map(document => (
-              <DocumentItem
+              <SelectableDocumentCardComponent
                 key={document.id}
+                document={document}
                 selected={isDocumentSelected(document.id)}
                 onClick={() => handleSelectDocument(document)}
-              >
-                <DocumentHeader>
-                  <DocumentTitle>{document.title}</DocumentTitle>
-                  <RelevanceContainer>
-                    <RelevanceIndicator score={document.relevance_score || 0} />
-                    <RelevanceScore>
-                      {Math.round((document.relevance_score || 0) * 100)}% match
-                    </RelevanceScore>
-                  </RelevanceContainer>
-                </DocumentHeader>
-                <DocumentSource>
-                  Source: {document.source?.name || 'Unknown'}
-                </DocumentSource>
-                <DocumentPreview>
-                  {document.content.substring(0, 200)}...
-                </DocumentPreview>
-              </DocumentItem>
+              />
             ))}
           </DocumentList>
         );
@@ -456,7 +437,6 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
       );
     }
 
-    // Standard document list without tabs
     return (
       <ResultsContainer>
         <SectionTitle>Discovered Documents</SectionTitle>
@@ -465,27 +445,12 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
         </SectionDescription>
         <DocumentList>
           {documentResults.documents.map(document => (
-            <DocumentItem
+            <SelectableDocumentCardComponent
               key={document.id}
+              document={document}
               selected={isDocumentSelected(document.id)}
               onClick={() => handleSelectDocument(document)}
-            >
-              <DocumentHeader>
-                <DocumentTitle>{document.title}</DocumentTitle>
-                <RelevanceContainer>
-                  <RelevanceIndicator score={document.relevance_score || 0} />
-                  <RelevanceScore>
-                    {Math.round((document.relevance_score || 0) * 100)}% match
-                  </RelevanceScore>
-                </RelevanceContainer>
-              </DocumentHeader>
-              <DocumentSource>
-                Source: {document.source?.name || 'Unknown'}
-              </DocumentSource>
-              <DocumentPreview>
-                {document.content.substring(0, 200)}...
-              </DocumentPreview>
-            </DocumentItem>
+            />
           ))}
         </DocumentList>
       </ResultsContainer>
