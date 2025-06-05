@@ -22,6 +22,7 @@ interface DocumentDiscoveryProps {
   autoSearch?: boolean;
   hideSearchButton?: boolean;
   showSourceTabs?: boolean;
+  hideQuestionInput?: boolean;  // Add this prop to hide the question input field
   onDocumentTabsVisible?: (visible: boolean) => void;
 }
 
@@ -222,6 +223,7 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
   autoSearch = false,
   hideSearchButton = false,
   showSourceTabs = false,
+  hideQuestionInput = false,
   onDocumentTabsVisible,
 }) => {
   const {
@@ -513,19 +515,21 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
     <DiscoveryContainer>
       <PageTitle>Find Relevant Documents</PageTitle>
 
-      <Form.FormField
-        label="Enter your question"
-        htmlFor="question"
-        hint="Describe what you would like to know to find relevant documents"
-      >
-        <StyledTextarea
-          id="question"
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          placeholder="What would you like to know?"
-          disabled={isLoading || isDiscovering}
-        />
-      </Form.FormField>
+      {!hideQuestionInput && (
+        <Form.FormField
+          label="Enter your question"
+          htmlFor="question"
+          hint="Describe what you would like to know to find relevant documents"
+        >
+          <StyledTextarea
+            id="question"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="What would you like to know?"
+            disabled={isLoading || isDiscovering}
+          />
+        </Form.FormField>
+      )}
 
       {!hideSearchButton && (
         <Form.FormActions align="left">

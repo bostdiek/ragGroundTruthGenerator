@@ -434,6 +434,7 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
         <DocumentDiscovery
           autoSearch={true}
           hideSearchButton={true}
+          hideQuestionInput={true}
           showSourceTabs={true}
           onDocumentTabsVisible={handleDocumentTabsVisible}
         />
