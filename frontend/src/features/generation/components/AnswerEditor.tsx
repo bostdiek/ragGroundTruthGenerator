@@ -3,13 +3,19 @@ import React, { useState } from 'react';
 import rehypeSanitize from 'rehype-sanitize';
 import styled from 'styled-components';
 
+import { Alert } from '../../../components/ui/Alert';
+import { Button as UIButton } from '../../../components/ui/Button';
+import { colors } from '../../../components/ui/theme';
+import { Document } from '../../../types';
 import GenerationService from '../api/generation.service';
+import GenerationRules from './GenerationRules';
+import SelectedDocumentsDisplay from './SelectedDocumentsDisplay';
 
 interface AnswerEditorProps {
   question: string;
   answer: string;
   onAnswerChange: (answer: string) => void;
-  selectedDocuments: any[];
+  selectedDocuments: Document[];
   onPreviousStep: () => void;
   onSave: () => void;
   isSaving?: boolean;
@@ -32,34 +38,27 @@ const EditorContainer = styled.div`
   overflow: hidden;
 `;
 
-const Button = styled.button`
-  background-color: #0078d4;
-  color: white;
+const AutoResponseButton = styled(UIButton)`
+  background-color: ${colors.success.main};
+  color: ${colors.common.white};
   border: none;
-  border-radius: 4px;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  margin-right: 1rem;
 
   &:hover {
-    background-color: #106ebe;
+    background-color: ${colors.success.dark};
   }
 
   &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+    background-color: ${colors.success.light};
   }
 `;
 
-const SecondaryButton = styled(Button)`
-  background-color: #f3f3f3;
-  color: #333;
-  border: 1px solid #ddd;
+const SecondaryButton = styled(UIButton)`
+  background-color: ${colors.grey[100]};
+  color: ${colors.text.primary};
+  border: 1px solid ${colors.grey[300]};
 
   &:hover {
-    background-color: #e6e6e6;
+    background-color: ${colors.grey[200]};
   }
 `;
 
@@ -71,31 +70,6 @@ const ButtonContainer = styled.div`
 
 const ActionButtons = styled.div`
   display: flex;
-`;
-
-const ErrorMessage = styled.div`
-  color: #d13438;
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  background-color: #fde7e9;
-  border-radius: 4px;
-`;
-
-const ModelInfo = styled.div`
-  margin-top: 1.5rem;
-  padding: 1rem;
-  background-color: #f9f9f9;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  color: #666;
-`;
-
-const InfoItem = styled.div`
-  margin-bottom: 0.5rem;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
 `;
 
 /**
@@ -112,10 +86,9 @@ const AnswerEditor: React.FC<AnswerEditorProps> = ({
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
-  const [generationInfo, setGenerationInfo] = useState<{
-    model: string;
-    tokens: Record<string, number>;
-  } | null>(null);
+  const [rules, setRules] = useState<string[]>([]);
+  const [editorMode, setEditorMode] = useState<'edit' | 'live'>('edit');
+  const [hasGeneratedAnswer, setHasGeneratedAnswer] = useState(false);
   // Error state for save operations that might be used in future enhancements
   const [saveError] = useState<string | null>(null);
 
@@ -130,18 +103,22 @@ const AnswerEditor: React.FC<AnswerEditorProps> = ({
 
     setIsGenerating(true);
     setGenerationError(null);
+    setHasGeneratedAnswer(true);
 
     try {
       const response = await GenerationService.generateAnswer({
         question,
         documents: selectedDocuments,
+        custom_rules: rules,
       });
 
       onAnswerChange(response.answer);
-      setGenerationInfo({
+      // For debugging purposes, log the model and token information
+      console.debug('Generation info:', {
         model: response.model_used,
         tokens: response.token_usage,
       });
+      setEditorMode('live');
     } catch (error) {
       console.error('Error generating answer:', error);
       setGenerationError('Failed to generate answer. Please try again.');
@@ -155,51 +132,42 @@ const AnswerEditor: React.FC<AnswerEditorProps> = ({
       <SectionTitle>Question</SectionTitle>
       <p style={{ marginBottom: '2rem' }}>{question}</p>
 
+      {/* Display selected documents */}
+      <SelectedDocumentsDisplay documents={selectedDocuments} />
+
+      {/* Rules input */}
+      <GenerationRules rules={rules} onRulesChange={setRules} />
+
       <SectionTitle>Create Answer</SectionTitle>
+
+      <div style={{ marginBottom: '1rem' }}>
+        <AutoResponseButton
+          onClick={generateAnswer}
+          disabled={isGenerating || selectedDocuments.length === 0}
+          style={{ marginBottom: '1rem' }}
+        >
+          {isGenerating
+            ? 'Generating...'
+            : hasGeneratedAnswer
+              ? 'Try another answer'
+              : 'Auto generate an answer'}
+        </AutoResponseButton>
+        {generationError && <Alert variant="error">{generationError}</Alert>}
+      </div>
 
       <EditorContainer data-color-mode="light">
         <MDEditor
           value={answer}
           onChange={value => onAnswerChange(value || '')}
-          preview="edit"
-          height={300}
+          preview={editorMode}
+          height={400}
           previewOptions={{
             rehypePlugins: [[rehypeSanitize]],
           }}
         />
       </EditorContainer>
 
-      {generationError && <ErrorMessage>{generationError}</ErrorMessage>}
-
-      <Button
-        onClick={generateAnswer}
-        disabled={isGenerating || selectedDocuments.length === 0}
-      >
-        {isGenerating ? 'Generating...' : 'Generate Answer with AI'}
-      </Button>
-
-      {saveError && <ErrorMessage>{saveError}</ErrorMessage>}
-
-      {generationInfo && (
-        <ModelInfo>
-          <InfoItem>
-            Generated using: {generationInfo.model || 'AI model'}
-          </InfoItem>
-          {generationInfo.tokens && (
-            <>
-              <InfoItem>
-                Prompt tokens: {generationInfo.tokens.prompt_tokens}
-              </InfoItem>
-              <InfoItem>
-                Completion tokens: {generationInfo.tokens.completion_tokens}
-              </InfoItem>
-              <InfoItem>
-                Total tokens: {generationInfo.tokens.total_tokens}
-              </InfoItem>
-            </>
-          )}
-        </ModelInfo>
-      )}
+      {saveError && <Alert variant="error">{saveError}</Alert>}
 
       <ButtonContainer>
         <SecondaryButton onClick={onPreviousStep} disabled={isSaving}>
@@ -207,9 +175,9 @@ const AnswerEditor: React.FC<AnswerEditorProps> = ({
         </SecondaryButton>
 
         <ActionButtons>
-          <Button onClick={onSave} disabled={isSaving || !answer.trim()}>
+          <UIButton onClick={onSave} disabled={isSaving || !answer.trim()}>
             {isSaving ? 'Saving Q&A Pair...' : 'Save Q&A Pair'}
-          </Button>
+          </UIButton>
         </ActionButtons>
       </ButtonContainer>
     </Section>

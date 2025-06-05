@@ -6,10 +6,10 @@ This module handles answer generation operations.
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 
-from providers.factory import get_generator
+from providers.factory import get_auth_provider, get_generator
 from providers.generation import GenerationManager
 
 # Create router
@@ -44,11 +44,6 @@ def get_generation_manager():
 
 
 # POST /generation/answer endpoint for answer generation (matches test expectations)
-from fastapi import Header
-
-from providers.factory import get_auth_provider
-
-
 @router.post("/answer", response_model=dict[str, Any])
 async def generate_answer(
     request: GenerationRequest, authorization: str | None = Header(None)
@@ -64,36 +59,38 @@ async def generate_answer(
         scheme, token = authorization.split()
         if scheme.lower() != "bearer":
             raise ValueError("Invalid token format")
-    except Exception:
+    except Exception as err:
         raise HTTPException(
             status_code=401, detail="Invalid authentication credentials"
-        )
+        ) from err
     auth_provider = get_auth_provider()
     try:
         await auth_provider.verify_token(token)
     except Exception as e:
-        raise HTTPException(status_code=401, detail=str(e) or "Invalid token")
+        raise HTTPException(status_code=401, detail=str(e) or "Invalid token") from e
 
-    # Use the demo generation logic
-    # In a real app, use the manager/generator
-    answer = ""
-    if request.documents:
-        # Use the first document's content for a simple answer
-        answer = f"Based on the provided documents, the answer is: {request.documents[0].get('content', 'No content available.')}"
-    else:
-        answer = "No documents provided. Cannot generate an answer."
-    # Apply custom rules (demo: just append them)
-    if request.custom_rules:
-        answer += " Rules: " + "; ".join(request.custom_rules)
-    return {
-        "answer": answer,
-        "model": request.model,
-        "token_usage": {
-            "prompt_tokens": 10,
-            "completion_tokens": 20,
-            "total_tokens": 30,
-        },
-    }
+    # Use the generation manager with the factory-provided generator
+    generation_manager = get_generation_manager()
+
+    try:
+        response = await generation_manager.generate_answer(
+            question=request.question,
+            documents=request.documents,
+            custom_rules=request.custom_rules,
+            model=request.model,
+            temperature=request.temperature,
+            max_tokens=request.max_tokens,
+        )
+
+        return {
+            "answer": response["answer"],
+            "model_used": response["model_used"],
+            "token_usage": response["token_usage"],
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error generating answer: {str(e)}"
+        ) from e
 
 
 # We don't need a get_available_models endpoint for the demo

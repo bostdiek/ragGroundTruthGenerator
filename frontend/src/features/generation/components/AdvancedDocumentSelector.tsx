@@ -124,9 +124,7 @@ const AdvancedDocumentSelector: React.FC<AdvancedDocumentSelectorProps> = ({
   const [sources, setSources] = useState<Source[]>([]);
   const [activeSource, setActiveSource] = useState<string>('all');
   // We're keeping this state as it might be used in future features
-  const [metadataFilters] = useState<Record<string, any>>(
-    {}
-  );
+  const [metadataFilters] = useState<Record<string, any>>({});
 
   // Fetch sources on component mount
   useEffect(() => {

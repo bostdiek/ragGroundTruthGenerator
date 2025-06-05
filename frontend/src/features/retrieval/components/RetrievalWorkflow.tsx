@@ -172,7 +172,7 @@ const DocumentsReadyBadge = styled.div`
   font-size: ${typography.fontSize.sm};
   font-weight: ${typography.fontWeight.semiBold};
   margin-left: ${spacing.sm};
-  
+
   &:before {
     content: '✓';
     margin-right: ${spacing.xs};
@@ -377,7 +377,7 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
       // Skip the review step (3) and directly complete the workflow
       if (selectedDocuments.length > 0) {
         completeWorkflow();
-        
+
         // Call the callback to notify parent component of selected documents
         if (onDocumentsSelected) {
           onDocumentsSelected(selectedDocuments);
@@ -505,10 +505,11 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
 
         <Summary>
           <SummaryTitle>Retrieval Summary</SummaryTitle>
-          
+
           {selectedDocuments.length > 0 && (
             <p style={{ marginBottom: spacing.md, color: colors.success.dark }}>
-              You've selected {selectedDocuments.length} document{selectedDocuments.length !== 1 ? 's' : ''} for answer generation. 
+              You've selected {selectedDocuments.length} document
+              {selectedDocuments.length !== 1 ? 's' : ''} for answer generation.
               Click "Generate Answer" when you're ready to proceed.
             </p>
           )}
@@ -571,8 +572,9 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
       <div>
         <Title>Document Retrieval</Title>
         <Subtitle>
-          Select relevant documents to use as context for generating your answer.
-          After selecting documents, click "Generate Answer" to proceed directly to the answer generation step.
+          Select relevant documents to use as context for generating your
+          answer. After selecting documents, click "Generate Answer" to proceed
+          directly to the answer generation step.
         </Subtitle>
       </div>
 
@@ -696,7 +698,8 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
             variant="success"
             title={`${selectedDocuments.length} document${selectedDocuments.length !== 1 ? 's' : ''} selected`}
           >
-            Your selected documents are ready to use for answer generation. Click "Generate Answer" to proceed.
+            Your selected documents are ready to use for answer generation.
+            Click "Generate Answer" to proceed.
           </Alert>
         </div>
       )}

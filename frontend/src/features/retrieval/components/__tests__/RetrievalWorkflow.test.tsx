@@ -179,7 +179,9 @@ describe('RetrievalWorkflow', () => {
 
     // Find and click the Complete button - using getAllByText since we have multiple elements with the same text
     const completeButtons = screen.getAllByText('Generate Answer');
-    const buttonElement = completeButtons.find(button => button.tagName.toLowerCase() === 'button');
+    const buttonElement = completeButtons.find(
+      button => button.tagName.toLowerCase() === 'button'
+    );
     if (buttonElement) {
       await user.click(buttonElement);
     } else {

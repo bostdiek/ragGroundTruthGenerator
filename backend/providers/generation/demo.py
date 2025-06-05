@@ -21,6 +21,12 @@ class DemoGenerator(BaseGenerator):
     def __init__(self):
         """Initialize the demo generator."""
         self.lorem_ipsum = """
+# Demo Generator Lorem Ipsum Text
+
+The answer is formatted in markdown
+
+## Lorem Ipsum
+
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor 
 incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud 
 exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute 
