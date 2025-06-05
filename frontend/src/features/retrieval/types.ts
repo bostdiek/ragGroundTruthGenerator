@@ -20,7 +20,10 @@ export interface Document {
 
 export interface SearchParams {
   query: string;
-  filters?: Record<string, any>;
+  filters?: {
+    sourceIds?: string[];
+    [key: string]: any;
+  };
   limit?: number;
   offset?: number;
 }
@@ -28,4 +31,13 @@ export interface SearchParams {
 export interface SearchResult {
   documents: Document[];
   totalCount: number;
+  page?: number;
+  totalPages?: number;
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  totalPages: number;
 }

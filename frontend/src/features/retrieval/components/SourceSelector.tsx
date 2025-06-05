@@ -113,18 +113,22 @@ const SourceSelector: React.FC<SourceSelectorProps> = ({
       <h2>Select Data Sources</h2>
       <p>Choose which data sources to search for relevant documents</p>
       <SourceList>
-        {sources.map(source => (
-          <SourceCard
-            key={source.id}
-            selected={selectedSources.includes(source.id)}
-            onClick={() =>
-              onSelectSource(source.id, !selectedSources.includes(source.id))
-            }
-          >
-            <SourceTitle>{source.name}</SourceTitle>
-            <SourceDescription>{source.description}</SourceDescription>
-          </SourceCard>
-        ))}
+        {sources.map(source => {
+          const isSelected = selectedSources.includes(source.id);
+          return (
+            <SourceCard
+              key={source.id}
+              selected={isSelected}
+              onClick={() => onSelectSource(source.id, !isSelected)}
+              data-testid={
+                isSelected ? 'source-card-selected' : 'source-card-unselected'
+              }
+            >
+              <SourceTitle>{source.name}</SourceTitle>
+              <SourceDescription>{source.description}</SourceDescription>
+            </SourceCard>
+          );
+        })}
       </SourceList>
     </SourceSelectorContainer>
   );
