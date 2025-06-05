@@ -4,7 +4,6 @@ import rehypeSanitize from 'rehype-sanitize';
 import styled from 'styled-components';
 
 import GenerationService from '../api/generation.service';
-import { GenerationRequest } from '../types/index';
 
 interface AnswerEditorProps {
   question: string;
@@ -13,6 +12,7 @@ interface AnswerEditorProps {
   selectedDocuments: any[];
   onPreviousStep: () => void;
   onSave: () => void;
+  isSaving?: boolean;
 }
 
 const Section = styled.section`
@@ -108,6 +108,7 @@ const AnswerEditor: React.FC<AnswerEditorProps> = ({
   selectedDocuments,
   onPreviousStep,
   onSave,
+  isSaving = false,
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
@@ -115,8 +116,8 @@ const AnswerEditor: React.FC<AnswerEditorProps> = ({
     model: string;
     tokens: Record<string, number>;
   } | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
+  // Error state for save operations that might be used in future enhancements
+  const [saveError] = useState<string | null>(null);
 
   // Generate answer based on question and selected documents
   const generateAnswer = async () => {
@@ -201,13 +202,13 @@ const AnswerEditor: React.FC<AnswerEditorProps> = ({
       )}
 
       <ButtonContainer>
-        <SecondaryButton onClick={onPreviousStep}>
+        <SecondaryButton onClick={onPreviousStep} disabled={isSaving}>
           Back: Select Documents
         </SecondaryButton>
 
         <ActionButtons>
           <Button onClick={onSave} disabled={isSaving || !answer.trim()}>
-            {isSaving ? 'Saving...' : 'Save Q&A Pair'}
+            {isSaving ? 'Saving Q&A Pair...' : 'Save Q&A Pair'}
           </Button>
         </ActionButtons>
       </ButtonContainer>

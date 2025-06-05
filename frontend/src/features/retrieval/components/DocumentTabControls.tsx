@@ -225,8 +225,6 @@ const DocumentTabControls: React.FC<DocumentTabControlsProps> = ({
     });
 
     return filters;
-
-    return filters;
   }, [documents, availableMetadataFields]);
 
   // Define sort options

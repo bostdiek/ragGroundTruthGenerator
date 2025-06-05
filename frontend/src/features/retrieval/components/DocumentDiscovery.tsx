@@ -22,7 +22,7 @@ interface DocumentDiscoveryProps {
   autoSearch?: boolean;
   hideSearchButton?: boolean;
   showSourceTabs?: boolean;
-  hideQuestionInput?: boolean;  // Add this prop to hide the question input field
+  hideQuestionInput?: boolean; // Add this prop to hide the question input field
   onDocumentTabsVisible?: (visible: boolean) => void;
 }
 

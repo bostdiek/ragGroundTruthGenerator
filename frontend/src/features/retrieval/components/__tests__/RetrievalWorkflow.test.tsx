@@ -111,7 +111,7 @@ describe('RetrievalWorkflow', () => {
     expect(screen.getByText('Document Retrieval')).toBeInTheDocument();
     expect(
       screen.getByText(
-        /Find and select the most relevant documents for generating AI ground truth/i
+        /Select relevant documents to use as context for generating your answer/i
       )
     ).toBeInTheDocument();
   });
@@ -125,8 +125,8 @@ describe('RetrievalWorkflow', () => {
 
     // Check for step indicators (these might be numbers, circles, or other UI elements)
     expect(screen.getByText(/Select Sources/i)).toBeInTheDocument();
-    expect(screen.getByText(/Find Documents/i)).toBeInTheDocument();
-    expect(screen.getByText(/Review Selection/i)).toBeInTheDocument();
+    expect(screen.getByText(/Select Documents/i)).toBeInTheDocument();
+    expect(screen.getByText(/Create Answer/i)).toBeInTheDocument();
   });
 
   it('renders the source selection step initially', () => {
@@ -177,9 +177,14 @@ describe('RetrievalWorkflow', () => {
       </QueryClientProvider>
     );
 
-    // Find and click the Complete button
-    const completeButton = screen.getByText('Complete Retrieval');
-    await user.click(completeButton);
+    // Find and click the Complete button - using getAllByText since we have multiple elements with the same text
+    const completeButtons = screen.getAllByText('Generate Answer');
+    const buttonElement = completeButtons.find(button => button.tagName.toLowerCase() === 'button');
+    if (buttonElement) {
+      await user.click(buttonElement);
+    } else {
+      throw new Error('No button with text "Generate Answer" found');
+    }
 
     // Verify the callback was called with the selected documents
     expect(mockContextWithSelectedDocs.completeWorkflow).toHaveBeenCalled();

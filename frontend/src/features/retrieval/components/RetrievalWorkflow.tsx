@@ -156,6 +156,27 @@ const SelectedDocumentsList = styled.div`
   flex-direction: column;
   gap: ${spacing.md};
   margin-top: ${spacing.lg};
+  padding: ${spacing.md};
+  border: 2px solid ${colors.primary.main};
+  border-radius: ${borderRadius.md};
+  background-color: ${colors.primary.light};
+`;
+
+const DocumentsReadyBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  background-color: ${colors.success.main};
+  color: white;
+  padding: ${spacing.xs} ${spacing.sm};
+  border-radius: ${borderRadius.sm};
+  font-size: ${typography.fontSize.sm};
+  font-weight: ${typography.fontWeight.semiBold};
+  margin-left: ${spacing.sm};
+  
+  &:before {
+    content: '✓';
+    margin-right: ${spacing.xs};
+  }
 `;
 
 const SelectedDocumentItem = styled(Card)`
@@ -353,8 +374,15 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
         setCurrentStep(2);
       }
     } else if (currentStep === 2) {
-      setCurrentStep(3);
-      setStatus('selecting_documents');
+      // Skip the review step (3) and directly complete the workflow
+      if (selectedDocuments.length > 0) {
+        completeWorkflow();
+        
+        // Call the callback to notify parent component of selected documents
+        if (onDocumentsSelected) {
+          onDocumentsSelected(selectedDocuments);
+        }
+      }
     }
   };
 
@@ -446,7 +474,12 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
   const renderSummaryStep = () => {
     return (
       <StepContainer>
-        <SummaryTitle>Selected Documents</SummaryTitle>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <SummaryTitle>Selected Documents</SummaryTitle>
+          {selectedDocuments.length > 0 && (
+            <DocumentsReadyBadge>Ready for Generation</DocumentsReadyBadge>
+          )}
+        </div>
 
         {selectedDocuments.length === 0 ? (
           <Alert variant="warning" title="No documents selected">
@@ -472,6 +505,13 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
 
         <Summary>
           <SummaryTitle>Retrieval Summary</SummaryTitle>
+          
+          {selectedDocuments.length > 0 && (
+            <p style={{ marginBottom: spacing.md, color: colors.success.dark }}>
+              You've selected {selectedDocuments.length} document{selectedDocuments.length !== 1 ? 's' : ''} for answer generation. 
+              Click "Generate Answer" when you're ready to proceed.
+            </p>
+          )}
 
           <SummaryItem>
             <SummaryLabel>Selected Sources</SummaryLabel>
@@ -531,8 +571,8 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
       <div>
         <Title>Document Retrieval</Title>
         <Subtitle>
-          Find and select the most relevant documents for generating AI ground
-          truth.
+          Select relevant documents to use as context for generating your answer.
+          After selecting documents, click "Generate Answer" to proceed directly to the answer generation step.
         </Subtitle>
       </div>
 
@@ -590,14 +630,14 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
           <StepDot active={currentStep === 2} completed={currentStep > 2}>
             2
           </StepDot>
-          <StepLabel active={currentStep === 2}>Find Documents</StepLabel>
+          <StepLabel active={currentStep === 2}>Select Documents</StepLabel>
         </div>
 
         <div style={{ position: 'relative' }}>
           <StepDot active={currentStep === 3} completed={false}>
             3
           </StepDot>
-          <StepLabel active={currentStep === 3}>Review Selection</StepLabel>
+          <StepLabel active={currentStep === 3}>Create Answer</StepLabel>
         </div>
       </StepsIndicator>
 
@@ -636,14 +676,30 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
             onClick={handleNextStep}
             disabled={isNextDisabled()}
           >
-            {currentStep === 2 ? 'Review Selection' : 'Next'}
+            {currentStep === 2 ? 'Generate Answer' : 'Next'}
+            {currentStep === 2 && selectedDocuments.length > 0 ? ' →' : ''}
           </Button>
         ) : (
-          <Button variant="primary" onClick={handleCompleteWorkflow}>
-            Complete Retrieval
+          <Button
+            variant="primary"
+            onClick={handleCompleteWorkflow}
+            disabled={selectedDocuments.length === 0}
+          >
+            Generate Answer
           </Button>
         )}
       </NavigationContainer>
+
+      {currentStep === 3 && selectedDocuments.length > 0 && (
+        <div style={{ marginTop: '1rem' }}>
+          <Alert
+            variant="success"
+            title={`${selectedDocuments.length} document${selectedDocuments.length !== 1 ? 's' : ''} selected`}
+          >
+            Your selected documents are ready to use for answer generation. Click "Generate Answer" to proceed.
+          </Alert>
+        </div>
+      )}
 
       {currentStep === 3 && (
         <Button

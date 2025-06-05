@@ -123,7 +123,8 @@ const AdvancedDocumentSelector: React.FC<AdvancedDocumentSelectorProps> = ({
   const [searchError, setSearchError] = useState<string | null>(null);
   const [sources, setSources] = useState<Source[]>([]);
   const [activeSource, setActiveSource] = useState<string>('all');
-  const [metadataFilters, setMetadataFilters] = useState<Record<string, any>>(
+  // We're keeping this state as it might be used in future features
+  const [metadataFilters] = useState<Record<string, any>>(
     {}
   );
 

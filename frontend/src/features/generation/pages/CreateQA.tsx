@@ -115,6 +115,16 @@ const StatusLine = styled.div<{ status: string }>`
   font-weight: 500;
 `;
 
+const AlertMessage = styled.div<{ type: 'error' | 'success' }>`
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  background-color: ${props =>
+    props.type === 'error' ? '#ffebee' : '#e6f7e6'};
+  color: ${props => (props.type === 'error' ? '#c62828' : '#2e7d32')};
+  border: 1px solid ${props => (props.type === 'error' ? '#ef9a9a' : '#a5d6a7')};
+`;
+
 // More styled components
 const ButtonsContainer = styled.div`
   display: flex;
@@ -130,6 +140,8 @@ const Button = styled.button`
   transition: all 0.2s ease;
 `;
 
+/* Used in other files or as reference for styling - keeping for consistency */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PrimaryButton = styled(Button)`
   background-color: #1976d2;
   color: white;
@@ -179,8 +191,13 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
   const [answer, setAnswer] = useState('');
 
   // Edit mode state
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [originalQA, setOriginalQA] = useState<any | null>(null);
   const [status, setStatus] = useState<string>('ready_for_review');
+
+  // UI state
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch data when in edit mode
   useEffect(() => {
@@ -212,8 +229,12 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
   // Save the QA pair
   const saveQAPair = async () => {
     if (!question.trim() || !answer.trim() || selectedDocuments.length === 0) {
-      return; // Don't proceed if required fields are missing
+      setError('Please fill in all required fields');
+      return;
     }
+
+    setError(null);
+    setIsLoading(true);
 
     try {
       const qaPairData = {
@@ -232,31 +253,39 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
       if (isEditMode && qaId) {
         // Update existing QA pair
         savedQA = await CollectionsService.updateQAPair(qaId, qaPairData);
+        // Navigate to the review page for edited QA pairs
+        navigate(`/review-qa/${savedQA.id}`);
       } else if (collectionId) {
         // Create new QA pair
         savedQA = await CollectionsService.createQAPair(
           collectionId,
           qaPairData
         );
+        // Skip review page for new QA pairs, go directly back to collection
+        navigate(`/collections/${collectionId}`);
       } else {
         throw new Error('Missing collection ID');
       }
-
-      // Navigate to the review page for the saved QA pair
-      navigate(`/review-qa/${savedQA.id}`);
     } catch (error) {
       console.error('Error saving QA pair:', error);
+      setError(
+        `Failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Navigation between steps
-  const goToStep = (step: number) => {
+  const goToStep = (step: number, documentsToValidate?: Document[]) => {
     // Validate before allowing step navigation
     if (step === 2 && !question.trim()) {
       return; // Don't proceed if question is empty
     }
 
-    if (step === 3 && selectedDocuments.length === 0) {
+    // For step 3 validation, use provided documents or current selectedDocuments
+    const docsToCheck = documentsToValidate || selectedDocuments;
+    if (step === 3 && docsToCheck.length === 0) {
       return; // Don't proceed if no documents selected
     }
 
@@ -271,7 +300,8 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
   // Handle document selection from retrieval feature
   const handleDocumentsSelected = (documents: Document[]) => {
     setSelectedDocuments(documents);
-    goToStep(4); // Move to the answer creation step
+    // Pass the documents to validate against to avoid timing issues
+    goToStep(3, documents);
   };
 
   // Handle answer change
@@ -319,6 +349,7 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
         </StatusLine>
       )}
 
+      {error && <AlertMessage type="error">{error}</AlertMessage>}
       {/* Step 1: Define Question */}
       {currentStep === 1 && (
         <QuestionInput
@@ -352,6 +383,7 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
           selectedDocuments={selectedDocuments}
           onPreviousStep={() => goToStep(2)}
           onSave={saveQAPair}
+          isSaving={isLoading}
         />
       )}
     </CreateQAContainer>

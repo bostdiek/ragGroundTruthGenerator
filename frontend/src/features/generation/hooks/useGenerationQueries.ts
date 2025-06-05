@@ -51,7 +51,7 @@ export const useCreateRule = () => {
   return useMutation({
     mutationFn: (rule: Omit<Rule, 'id'>) => GenerationService.createRule(rule),
     // Add invalidation to refresh rules list after creation
-    onSuccess: (_, __, context) => {
+    onSuccess: () => {
       // Optionally add queryClient invalidation here if needed
     },
   });
@@ -70,7 +70,7 @@ export const useUpdateRule = () => {
       rule: Partial<Omit<Rule, 'id'>>;
     }) => GenerationService.updateRule(id, rule),
     // Add invalidation to refresh rule after update
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       // Optionally add queryClient invalidation here if needed
     },
   });
