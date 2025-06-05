@@ -105,6 +105,13 @@ export const RetrievalProvider: React.FC<RetrievalProviderProps> = ({
     resetWorkflow,
   } = useRetrievalStore();
 
+  // Reset workflow state when the provider is mounted
+  useEffect(() => {
+    // Reset the workflow state to ensure we start fresh
+    resetWorkflow();
+    // Only run this effect once when the provider is mounted
+  }, [resetWorkflow]);
+
   // Use custom hooks for data fetching
   const {
     data: sourcesData,
