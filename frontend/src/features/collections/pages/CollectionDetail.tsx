@@ -2,6 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
+import {
+  formatStatusLabel as sharedFormatStatusLabel,
+  StatusBadge as SharedStatusBadge,
+  StatusFilterGroup,
+  StatusFilterPill as SharedStatusFilterPill,
+} from '../../../components/ui/StatusPill';
 import CollectionsService from '../api/collections.service';
 
 // Types
@@ -136,26 +142,6 @@ const FilterLabel = styled.label`
   color: #555;
 `;
 
-const StatusFilterContainer = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`;
-
-const StatusFilter = styled.button<{ active: boolean }>`
-  background-color: ${props => (props.active ? '#0078d4' : '#f0f0f0')};
-  color: ${props => (props.active ? 'white' : '#333')};
-  border: none;
-  border-radius: 4px;
-  padding: 0.4rem 0.8rem;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: ${props => (props.active ? '#106ebe' : '#e0e0e0')};
-  }
-`;
-
 const SearchInput = styled.input`
   padding: 0.5rem;
   border: 1px solid #ddd;
@@ -197,41 +183,7 @@ const Question = styled.h3`
   flex-grow: 1;
 `;
 
-const StatusBadge = styled.span<{ status: string }>`
-  padding: 0.3rem 0.6rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  white-space: nowrap;
-
-  background-color: ${props => {
-    switch (props.status) {
-      case 'approved':
-        return '#e6f7e6';
-      case 'rejected':
-        return '#ffebee';
-      case 'revision_requested':
-        return '#fff8e1';
-      case 'ready_for_review':
-      default:
-        return '#e3f2fd';
-    }
-  }};
-
-  color: ${props => {
-    switch (props.status) {
-      case 'approved':
-        return '#2e7d32';
-      case 'rejected':
-        return '#c62828';
-      case 'revision_requested':
-        return '#f57c00';
-      case 'ready_for_review':
-      default:
-        return '#1976d2';
-    }
-  }};
-`;
+// Using shared components for consistency across the application
 
 const AnswerPreview = styled.div`
   color: #555;
@@ -321,22 +273,7 @@ const PageInfo = styled.div`
 /**
  * Helper function to format status labels for display
  */
-const formatStatusLabel = (status: string): string => {
-  switch (status) {
-    case 'ready_for_review':
-      return 'Ready for Review';
-    case 'revision_requested':
-      return 'Revision Requested';
-    case 'approved':
-      return 'Approved';
-    case 'rejected':
-      return 'Rejected';
-    case 'all':
-      return 'All';
-    default:
-      return status.charAt(0).toUpperCase() + status.slice(1);
-  }
-};
+// Using the shared formatStatusLabel function from StatusPill component
 
 /**
  * Helper function to truncate text to a certain length
@@ -413,8 +350,7 @@ const CollectionDetail: React.FC = () => {
   }, [qaPairs, activeStatus, searchQuery]);
 
   // Handle status change
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newStatus = e.target.value;
+  const handleStatusChange = (newStatus: string) => {
     setActiveStatus(newStatus);
   };
 
@@ -459,23 +395,20 @@ const CollectionDetail: React.FC = () => {
 
       <FilterContainer>
         <FilterGroup>
-          <FilterLabel htmlFor="status-filter">Status:</FilterLabel>
-          <select
-            id="status-filter"
-            aria-label="Status"
-            value={activeStatus}
-            onChange={handleStatusChange}
-          >
+          <FilterLabel>Status:</FilterLabel>
+          <StatusFilterGroup role="group" aria-label="Filter by status">
             {STATUSES.map(status => (
-              <option
+              <SharedStatusFilterPill
                 key={status}
-                value={status}
-                onClick={() => setActiveStatus(status)}
+                status={status}
+                active={activeStatus === status}
+                onClick={() => handleStatusChange(status)}
+                aria-pressed={activeStatus === status}
               >
-                {formatStatusLabel(status)}
-              </option>
+                {sharedFormatStatusLabel(status)}
+              </SharedStatusFilterPill>
             ))}
-          </select>
+          </StatusFilterGroup>
         </FilterGroup>
 
         <SearchInput
@@ -508,9 +441,9 @@ const CollectionDetail: React.FC = () => {
               <QACard key={qa.id}>
                 <QAHeader>
                   <Question>{qa.question}</Question>
-                  <StatusBadge status={qa.status}>
-                    {formatStatusLabel(qa.status)}
-                  </StatusBadge>
+                  <SharedStatusBadge status={qa.status}>
+                    {sharedFormatStatusLabel(qa.status)}
+                  </SharedStatusBadge>
                 </QAHeader>
 
                 <AnswerPreview>{truncateText(qa.answer, 300)}</AnswerPreview>

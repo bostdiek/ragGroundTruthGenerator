@@ -2,6 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
+import Card from '../../../components/ui/Card';
+import { Skeleton } from '../../../components/ui/Skeleton';
+import {
+  formatStatusLabel as sharedFormatStatusLabel,
+  StatusBadge as SharedStatusBadge,
+} from '../../../components/ui/StatusPill';
 import CollectionsService, {
   Collection as ServiceCollection,
 } from '../api/collections.service';
@@ -27,14 +33,19 @@ const Title = styled.h1`
   color: #333;
 `;
 
+// Use a styled Link that looks like a button
 const CreateButton = styled(Link)`
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background-color: #0078d4;
   color: white;
   text-decoration: none;
   border-radius: 4px;
   padding: 0.5rem 1rem;
   font-weight: 500;
+  border: none;
+  transition: background-color 0.2s;
 
   &:hover {
     background-color: #106ebe;
@@ -47,22 +58,21 @@ const CollectionGrid = styled.div`
   gap: 1.5rem;
 `;
 
-const CollectionCard = styled(Link)`
-  display: block;
-  background-color: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+// Use the Link to wrap the Card for navigation
+const CollectionCardLink = styled(Link)`
   text-decoration: none;
   color: inherit;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+  display: block;
+  transition: transform 0.2s;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
+`;
+
+// Use the shared Card component with hover effect
+const CollectionCard = styled(Card)`
+  height: 100%;
 `;
 
 const CollectionName = styled.h2`
@@ -130,42 +140,9 @@ const StatusBadgesContainer = styled.div`
   margin-top: 0.5rem;
 `;
 
-const StatusBadge = styled.span<{ status: string }>`
-  padding: 0.2rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-
-  background-color: ${props => {
-    switch (props.status) {
-      case 'approved':
-        return '#e6f7e6';
-      case 'rejected':
-        return '#ffebee';
-      case 'revision_requested':
-        return '#fff8e1';
-      case 'ready_for_review':
-      default:
-        return '#e3f2fd';
-    }
-  }};
-
-  color: ${props => {
-    switch (props.status) {
-      case 'approved':
-        return '#2e7d32';
-      case 'rejected':
-        return '#c62828';
-      case 'revision_requested':
-        return '#f57c00';
-      case 'ready_for_review':
-      default:
-        return '#1976d2';
-    }
-  }};
-
+// Using the shared StatusBadge component
+const StatusBadge = styled(SharedStatusBadge)`
+  // Add the bullet point before the status badge
   &::before {
     content: '';
     display: inline-block;
@@ -190,17 +167,12 @@ const StatusBadge = styled.span<{ status: string }>`
 `;
 
 /**
- * Helper function to format status labels for display
+ * Helper function to format status labels for display and make them lowercase
+ * for the collections page badges (which use a different formatting style)
  */
 const formatStatusLabel = (status: string): string => {
-  switch (status) {
-    case 'ready_for_review':
-      return 'ready for review';
-    case 'revision_requested':
-      return 'revision requested';
-    default:
-      return status;
-  }
+  // Use the shared function but convert to lowercase for this specific usage
+  return sharedFormatStatusLabel(status).toLowerCase();
 };
 
 /**
@@ -230,7 +202,26 @@ const Collections: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <CollectionsContainer>Loading collections...</CollectionsContainer>;
+    return (
+      <CollectionsContainer>
+        <Header>
+          <Title>Collections</Title>
+          <CreateButton to="/collections/new">Create Collection</CreateButton>
+        </Header>
+
+        <CollectionGrid>
+          {/* Show skeleton loaders while loading */}
+          {[1, 2, 3, 4].map((_, index) => (
+            <div key={index}>
+              <Skeleton height="30px" width="60%" margin="0 0 12px 0" />
+              <Skeleton height="60px" margin="0 0 12px 0" />
+              <Skeleton height="20px" width="30%" margin="0 0 12px 0" />
+              <Skeleton height="40px" margin="0 0 12px 0" />
+            </div>
+          ))}
+        </CollectionGrid>
+      </CollectionsContainer>
+    );
   }
 
   if (error) {
@@ -255,49 +246,56 @@ const Collections: React.FC = () => {
       ) : (
         <CollectionGrid>
           {collections.map(collection => (
-            <CollectionCard
+            <CollectionCardLink
               key={collection.id}
               to={`/collections/${collection.id}`}
             >
-              <CollectionName>{collection.name}</CollectionName>
-              <CollectionDescription>
-                {collection.description}
-              </CollectionDescription>
+              <CollectionCard
+                variant="elevated"
+                padding="medium"
+                elevation="low"
+              >
+                <CollectionName>{collection.name}</CollectionName>
+                <CollectionDescription>
+                  {collection.description}
+                </CollectionDescription>
 
-              <TagsContainer>
-                {collection.tags.map((tag, index) => (
-                  <Tag key={index}>{tag}</Tag>
-                ))}
-              </TagsContainer>
+                <TagsContainer>
+                  {collection.tags.map((tag, index) => (
+                    <Tag key={index}>{tag}</Tag>
+                  ))}
+                </TagsContainer>
 
-              <CollectionMeta>
-                <CollectionStats>
-                  <span>{collection.document_count} Q&A Pairs</span>
-                  {collection.status_counts && (
-                    <StatusBadgesContainer>
-                      {/* Display statuses in order: ready_for_review, revision_requested, approved, rejected */}
-                      {[
-                        'ready_for_review',
-                        'revision_requested',
-                        'approved',
-                        'rejected',
-                      ].map(status =>
-                        collection.status_counts &&
-                        collection.status_counts[status] ? (
-                          <StatusBadge key={status} status={status}>
-                            {collection.status_counts[status]}{' '}
-                            {formatStatusLabel(status)}
-                          </StatusBadge>
-                        ) : null
-                      )}
-                    </StatusBadgesContainer>
-                  )}
-                </CollectionStats>
-                <span>
-                  Updated {new Date(collection.updated_at).toLocaleDateString()}
-                </span>
-              </CollectionMeta>
-            </CollectionCard>
+                <CollectionMeta>
+                  <CollectionStats>
+                    <span>{collection.document_count} Q&A Pairs</span>
+                    {collection.status_counts && (
+                      <StatusBadgesContainer>
+                        {/* Display statuses in order: ready_for_review, revision_requested, approved, rejected */}
+                        {[
+                          'ready_for_review',
+                          'revision_requested',
+                          'approved',
+                          'rejected',
+                        ].map(status =>
+                          collection.status_counts &&
+                          collection.status_counts[status] ? (
+                            <StatusBadge key={status} status={status}>
+                              {collection.status_counts[status]}{' '}
+                              {formatStatusLabel(status)}
+                            </StatusBadge>
+                          ) : null
+                        )}
+                      </StatusBadgesContainer>
+                    )}
+                  </CollectionStats>
+                  <span>
+                    Updated{' '}
+                    {new Date(collection.updated_at).toLocaleDateString()}
+                  </span>
+                </CollectionMeta>
+              </CollectionCard>
+            </CollectionCardLink>
           ))}
         </CollectionGrid>
       )}
