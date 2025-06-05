@@ -1,7 +1,7 @@
 // Retrieval feature type definitions
 
 // Re-export shared types from the app level
-import { Document as AppDocument, Source } from '../../../types';
+import { Document as AppDocument } from '../../../types';
 
 export type { Document, Source } from '../../../types';
 

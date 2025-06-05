@@ -177,12 +177,16 @@ export const RetrievalProvider: React.FC<RetrievalProviderProps> = ({
       setDocuments(fetchedDocuments as unknown as Document[]);
       setDocumentResults(result.data as any);
 
+      // Always clear the error first
+      setError(null);
+
+      // Only set error if no documents found
       if (fetchedDocuments.length === 0) {
         setError(
           'No relevant documents found. Try a different question or select different sources.'
         );
+        setStatus('error');
       } else {
-        setError(null);
         setStatus('selecting_documents');
       }
 
@@ -290,6 +294,23 @@ export const RetrievalProvider: React.FC<RetrievalProviderProps> = ({
     searchError,
     setError,
   ]);
+
+  // Effect to update error state based on workflow status and document count
+  useEffect(() => {
+    // Clear error message when:
+    // 1. We're in the source selection phase
+    // 2. We have successfully found documents
+    // 3. We're in the initial state
+    // 4. We're still loading documents
+    if (
+      status === 'idle' ||
+      status === 'selecting_sources' ||
+      documents.length > 0 ||
+      isLoadingDocuments
+    ) {
+      setError(null);
+    }
+  }, [status, documents, isLoadingDocuments, setError]);
 
   // Provide the complete context value
   const value = {

@@ -174,6 +174,41 @@ const RemoveButton = styled.button`
   font-size: ${typography.fontSize.md};
 `;
 
+const QuestionContainer = styled.div`
+  background-color: ${colors.background.paper};
+  border-radius: ${borderRadius.lg};
+  padding: ${spacing.md};
+  margin-bottom: ${spacing.lg};
+  box-shadow: ${shadows.sm};
+`;
+
+const QuestionTitle = styled.h3`
+  font-size: ${typography.fontSize.lg};
+  font-weight: ${typography.fontWeight.semiBold};
+  color: ${colors.text.primary};
+  margin-bottom: ${spacing.sm};
+`;
+
+const QuestionEditForm = styled.div`
+  display: flex;
+  gap: ${spacing.md};
+`;
+
+const QuestionInput = styled.input`
+  flex: 1;
+  padding: ${spacing.md};
+  border: 1px solid ${colors.grey[300]};
+  border-radius: ${borderRadius.md};
+  font-family: ${typography.fontFamily.primary};
+  font-size: ${typography.fontSize.md};
+
+  &:focus {
+    outline: none;
+    border-color: ${colors.primary.main};
+    box-shadow: 0 0 0 2px ${colors.primary.main}20;
+  }
+`;
+
 /**
  * RetrievalWorkflow Component
  *
@@ -193,7 +228,6 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
     status,
     setStatus,
     error,
-    isReady,
 
     // Source-related
     sources,
@@ -205,7 +239,6 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
     // Document-related
     documents,
     isLoadingDocuments,
-    documentsError,
     selectedDocuments,
     selectDocument,
 
@@ -222,6 +255,10 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
 
   // Local state for step management
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [questionModified, setQuestionModified] = useState<boolean>(false);
+
+  // Track if document tabs are visible to avoid showing error when we have tabs with documents
+  const [documentTabsVisible, setDocumentTabsVisible] = useState(false);
 
   // Effect to initialize workflow
   useEffect(() => {
@@ -234,6 +271,7 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
   useEffect(() => {
     if (question && question !== searchQuery) {
       setSearchQuery(question);
+      setQuestionModified(false);
     }
   }, [question, searchQuery, setSearchQuery]);
 
@@ -256,6 +294,19 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
     currentStep,
     status,
   ]);
+
+  // Debug effect to log state when it might cause the error banner to appear
+  useEffect(() => {
+    if (error && currentStep === 2) {
+      console.log('Error banner debug:', {
+        error,
+        status,
+        documentsLength: documents.length,
+        isLoadingDocuments,
+        step: currentStep,
+      });
+    }
+  }, [error, status, documents, currentStep, isLoadingDocuments]);
 
   // Effect to update step based on status
   useEffect(() => {
@@ -282,25 +333,25 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
     selectSource(sourceId, isSelected);
   };
 
-  // Handler for document selection
-  const handleDocumentSelection = (document: any) => {
-    selectDocument(document, !isDocumentSelected(document.id));
-  };
-
-  // Helper to check if a document is selected
-  const isDocumentSelected = (documentId: string) => {
-    return selectedDocuments.some((doc: any) => doc.id === documentId);
-  };
-
   // Handler for next step navigation
   const handleNextStep = async () => {
     if (currentStep === 1) {
-      setStatus('searching');
-      // Trigger document search when moving to step 2
-      if (question && selectedSources.length > 0) {
-        await fetchRecommendedDocuments(question);
+      // Always trigger document search when moving from source selection to document discovery
+      if (selectedSources.length > 0) {
+        setStatus('searching');
+
+        // Make sure we have a search query
+        if (!searchQuery.trim() && question) {
+          setSearchQuery(question);
+        }
+
+        // Use the current searchQuery from state instead of the original question prop
+        if (searchQuery.trim()) {
+          await fetchRecommendedDocuments(searchQuery);
+          setQuestionModified(false);
+        }
+        setCurrentStep(2);
       }
-      setCurrentStep(2);
     } else if (currentStep === 2) {
       setCurrentStep(3);
       setStatus('selecting_documents');
@@ -342,6 +393,11 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
     }
   };
 
+  // Pass callback to DocumentDiscovery to report when tabs with documents are visible
+  const handleDocumentTabsVisible = (visible: boolean) => {
+    setDocumentTabsVisible(visible);
+  };
+
   // Render source selection step
   const renderSourceSelectionStep = () => {
     return (
@@ -359,9 +415,28 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
 
   // Render document discovery step
   const renderDocumentDiscoveryStep = () => {
+    // Show selected sources summary
+    const selectedSourcesInfo = sources
+      .filter((source: any) => selectedSources.includes(source.id))
+      .map((source: any) => source.name);
+
     return (
       <StepContainer>
-        <DocumentDiscovery />
+        <SummaryItem style={{ marginBottom: spacing.lg }}>
+          <SummaryLabel>Selected Sources:</SummaryLabel>
+          <SummaryValue>
+            {selectedSourcesInfo.length > 0
+              ? selectedSourcesInfo.join(', ')
+              : 'No sources selected'}
+          </SummaryValue>
+        </SummaryItem>
+
+        <DocumentDiscovery
+          autoSearch={true}
+          hideSearchButton={true}
+          showSourceTabs={true}
+          onDocumentTabsVisible={handleDocumentTabsVisible}
+        />
       </StepContainer>
     );
   };
@@ -460,6 +535,48 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
         </Subtitle>
       </div>
 
+      {/* Display current question with edit functionality */}
+      <QuestionContainer>
+        <QuestionTitle>Current Question</QuestionTitle>
+        <QuestionEditForm>
+          <QuestionInput
+            type="text"
+            value={searchQuery}
+            onChange={e => {
+              setSearchQuery(e.target.value);
+              setQuestionModified(true);
+            }}
+            placeholder="Enter your question"
+          />
+          <Button
+            variant="primary"
+            onClick={() => {
+              fetchRecommendedDocuments(searchQuery);
+              setQuestionModified(false);
+            }}
+            disabled={!searchQuery.trim() || selectedSources.length === 0}
+          >
+            Update Search
+          </Button>
+        </QuestionEditForm>
+        <SummaryLabel style={{ marginTop: spacing.sm }}>
+          You can edit your question at any time and click "Update Search" to
+          find new relevant documents.
+          {questionModified && (
+            <span
+              style={{
+                color: colors.warning.main,
+                marginLeft: spacing.sm,
+                display: 'block',
+              }}
+            >
+              Question has been modified. Click "Update Search" to refresh
+              results.
+            </span>
+          )}
+        </SummaryLabel>
+      </QuestionContainer>
+
       <StepsIndicator>
         <div style={{ position: 'relative' }}>
           <StepDot active={currentStep === 1} completed={currentStep > 1}>
@@ -483,11 +600,23 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
         </div>
       </StepsIndicator>
 
-      {error && (
-        <Alert variant="error" title="Error">
-          {error}
-        </Alert>
-      )}
+      {/* 
+        Never show the error banner if:
+        1. We're not in document selection step
+        2. We have documents
+        3. We're still loading/searching
+        4. Our document results are showing in tabs (as seen in the screenshot)
+      */}
+      {error &&
+        status === 'selecting_documents' &&
+        documents.length === 0 &&
+        !isLoadingDocuments &&
+        !documentTabsVisible &&
+        currentStep === 2 && (
+          <Alert variant="error" title="No Documents Found">
+            {error}
+          </Alert>
+        )}
 
       {renderCurrentStep()}
 
