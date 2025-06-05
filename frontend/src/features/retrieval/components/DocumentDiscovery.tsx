@@ -205,6 +205,7 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
     setDocumentResults,
     setStatus,
     selectDocument,
+    selectedDocuments,
   } = useRetrievalStore();
 
   const [isDiscovering, setIsDiscovering] = useState(false);
@@ -259,9 +260,7 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
   };
 
   const isDocumentSelected = (documentId: string) => {
-    return (
-      documentResults?.documents.some(doc => doc.id === documentId) || false
-    );
+    return selectedDocuments.some(doc => doc.id === documentId);
   };
 
   // Add useEffect to run search automatically when component mounts if autoSearch is true
