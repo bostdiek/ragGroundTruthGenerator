@@ -67,6 +67,7 @@ interface RetrievalState {
   // Tab-specific filter state
   tabFilters: Record<string, TabFilterState>;
   setTabFilter: (tabId: string, filterState: Partial<TabFilterState>) => void;
+  getTabFilter: (tabId: string) => TabFilterState;
   clearTabFilter: (tabId: string) => void;
   clearAllTabFilters: () => void;
 
@@ -101,7 +102,7 @@ const defaultTabFilterState: TabFilterState = {
 const useRetrievalStore = create<RetrievalState>()(
   devtools(
     persist(
-      set => ({
+      (set, get) => ({
         // Workflow state
         status: 'idle',
         setStatus: status => set({ status }),
@@ -154,6 +155,10 @@ const useRetrievalStore = create<RetrievalState>()(
               },
             },
           })),
+        getTabFilter: (tabId: string) => {
+          const state = get();
+          return state.tabFilters[tabId] || defaultTabFilterState;
+        },
         clearTabFilter: tabId =>
           set(state => {
             const newTabFilters = { ...state.tabFilters };
@@ -204,6 +209,7 @@ const useRetrievalStore = create<RetrievalState>()(
             documentResults: null,
             filters: {},
             error: null,
+            tabFilters: {},
           }),
       }),
       {
@@ -213,6 +219,7 @@ const useRetrievalStore = create<RetrievalState>()(
           selectedSources: state.selectedSources,
           selectedDocuments: state.selectedDocuments,
           filters: state.filters,
+          tabFilters: state.tabFilters,
         }),
       }
     )

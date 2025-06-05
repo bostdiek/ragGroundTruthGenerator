@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
-import { Alert, Button, Card, Form } from '../../../components';
+import { Alert, Button, Form } from '../../../components';
 import DocumentCard from '../../../components/ui/DocumentCard';
 import {
   borderRadius,
@@ -15,6 +15,7 @@ import {
 import { Document } from '../../../types';
 import RetrievalService from '../api/retrieval.service';
 import useRetrievalStore from '../stores/retrievalStore';
+import DocumentTabControls from './DocumentTabControls';
 
 // Props interface for DocumentDiscovery
 interface DocumentDiscoveryProps {
@@ -105,6 +106,20 @@ const DocumentList = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${spacing.md};
+`;
+
+const DocumentContainer = styled.div`
+  background-color: ${colors.grey[50]};
+  border-radius: ${borderRadius.md};
+  padding: ${spacing.md};
+  margin-top: ${spacing.sm};
+`;
+
+const TabContentContainer = styled.div`
+  border: 1px solid ${colors.grey[300]};
+  border-top: none;
+  background-color: ${colors.common.white};
+  border-radius: 0 0 ${borderRadius.md} ${borderRadius.md};
 `;
 
 const EmptyState = styled.div`
@@ -223,6 +238,9 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
 
   const [isDiscovering, setIsDiscovering] = useState(false);
   const [activeSourceTab, setActiveSourceTab] = useState<string>('all');
+  const [filteredDocumentsByTab, setFilteredDocumentsByTab] = useState<
+    Record<string, Document[]>
+  >({});
 
   const { refetch, isLoading, error, isError } = useQuery({
     queryKey: ['recommendedDocuments', searchQuery, selectedSources],
@@ -308,6 +326,30 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
     }
   }, [documentResults, showSourceTabs, onDocumentTabsVisible]);
 
+  // Initialize filtered documents when document results change
+  useEffect(() => {
+    if (documentResults?.documents) {
+      const docsBySource: Record<string, Document[]> = {};
+      docsBySource['all'] = documentResults.documents;
+
+      documentResults.documents.forEach(doc => {
+        const sourceId = doc.source?.id || 'unknown';
+        if (!docsBySource[sourceId]) {
+          docsBySource[sourceId] = [];
+        }
+        docsBySource[sourceId].push(doc);
+      });
+
+      // Initialize filtered documents to show all documents initially
+      const initialFiltered: Record<string, Document[]> = {};
+      Object.keys(docsBySource).forEach(sourceId => {
+        initialFiltered[sourceId] = docsBySource[sourceId];
+      });
+
+      setFilteredDocumentsByTab(initialFiltered);
+    }
+  }, [documentResults]);
+
   const renderDocumentResults = () => {
     if (isLoading || isDiscovering) {
       return (
@@ -375,18 +417,33 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
 
       const renderTabContent = (sourceId: string) => {
         const docsToShow = docsBySource[sourceId] || [];
+        const filteredDocs = filteredDocumentsByTab[sourceId] || docsToShow;
 
         return (
-          <DocumentList>
-            {docsToShow.map(document => (
-              <SelectableDocumentCardComponent
-                key={document.id}
-                document={document}
-                selected={isDocumentSelected(document.id)}
-                onClick={() => handleSelectDocument(document)}
-              />
-            ))}
-          </DocumentList>
+          <>
+            <DocumentTabControls
+              documents={docsToShow}
+              sourceId={sourceId}
+              onFilteredDocuments={filtered => {
+                setFilteredDocumentsByTab(prev => ({
+                  ...prev,
+                  [sourceId]: filtered,
+                }));
+              }}
+            />
+            <DocumentContainer>
+              <DocumentList>
+                {filteredDocs.map(document => (
+                  <SelectableDocumentCardComponent
+                    key={document.id}
+                    document={document}
+                    selected={isDocumentSelected(document.id)}
+                    onClick={() => handleSelectDocument(document)}
+                  />
+                ))}
+              </DocumentList>
+            </DocumentContainer>
+          </>
         );
       };
 
@@ -422,16 +479,9 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
                 </button>
               ))}
             </div>
-            <div
-              className="tab-content"
-              style={{
-                padding: '16px',
-                border: '1px solid #ddd',
-                borderTop: 'none',
-              }}
-            >
+            <TabContentContainer>
               {renderTabContent(activeSourceTab)}
-            </div>
+            </TabContentContainer>
           </div>
         </ResultsContainer>
       );
@@ -443,16 +493,18 @@ const DocumentDiscovery: React.FC<DocumentDiscoveryProps> = ({
         <SectionDescription>
           The following documents were found to be relevant to your question:
         </SectionDescription>
-        <DocumentList>
-          {documentResults.documents.map(document => (
-            <SelectableDocumentCardComponent
-              key={document.id}
-              document={document}
-              selected={isDocumentSelected(document.id)}
-              onClick={() => handleSelectDocument(document)}
-            />
-          ))}
-        </DocumentList>
+        <DocumentContainer>
+          <DocumentList>
+            {documentResults.documents.map(document => (
+              <SelectableDocumentCardComponent
+                key={document.id}
+                document={document}
+                selected={isDocumentSelected(document.id)}
+                onClick={() => handleSelectDocument(document)}
+              />
+            ))}
+          </DocumentList>
+        </DocumentContainer>
       </ResultsContainer>
     );
   };
