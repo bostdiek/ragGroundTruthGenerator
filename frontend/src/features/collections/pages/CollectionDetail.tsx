@@ -454,9 +454,12 @@ const CollectionDetail: React.FC = () => {
                   </span>
 
                   <QAActions>
-                    <ActionLink to={`/review-qa/${qa.id}`}>View</ActionLink>
-                    {qa.status !== 'approved' && (
-                      <ActionLink to={`/edit-qa/${qa.id}`}>Edit</ActionLink>
+                    {(qa.status === 'approved' || qa.status === 'rejected') && (
+                      <ActionLink to={`/review-qa/${qa.id}`}>View</ActionLink>
+                    )}
+                    {(qa.status === 'ready_for_review' ||
+                      qa.status === 'revision_requested') && (
+                      <ActionLink to={`/edit-qa/${qa.id}`}>Review</ActionLink>
                     )}
                   </QAActions>
                 </QAFooter>

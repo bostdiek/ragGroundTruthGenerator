@@ -312,10 +312,10 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
   return (
     <CreateQAContainer>
       <Header>
-        <Title>{isEditMode ? 'Edit Q&A Pair' : 'Create Q&A Pair'}</Title>
+        <Title>{isEditMode ? 'Review Q&A Pair' : 'Create Q&A Pair'}</Title>
         <Subtitle>
           {isEditMode
-            ? 'Update this question-answer pair with new information'
+            ? 'Review and update this question-answer pair'
             : 'Create a new question-answer pair for your collection'}
         </Subtitle>
       </Header>
