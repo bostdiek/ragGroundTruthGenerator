@@ -6,6 +6,7 @@ import React, {
   useState,
 } from 'react';
 
+import { useInvalidateAllQueries } from '../../../lib/react-query';
 import AuthService from '../../auth/api/auth.service';
 
 /**
@@ -55,6 +56,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [user, setUser] = useState<UserInfo | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const invalidateAllQueries = useInvalidateAllQueries();
 
   /**
    * Check if user is already authenticated on component mount
@@ -111,6 +113,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const logout = () => {
     AuthService.logout();
     setUser(null);
+    invalidateAllQueries(); // Clear all cached queries on logout
   };
 
   // Compute authentication state

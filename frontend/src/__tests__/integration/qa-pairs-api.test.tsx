@@ -2,7 +2,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 
 import { useQAPairs } from '../../features/qa_pairs/hooks/useQAPairs';
-import { ReactQueryProvider } from '../../lib/react-query/ReactQueryProvider';
+import { ReactQueryProvider } from '../../lib/react-query';
 import { mockQAPairs } from '../../testing/mocks/qa-pairs-handlers';
 import { server } from '../../testing/setup';
 import { render } from '../../testing/utils/test-utils';
