@@ -147,14 +147,13 @@ const CollectionsService = {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-      const response = await apiClient.put<QAPair>(
+      const response = await apiClient.patch<QAPair>(
         `/collections/qa-pairs/${id}`,
         qaPair,
         { signal: controller.signal }
       );
 
       clearTimeout(timeoutId);
-      console.log('CollectionsService.updateQAPair response:', response.data);
       return response.data;
     } catch (error) {
       console.error('CollectionsService.updateQAPair error:', error);
@@ -202,6 +201,10 @@ const CollectionsService = {
       );
       const currentMetadata = currentQA.data.metadata || {};
 
+      // Get current user info for the revision requester
+      const currentUser = localStorage.getItem('auth_user') || 'unknown_user';
+      const currentTime = new Date().toISOString();
+
       // Merge existing metadata with new revision comments
       const response = await apiClient.patch<QAPair>(
         `/collections/qa-pairs/${id}`,
@@ -210,6 +213,9 @@ const CollectionsService = {
           metadata: {
             ...currentMetadata,
             revision_comments: revisionComments,
+            revision_feedback: revisionComments,
+            revision_requested_by: currentUser,
+            revision_requested_at: currentTime,
           },
         }
       );

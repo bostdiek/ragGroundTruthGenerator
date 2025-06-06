@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { Document } from '../../../types';
+import RevisionFeedbackBox from '../../../components/feedback/RevisionFeedbackBox';
 import CollectionsService from '../../collections/api/collections.service';
 import { RetrievalProvider, RetrievalWorkflow } from '../../retrieval';
 import { AnswerEditor, QuestionInput } from '../components';
@@ -81,12 +82,11 @@ const StepLabel = styled.div<{ active: boolean }>`
 `;
 
 const StatusLine = styled.div<{ status: string }>`
-  padding: 0.5rem 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 0.8rem;
+  border-radius: 4px;
   background-color: ${props => {
     switch (props.status) {
-      case 'ready_for_review':
-        return '#e3f2fd';
       case 'approved':
         return '#e6f7e6';
       case 'rejected':
@@ -94,13 +94,11 @@ const StatusLine = styled.div<{ status: string }>`
       case 'revision_requested':
         return '#fff8e1';
       default:
-        return '#f5f5f5';
+        return '#e3f2fd';
     }
   }};
   color: ${props => {
     switch (props.status) {
-      case 'ready_for_review':
-        return '#1976d2';
       case 'approved':
         return '#2e7d32';
       case 'rejected':
@@ -108,14 +106,15 @@ const StatusLine = styled.div<{ status: string }>`
       case 'revision_requested':
         return '#f57c00';
       default:
-        return '#333';
+        return '#1565c0';
     }
   }};
-  border-radius: 4px;
   font-weight: 500;
 `;
 
-const AlertMessage = styled.div<{ type: 'error' | 'success' }>`
+const AlertMessage = styled.div<{
+  type: 'error' | 'warning' | 'success' | 'info';
+}>`
   padding: 1rem;
   margin-bottom: 1rem;
   border-radius: 4px;
@@ -194,6 +193,9 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [originalQA, setOriginalQA] = useState<any | null>(null);
   const [status, setStatus] = useState<string>('ready_for_review');
+  const [revisionFeedback, setRevisionFeedback] = useState<string>('');
+  const [revisionRequestedBy, setRevisionRequestedBy] = useState<string>('');
+  const [revisionRequestedAt, setRevisionRequestedAt] = useState<string>('');
 
   // UI state
   const [isLoading, setIsLoading] = useState(false);
@@ -212,9 +214,23 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
           setSelectedDocuments(qa.documents || []);
           setStatus(qa.status);
 
+          // Set revision feedback if it exists
+          if (qa.metadata?.revision_feedback || qa.metadata?.revision_comments) {
+            setRevisionFeedback(qa.metadata?.revision_feedback || qa.metadata?.revision_comments);
+            
+            // Set reviewer information if available
+            if (qa.metadata?.revision_requested_by) {
+              setRevisionRequestedBy(qa.metadata.revision_requested_by);
+            }
+            
+            if (qa.metadata?.revision_requested_at) {
+              setRevisionRequestedAt(qa.metadata.revision_requested_at);
+            }
+          }
+
           // If the QA pair has documents, we can skip to the answer step
           if (qa.documents && qa.documents.length > 0) {
-            setCurrentStep(4);
+            setCurrentStep(3);
           }
         } catch (error) {
           console.error('Error fetching QA pair:', error);
@@ -237,16 +253,42 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
     setIsLoading(true);
 
     try {
-      const qaPairData = {
-        question,
-        answer,
-        documents: selectedDocuments,
-        status: 'ready_for_review' as
+      // Prepare the base QA pair data
+      const qaPairData: {
+        question: string;
+        answer: string;
+        documents: Document[];
+        status:
           | 'ready_for_review'
           | 'approved'
           | 'rejected'
-          | 'revision_requested',
+          | 'revision_requested';
+        metadata?: Record<string, any>;
+      } = {
+        question,
+        answer,
+        documents: selectedDocuments,
+        status: 'ready_for_review',
       };
+
+      // If we're editing an existing QA pair, preserve its metadata
+      if (isEditMode && originalQA?.metadata) {
+        qaPairData.metadata = { ...originalQA.metadata };
+
+        // If the QA pair was previously in revision_requested status,
+        // change status to ready_for_review but preserve revision feedback in history
+        if (status === 'revision_requested' && qaPairData.metadata) {
+          // Store current revision feedback as revision history
+          qaPairData.metadata.previous_revision_feedback = qaPairData.metadata.revision_feedback || qaPairData.metadata.revision_comments;
+          qaPairData.metadata.revision_history = qaPairData.metadata.revision_history || [];
+          qaPairData.metadata.revision_history.push({
+            feedback: qaPairData.metadata.revision_feedback || qaPairData.metadata.revision_comments,
+            requested_by: qaPairData.metadata.revision_requested_by,
+            requested_at: qaPairData.metadata.revision_requested_at,
+            resolved_at: new Date().toISOString()
+          });
+        }
+      }
 
       let savedQA;
 
@@ -349,7 +391,27 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
         </StatusLine>
       )}
 
+      {status === 'revision_requested' && revisionFeedback && (
+        <RevisionFeedbackBox
+          title="Revision Feedback"
+          feedback={revisionFeedback}
+          requestedBy={revisionRequestedBy}
+          requestedAt={revisionRequestedAt}
+        />
+      )}
+
       {error && <AlertMessage type="error">{error}</AlertMessage>}
+
+      {/* Show previous revision feedback if it exists and we're in edit mode */}
+      {isEditMode && originalQA?.metadata?.previous_revision_feedback && status !== 'revision_requested' && (
+        <RevisionFeedbackBox
+          title="Previous Revision Feedback"
+          feedback={originalQA.metadata.previous_revision_feedback}
+          requestedBy={originalQA.metadata?.revision_requested_by}
+          requestedAt={originalQA.metadata?.revision_requested_at}
+        />
+      )}
+      
       {/* Step 1: Define Question */}
       {currentStep === 1 && (
         <QuestionInput

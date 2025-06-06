@@ -1,10 +1,11 @@
 import MDEditor from '@uiw/react-md-editor';
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import rehypeSanitize from 'rehype-sanitize';
 import styled from 'styled-components';
 
 import DocumentCard from '../../../components/ui/DocumentCard';
+import RevisionFeedbackBox from '../../../components/feedback/RevisionFeedbackBox';
 import RevisionModal from '../../../components/ui/RevisionModal';
 import { Document } from '../../../types';
 import CollectionsService from '../../collections/api/collections.service';
@@ -215,6 +216,33 @@ const DangerButton = styled(Button)`
   }
 `;
 
+const EditButton = styled(Link)`
+  display: inline-block;
+  background-color: #0078d4;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  font-weight: 500;
+  text-align: center;
+  margin-top: 1rem;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  
+  &:before {
+    content: '✏️';
+    margin-right: 0.5rem;
+  }
+
+  &:hover {
+    background-color: #106ebe;
+    text-decoration: none;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+`;
+
 const LoadingSpinner = styled.div`
   text-align: center;
   padding: 2rem;
@@ -262,6 +290,11 @@ const ReviewQA: React.FC = () => {
   const [showRevisionModal, setShowRevisionModal] = useState(false);
   const [revisionFeedback, setRevisionFeedback] = useState('');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  
+  // Get current user - in a real app this would come from auth context
+  const getCurrentUser = () => {
+    return localStorage.getItem('auth_user') || 'demo_user';
+  };
 
   useEffect(() => {
     const fetchQAPair = async () => {
@@ -292,13 +325,27 @@ const ReviewQA: React.FC = () => {
       const metadata = qaPair.metadata || {};
 
       if (newStatus === 'revision_requested' && revisionFeedback) {
+        const currentUser = getCurrentUser();
+        const currentDate = new Date().toISOString();
+        
+        // Save both feedback and reviewer information
         metadata.revision_feedback = revisionFeedback;
+        metadata.revision_comments = revisionFeedback; // For backward compatibility
+        metadata.revision_requested_by = currentUser;
+        metadata.revision_requested_at = currentDate;
       }
 
-      await CollectionsService.updateQAPair(qaPair.id, {
+      const updateData = {
         status: newStatus,
         metadata,
-      });
+      };
+      
+      try {
+        await CollectionsService.updateQAPair(qaPair.id, updateData);
+      } catch (error) {
+        console.error('Error from updateQAPair:', error);
+        throw error;
+      }
 
       // Refresh the QA pair data
       const updatedQAPair = await CollectionsService.getQAPair(qaPair.id);
@@ -352,18 +399,64 @@ const ReviewQA: React.FC = () => {
       <Header>
         <HeaderContent>
           <Title>
-            Review Q&A Pair
+            {qaPair.status === 'revision_requested'
+              ? 'Revision Requested: Q&A Pair'
+              : 'Review Q&A Pair'}
             <StatusBadge status={qaPair.status || 'ready_for_review'}>
               {formatStatusLabel(qaPair.status || 'ready_for_review')}
             </StatusBadge>
           </Title>
           <Subtitle>
-            Review this question-answer pair for accuracy and quality
+            {qaPair.status === 'revision_requested'
+              ? 'This Q&A pair needs revision based on reviewer feedback'
+              : 'Review this question-answer pair for accuracy and quality'}
           </Subtitle>
         </HeaderContent>
       </Header>
 
       {error && <ErrorMessage>{error}</ErrorMessage>}
+
+      {qaPair.status === 'revision_requested' && (
+        <>
+          {qaPair.metadata?.revision_feedback || qaPair.metadata?.revision_comments ? (
+            <RevisionFeedbackBox
+              title="Revision Feedback from Reviewer"
+              feedback={qaPair.metadata?.revision_feedback || qaPair.metadata?.revision_comments}
+              requestedBy={qaPair.metadata?.revision_requested_by}
+              requestedAt={qaPair.metadata?.revision_requested_at}
+            >
+              <EditButton
+                to={`/edit-qa/${qaPair.id}`}
+                style={{ marginTop: '1rem', display: 'inline-block' }}
+              >
+                Edit Q&A Pair
+              </EditButton>
+            </RevisionFeedbackBox>
+          ) : (
+            <RevisionFeedbackBox
+              title="Revision Requested"
+              feedback="A reviewer has requested revisions to this Q&A pair, but no specific feedback was provided. Please review the question and answer for accuracy, clarity, and completeness."
+            >
+              <EditButton
+                to={`/edit-qa/${qaPair.id}`}
+                style={{ marginTop: '1rem', display: 'inline-block' }}
+              >
+                Edit Q&A Pair
+              </EditButton>
+            </RevisionFeedbackBox>
+          )}
+        </>
+      )}
+
+      {(qaPair.metadata?.revision_feedback || qaPair.metadata?.revision_comments) &&
+        qaPair.status !== 'revision_requested' && (
+          <RevisionFeedbackBox
+            title="Previous Revision Feedback"
+            feedback={qaPair.metadata?.revision_feedback || qaPair.metadata?.revision_comments}
+            requestedBy={qaPair.metadata?.revision_requested_by}
+            requestedAt={qaPair.metadata?.revision_requested_at}
+          />
+        )}
 
       <Section>
         <SectionTitle>Question</SectionTitle>
@@ -404,38 +497,34 @@ const ReviewQA: React.FC = () => {
                 : 'Unknown'}
             </span>
           </MetadataItem>
-          {qaPair.metadata?.revision_feedback && (
-            <MetadataItem>
-              <MetadataLabel>Revision feedback:</MetadataLabel>
-              <span>{qaPair.metadata.revision_feedback}</span>
-            </MetadataItem>
-          )}
         </MetadataBox>
 
-        {qaPair.status !== 'approved' && (
-          <ButtonGroup>
-            <Button
-              onClick={() => handleStatusUpdate('approved')}
-              disabled={isUpdatingStatus}
-            >
-              Approve
-            </Button>
+        {qaPair.status !== 'approved' &&
+          qaPair.status !== 'rejected' &&
+          qaPair.status !== 'revision_requested' && (
+            <ButtonGroup>
+              <Button
+                onClick={() => handleStatusUpdate('approved')}
+                disabled={isUpdatingStatus}
+              >
+                Approve
+              </Button>
 
-            <SecondaryButton
-              onClick={handleRevisionRequest}
-              disabled={isUpdatingStatus}
-            >
-              Request Revision
-            </SecondaryButton>
+              <SecondaryButton
+                onClick={handleRevisionRequest}
+                disabled={isUpdatingStatus}
+              >
+                Request Revision
+              </SecondaryButton>
 
-            <DangerButton
-              onClick={() => handleStatusUpdate('rejected')}
-              disabled={isUpdatingStatus}
-            >
-              Reject
-            </DangerButton>
-          </ButtonGroup>
-        )}
+              <DangerButton
+                onClick={() => handleStatusUpdate('rejected')}
+                disabled={isUpdatingStatus}
+              >
+                Reject
+              </DangerButton>
+            </ButtonGroup>
+          )}
       </Section>
 
       <RevisionModal

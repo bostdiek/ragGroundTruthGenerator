@@ -459,7 +459,7 @@ const CollectionDetail: React.FC = () => {
                     )}
                     {(qa.status === 'ready_for_review' ||
                       qa.status === 'revision_requested') && (
-                      <ActionLink to={`/edit-qa/${qa.id}`}>Review</ActionLink>
+                      <ActionLink to={`/review-qa/${qa.id}`}>Review</ActionLink>
                     )}
                   </QAActions>
                 </QAFooter>
