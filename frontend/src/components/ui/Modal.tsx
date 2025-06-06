@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 
 import {
   borderRadius,
@@ -52,8 +52,8 @@ const ModalOverlay = styled.div`
   align-items: center;
   justify-content: center;
   z-index: ${zIndex.modal};
-  animation: ${fadeIn} ${transitions.duration.medium}
-    ${transitions.easing.easeOut};
+  animation: ${css`
+      ${fadeIn}`} ${transitions.duration.medium} ${transitions.easing.easeOut};
 `;
 
 const ModalContent = styled.div<{ size: 'small' | 'medium' | 'large' }>`
@@ -75,8 +75,8 @@ const ModalContent = styled.div<{ size: 'small' | 'medium' | 'large' }>`
   max-height: calc(100vh - 64px);
   display: flex;
   flex-direction: column;
-  animation: ${slideIn} ${transitions.duration.medium}
-    ${transitions.easing.easeOut};
+  animation: ${css`
+      ${slideIn}`} ${transitions.duration.medium} ${transitions.easing.easeOut};
   margin: ${spacing.md};
 `;
 

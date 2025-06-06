@@ -39,8 +39,8 @@
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
     "eject": "react-scripts eject",
-    "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
-    "lint:fix": "eslint 'src/**/*.{js,jsx,ts,tsx}' --fix",
+    "lint": "eslint --config eslint.config.js 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint:fix": "eslint --config eslint.config.js 'src/**/*.{js,jsx,ts,tsx}' --fix",
     "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,css,json}'",
     "format:check": "prettier --check 'src/**/*.{js,jsx,ts,tsx,css,json}'"
   },

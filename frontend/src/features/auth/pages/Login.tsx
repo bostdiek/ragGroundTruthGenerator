@@ -148,7 +148,8 @@ const Login: React.FC = () => {
 
         <Description>
           <small>
-            Demo credentials: username = "demo", password = "password"
+            Demo credentials: username = &quot;demo&quot;, password =
+            &quot;password&quot;
           </small>
         </Description>
       </LoginCard>

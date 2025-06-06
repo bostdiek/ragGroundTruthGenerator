@@ -53,7 +53,7 @@ export const filterDocumentsByMetadata = (
  */
 export const sortDocuments = (
   documents: Document[],
-  sortBy: string = 'relevance_score',
+  sortBy = 'relevance_score',
   sortDirection: 'asc' | 'desc' = 'desc'
 ): Document[] => {
   return [...documents].sort((a, b) => {

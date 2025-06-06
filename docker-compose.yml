@@ -28,6 +28,7 @@ services:
       - /app/node_modules
     environment:
       - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_AUTH_PROVIDER=simple
     depends_on:
       - backend
     restart: unless-stopped

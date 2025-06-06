@@ -1,5 +1,5 @@
 import React, { ButtonHTMLAttributes } from 'react';
-import styled, { css } from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 
 import {
   borderRadius,
@@ -8,6 +8,16 @@ import {
   transitions,
   typography,
 } from './theme';
+
+// Define the spin animation
+const spinAnimation = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`;
 
 export type ButtonVariant =
   | 'primary'
@@ -176,16 +186,7 @@ const StyledButton = styled.button<ButtonProps>`
         border-radius: 50%;
         border: 2px solid;
         border-color: currentColor transparent currentColor transparent;
-        animation: buttonLoader 1.2s linear infinite;
-      }
-
-      @keyframes buttonLoader {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
+        animation: ${spinAnimation} 1.2s linear infinite;
       }
     `}
 `;

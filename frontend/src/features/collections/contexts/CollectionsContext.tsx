@@ -42,9 +42,15 @@ const CollectionsContext = createContext<CollectionsContextType>({
   qaPairs: [],
   isLoading: false,
   error: null,
-  fetchCollections: async () => {},
-  fetchCollection: async () => {},
-  fetchQAPairs: async () => {},
+  fetchCollections: async () => {
+    /* Implementation will be provided by the context provider */
+  },
+  fetchCollection: async () => {
+    /* Implementation will be provided by the context provider */
+  },
+  fetchQAPairs: async () => {
+    /* Implementation will be provided by the context provider */
+  },
   createCollection: async () => ({
     id: '',
     name: '',
@@ -63,8 +69,12 @@ const CollectionsContext = createContext<CollectionsContextType>({
     updated_at: '',
     document_count: 0,
   }),
-  deleteCollection: async () => {},
-  clearCurrentCollection: () => {},
+  deleteCollection: async () => {
+    /* Implementation will be provided by the context provider */
+  },
+  clearCurrentCollection: () => {
+    /* Implementation will be provided by the context provider */
+  },
   createQAPair: async () => ({
     id: '',
     collection_id: '',

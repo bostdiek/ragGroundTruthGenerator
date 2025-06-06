@@ -261,7 +261,7 @@ export const getAvailableMetadataFields = (documents: Document[]): string[] => {
 export const createFilterOptions = (
   documents: Document[],
   field: string,
-  includeAll: boolean = true
+  includeAll = true
 ): Array<{ value: string; label: string }> => {
   const values = getUniqueMetadataValues(documents, field);
   const options = values.map(value => ({ value, label: value }));

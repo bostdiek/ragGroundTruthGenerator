@@ -36,8 +36,12 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
   isAuthenticated: false,
-  login: async () => {},
-  logout: () => {},
+  login: async () => {
+    /* Implementation will be provided by the context provider */
+  },
+  logout: () => {
+    /* Implementation will be provided by the context provider */
+  },
   error: null,
 });
 

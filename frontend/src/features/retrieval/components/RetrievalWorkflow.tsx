@@ -508,8 +508,8 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
 
         {selectedDocuments.length === 0 ? (
           <Alert variant="warning" title="No documents selected">
-            You haven't selected any documents. Go back to select documents or
-            reset the workflow.
+            You haven&apos;t selected any documents. Go back to select documents
+            or reset the workflow.
           </Alert>
         ) : (
           <SelectedDocumentsList>
@@ -533,9 +533,10 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
 
           {selectedDocuments.length > 0 && (
             <p style={{ marginBottom: spacing.md, color: colors.success.dark }}>
-              You've selected {selectedDocuments.length} document
+              You&apos;ve selected {selectedDocuments.length} document
               {selectedDocuments.length !== 1 ? 's' : ''} for answer generation.
-              Click "Generate Answer" when you're ready to proceed.
+              Click &quot;Generate Answer&quot; when you&apos;re ready to
+              proceed.
             </p>
           )}
 
@@ -598,8 +599,8 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
         <Title>Document Retrieval</Title>
         <Subtitle>
           Select relevant documents to use as context for generating your
-          answer. After selecting documents, click "Generate Answer" to proceed
-          directly to the answer generation step.
+          answer. After selecting documents, click &quot;Generate Answer&quot;
+          to proceed directly to the answer generation step.
         </Subtitle>
       </div>
 
@@ -640,12 +641,12 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
               </Button>
             </QuestionEditForm>
             <SummaryLabel style={{ marginTop: spacing.sm }}>
-              You can edit your question at any time and click "Update Search"
-              to find new relevant documents.
+              You can edit your question at any time and click &quot;Update
+              Search&quot; to find new relevant documents.
               {questionModified && (
                 <WarningText>
-                  Question has been modified. Click "Update Search" to refresh
-                  results.
+                  Question has been modified. Click &quot;Update Search&quot; to
+                  refresh results.
                 </WarningText>
               )}
             </SummaryLabel>
@@ -732,7 +733,7 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
             title={`${selectedDocuments.length} document${selectedDocuments.length !== 1 ? 's' : ''} selected`}
           >
             Your selected documents are ready to use for answer generation.
-            Click "Generate Answer" to proceed.
+            Click &quot;Generate Answer&quot; to proceed.
           </Alert>
         </div>
       )}

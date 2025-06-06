@@ -1,5 +1,5 @@
 import React from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 
 import { colors, spacing } from './theme';
 
@@ -34,7 +34,11 @@ const SkeletonBase = styled.div<{
   );
   background-size: 200% 100%;
   animation: ${({ animation }) =>
-    animation !== false ? `${shimmer} 1.5s ease-in-out infinite` : 'none'};
+    animation !== false
+      ? css`
+          ${shimmer} 1.5s ease-in-out infinite
+        `
+      : 'none'};
 `;
 
 export interface SkeletonProps {
@@ -143,7 +147,8 @@ const SpinnerContainer = styled.div<SpinnerProps>`
   border-top: ${({ thickness }) => thickness || 2}px solid
     ${({ color }) => color || colors.primary.main};
   border-radius: 50%;
-  animation: ${spin} 1s linear infinite;
+  animation: ${css`
+      ${spin}`} 1s linear infinite;
 `;
 
 export const Spinner: React.FC<SpinnerProps> = ({
