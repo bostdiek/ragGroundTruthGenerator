@@ -10,7 +10,7 @@ import { AppErrorBoundary } from '../components/feedback/ErrorBoundary';
 import { ToastProvider } from '../components/feedback/Toast';
 import { AuthProvider } from '../features/auth/contexts/AuthContext';
 import { CollectionsProvider } from '../features/collections/contexts/CollectionsContext';
-import { ReactQueryProvider } from '../lib/react-query';
+import { ReactQueryProvider } from '../lib/query';
 
 interface AppProvidersProps {
   children: ReactNode;

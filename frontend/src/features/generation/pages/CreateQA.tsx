@@ -139,23 +139,6 @@ const Button = styled.button`
   transition: all 0.2s ease;
 `;
 
-/* Used in other files or as reference for styling - keeping for consistency */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const PrimaryButton = styled(Button)`
-  background-color: #1976d2;
-  color: white;
-  border: none;
-
-  &:hover {
-    background-color: #1565c0;
-  }
-
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-`;
-
 const BackButton = styled(Button)`
   background-color: white;
   color: #333;
@@ -190,7 +173,6 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
   const [answer, setAnswer] = useState('');
 
   // Edit mode state
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [originalQA, setOriginalQA] = useState<any | null>(null);
   const [status, setStatus] = useState<string>('ready_for_review');
   const [revisionFeedback, setRevisionFeedback] = useState<string>('');
