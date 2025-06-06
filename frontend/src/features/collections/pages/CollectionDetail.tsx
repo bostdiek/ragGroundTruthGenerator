@@ -8,33 +8,8 @@ import {
   StatusFilterGroup,
   StatusFilterPill as SharedStatusFilterPill,
 } from '../../../components/ui/StatusPill';
+import { Collection, QAPair } from '../../../types';
 import CollectionsService from '../api/collections.service';
-
-// Types
-interface Collection {
-  id: string;
-  name: string;
-  description: string;
-  tags: string[];
-  created_at: string;
-  updated_at: string;
-  document_count: number;
-  status_counts?: { [key: string]: number };
-}
-
-interface QAPair {
-  id: string;
-  question: string;
-  answer: string;
-  custom_rules?: string[];
-  documents: any[];
-  collection_id: string;
-  created_at: string;
-  updated_at: string;
-  created_by: string;
-  reviewed_by?: string;
-  status: string;
-}
 
 // Status constants
 const STATUSES = [
@@ -100,6 +75,29 @@ const ActionButton = styled(Link)`
 
   &:hover {
     background-color: #106ebe;
+  }
+`;
+
+const ExportButton = styled.button`
+  display: inline-block;
+  background-color: #0078d4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  margin-left: 1rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+
+  &:hover {
+    background-color: #106ebe;
+  }
+
+  &:focus {
+    outline: 2px solid #106ebe;
+    outline-offset: 2px;
   }
 `;
 
@@ -354,6 +352,19 @@ const CollectionDetail: React.FC = () => {
     setActiveStatus(newStatus);
   };
 
+  // Handle export to JSONL
+  const handleExport = () => {
+    if (!collection) return;
+
+    const hasSearch = searchQuery.trim() !== '';
+    CollectionsService.exportToJSONL(
+      filteredQaPairs,
+      collection.name,
+      activeStatus,
+      hasSearch
+    );
+  };
+
   // Get current items for pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -383,6 +394,10 @@ const CollectionDetail: React.FC = () => {
             ))}
           </TagsContainer>
         </HeaderContent>
+        {/* Export JSONL button */}
+        <ExportButton onClick={handleExport} type="button">
+          Export JSONL
+        </ExportButton>
         {/* Edit Collection button for navigation */}
         <ActionButton to={`/collections/${collection.id}/edit`} role="button">
           Edit Collection

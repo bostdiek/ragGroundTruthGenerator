@@ -1,7 +1,7 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
-import { borderRadius, colors, spacing } from './theme';
+import { colors, spacing } from './theme';
 
 // Skeleton shimmer animation
 const shimmer = keyframes`
@@ -19,6 +19,7 @@ const SkeletonBase = styled.div<{
   height?: string;
   borderRadius?: string;
   margin?: string;
+  animation?: boolean;
 }>`
   width: ${({ width }) => width || '100%'};
   height: ${({ height }) => height || '20px'};
@@ -32,7 +33,8 @@ const SkeletonBase = styled.div<{
     ${colors.grey[200]} 80px
   );
   background-size: 200% 100%;
-  animation: ${shimmer} 1.5s ease-in-out infinite;
+  animation: ${({ animation }) =>
+    animation !== false ? `${shimmer} 1.5s ease-in-out infinite` : 'none'};
 `;
 
 export interface SkeletonProps {
@@ -70,6 +72,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
       height={height || (variant === 'circular' ? width : '20px')}
       borderRadius={radiusValue}
       margin={margin}
+      animation={animation}
     />
   );
 };

@@ -3,7 +3,6 @@ import axios from 'axios';
 import { apiClient } from '../../../lib/api/client';
 import {
   Collection as CoreCollection,
-  Document,
   QAPair as CoreQAPair,
 } from '../../../types';
 
@@ -307,6 +306,77 @@ const CollectionsService = {
    */
   deleteQAPair: async (id: string): Promise<void> => {
     await apiClient.delete(`/collections/qa-pairs/${id}`);
+  },
+
+  /**
+   * Export QA pairs to JSONL format and download to user's machine
+   * @param qaPairs - Array of QA pairs to export
+   * @param collectionName - Name of the collection
+   * @param activeStatus - Current status filter
+   * @param hasSearch - Whether search filter is applied
+   */
+  exportToJSONL: (
+    qaPairs: QAPair[],
+    collectionName: string,
+    activeStatus: string,
+    hasSearch: boolean
+  ): void => {
+    // Generate timestamp in YYYYMMDD-HHMM format
+    const now = new Date();
+    const timestamp = now
+      .toISOString()
+      .slice(0, 16)
+      .replace(/[-:]/g, '')
+      .replace('T', '-');
+
+    // Build filename
+    const sanitizedCollectionName = collectionName
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '');
+
+    const statusPart = activeStatus === 'all' ? 'all' : activeStatus;
+    const searchPart = hasSearch ? '_search' : '';
+    const filename = `${sanitizedCollectionName}_${statusPart}${searchPart}_${timestamp}.jsonl`;
+
+    // Convert QA pairs to JSONL format
+    const jsonlContent = qaPairs
+      .map(qaPair => {
+        const exportData = {
+          question: qaPair.question,
+          answer: qaPair.answer,
+          documents: qaPair.documents,
+          status: qaPair.status,
+          metadata: {
+            ...qaPair.metadata,
+            collection_id: qaPair.collection_id,
+            created_at: qaPair.created_at,
+            updated_at: qaPair.updated_at,
+            created_by: qaPair.created_by,
+          },
+        };
+        return JSON.stringify(exportData);
+      })
+      .join('\n');
+
+    // Create blob and download
+    const blob = new Blob([jsonlContent], { type: 'application/jsonl' });
+    const url = URL.createObjectURL(blob);
+
+    // Create temporary download link
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clean up object URL
+    URL.revokeObjectURL(url);
   },
 };
 
