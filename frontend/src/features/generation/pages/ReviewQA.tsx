@@ -4,8 +4,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import rehypeSanitize from 'rehype-sanitize';
 import styled from 'styled-components';
 
-import DocumentCard from '../../../components/ui/DocumentCard';
 import RevisionFeedbackBox from '../../../components/feedback/RevisionFeedbackBox';
+import DocumentCard from '../../../components/ui/DocumentCard';
 import RevisionModal from '../../../components/ui/RevisionModal';
 import { Document } from '../../../types';
 import CollectionsService from '../../collections/api/collections.service';
@@ -228,7 +228,7 @@ const EditButton = styled(Link)`
   text-decoration: none;
   transition: background-color 0.2s;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  
+
   &:before {
     content: '✏️';
     margin-right: 0.5rem;
@@ -290,7 +290,7 @@ const ReviewQA: React.FC = () => {
   const [showRevisionModal, setShowRevisionModal] = useState(false);
   const [revisionFeedback, setRevisionFeedback] = useState('');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  
+
   // Get current user - in a real app this would come from auth context
   const getCurrentUser = () => {
     return localStorage.getItem('auth_user') || 'demo_user';
@@ -322,24 +322,54 @@ const ReviewQA: React.FC = () => {
     setIsUpdatingStatus(true);
 
     try {
-      const metadata = qaPair.metadata || {};
+      const metadata = { ...(qaPair.metadata || {}) };
 
       if (newStatus === 'revision_requested' && revisionFeedback) {
         const currentUser = getCurrentUser();
         const currentDate = new Date().toISOString();
-        
+
         // Save both feedback and reviewer information
         metadata.revision_feedback = revisionFeedback;
         metadata.revision_comments = revisionFeedback; // For backward compatibility
         metadata.revision_requested_by = currentUser;
         metadata.revision_requested_at = currentDate;
+      } else if (newStatus === 'approved') {
+        // When approving, archive revision feedback for backend knowledge mining
+        // but remove it from frontend display
+        if (metadata.revision_feedback || metadata.revision_comments) {
+          // Initialize revision history if it doesn't exist
+          if (!metadata.revision_history) {
+            metadata.revision_history = [];
+          }
+
+          // Archive the current revision feedback for backend analysis
+          metadata.revision_history.push({
+            revision_feedback:
+              metadata.revision_feedback || metadata.revision_comments,
+            revision_requested_by: metadata.revision_requested_by,
+            revision_requested_at: metadata.revision_requested_at,
+            archived_on_approval_by: getCurrentUser(),
+            archived_on_approval_at: new Date().toISOString(),
+            archive_reason: 'approved_after_revision',
+          });
+
+          // Remove revision feedback from frontend-visible metadata
+          delete metadata.revision_feedback;
+          delete metadata.revision_comments;
+          delete metadata.revision_requested_by;
+          delete metadata.revision_requested_at;
+        }
+
+        // Record approval details
+        metadata.approved_by = getCurrentUser();
+        metadata.approved_at = new Date().toISOString();
       }
 
       const updateData = {
         status: newStatus,
         metadata,
       };
-      
+
       try {
         await CollectionsService.updateQAPair(qaPair.id, updateData);
       } catch (error) {
@@ -418,10 +448,14 @@ const ReviewQA: React.FC = () => {
 
       {qaPair.status === 'revision_requested' && (
         <>
-          {qaPair.metadata?.revision_feedback || qaPair.metadata?.revision_comments ? (
+          {qaPair.metadata?.revision_feedback ||
+          qaPair.metadata?.revision_comments ? (
             <RevisionFeedbackBox
               title="Revision Feedback from Reviewer"
-              feedback={qaPair.metadata?.revision_feedback || qaPair.metadata?.revision_comments}
+              feedback={
+                qaPair.metadata?.revision_feedback ||
+                qaPair.metadata?.revision_comments
+              }
               requestedBy={qaPair.metadata?.revision_requested_by}
               requestedAt={qaPair.metadata?.revision_requested_at}
             >
@@ -448,11 +482,16 @@ const ReviewQA: React.FC = () => {
         </>
       )}
 
-      {(qaPair.metadata?.revision_feedback || qaPair.metadata?.revision_comments) &&
-        qaPair.status !== 'revision_requested' && (
+      {(qaPair.metadata?.revision_feedback ||
+        qaPair.metadata?.revision_comments) &&
+        qaPair.status !== 'revision_requested' &&
+        qaPair.status !== 'approved' && (
           <RevisionFeedbackBox
             title="Previous Revision Feedback"
-            feedback={qaPair.metadata?.revision_feedback || qaPair.metadata?.revision_comments}
+            feedback={
+              qaPair.metadata?.revision_feedback ||
+              qaPair.metadata?.revision_comments
+            }
             requestedBy={qaPair.metadata?.revision_requested_by}
             requestedAt={qaPair.metadata?.revision_requested_at}
           />

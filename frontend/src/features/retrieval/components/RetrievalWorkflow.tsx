@@ -230,6 +230,31 @@ const QuestionInput = styled.input`
   }
 `;
 
+const QuestionDisplay = styled.div`
+  padding: ${spacing.md};
+  background-color: ${colors.grey[50]};
+  border: 1px solid ${colors.grey[200]};
+  border-radius: ${borderRadius.md};
+  font-family: ${typography.fontFamily.primary};
+  font-size: ${typography.fontSize.md};
+  color: ${colors.text.primary};
+  margin-bottom: ${spacing.sm};
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+`;
+
+const QuestionHelpText = styled(SummaryLabel)`
+  margin-top: ${spacing.sm};
+  margin-bottom: 0;
+`;
+
+const WarningText = styled.span`
+  color: ${colors.warning.main};
+  margin-left: ${spacing.sm};
+  display: block;
+`;
+
 /**
  * RetrievalWorkflow Component
  *
@@ -578,46 +603,54 @@ const RetrievalWorkflow: React.FC<RetrievalWorkflowProps> = ({
         </Subtitle>
       </div>
 
-      {/* Display current question with edit functionality */}
+      {/* Display current question */}
       <QuestionContainer>
-        <QuestionTitle>Current Question</QuestionTitle>
-        <QuestionEditForm>
-          <QuestionInput
-            type="text"
-            value={searchQuery}
-            onChange={e => {
-              setSearchQuery(e.target.value);
-              setQuestionModified(true);
-            }}
-            placeholder="Enter your question"
-          />
-          <Button
-            variant="primary"
-            onClick={() => {
-              fetchRecommendedDocuments(searchQuery);
-              setQuestionModified(false);
-            }}
-            disabled={!searchQuery.trim() || selectedSources.length === 0}
-          >
-            Update Search
-          </Button>
-        </QuestionEditForm>
-        <SummaryLabel style={{ marginTop: spacing.sm }}>
-          You can edit your question at any time and click "Update Search" to
-          find new relevant documents.
-          {questionModified && (
-            <span
-              style={{
-                color: colors.warning.main,
-                marginLeft: spacing.sm,
-                display: 'block',
-              }}
-            >
-              Question has been modified. Click "Update Search" to refresh
-              results.
-            </span>
-          )}
-        </SummaryLabel>
+        <QuestionTitle>Your Question</QuestionTitle>
+        {currentStep === 1 ? (
+          // Step 1: Show question as readonly text with clear indication it's set
+          <div>
+            <QuestionDisplay>{searchQuery || question}</QuestionDisplay>
+            <QuestionHelpText>
+              This is the question you entered. You can edit it when selecting
+              documents in the next step.
+            </QuestionHelpText>
+          </div>
+        ) : (
+          // Step 2+: Show editable question form
+          <>
+            <QuestionEditForm>
+              <QuestionInput
+                type="text"
+                value={searchQuery}
+                onChange={e => {
+                  setSearchQuery(e.target.value);
+                  setQuestionModified(true);
+                }}
+                placeholder="Enter your question"
+              />
+              <Button
+                variant="primary"
+                onClick={() => {
+                  fetchRecommendedDocuments(searchQuery);
+                  setQuestionModified(false);
+                }}
+                disabled={!searchQuery.trim() || selectedSources.length === 0}
+              >
+                Update Search
+              </Button>
+            </QuestionEditForm>
+            <SummaryLabel style={{ marginTop: spacing.sm }}>
+              You can edit your question at any time and click "Update Search"
+              to find new relevant documents.
+              {questionModified && (
+                <WarningText>
+                  Question has been modified. Click "Update Search" to refresh
+                  results.
+                </WarningText>
+              )}
+            </SummaryLabel>
+          </>
+        )}
       </QuestionContainer>
 
       <StepsIndicator>

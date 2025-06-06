@@ -10,7 +10,7 @@ const RevisionFeedbackContainer = styled.div`
   border-left: 4px solid #f57c00;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   position: relative;
-  
+
   /* Adding a visual indicator for revision feedback */
   &:before {
     content: '!';
@@ -70,22 +70,23 @@ const RevisionFeedbackBox: React.FC<RevisionFeedbackBoxProps> = ({
   feedback,
   requestedBy,
   requestedAt,
-  children
+  children,
 }) => {
   return (
     <RevisionFeedbackContainer>
       <h4>{title}</h4>
-      
+
       {requestedBy && (
-        <small style={{ display: 'block', marginBottom: '0.75rem', color: '#666' }}>
+        <small
+          style={{ display: 'block', marginBottom: '0.75rem', color: '#666' }}
+        >
           Requested by <strong>{requestedBy}</strong>
-          {requestedAt && 
-            ` on ${new Date(requestedAt).toLocaleString()}`}
+          {requestedAt && ` on ${new Date(requestedAt).toLocaleString()}`}
         </small>
       )}
-      
+
       <p>{feedback}</p>
-      
+
       {children}
     </RevisionFeedbackContainer>
   );

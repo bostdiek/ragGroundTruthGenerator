@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { Document } from '../../../types';
 import RevisionFeedbackBox from '../../../components/feedback/RevisionFeedbackBox';
+import { Document } from '../../../types';
 import CollectionsService from '../../collections/api/collections.service';
 import { RetrievalProvider, RetrievalWorkflow } from '../../retrieval';
 import { AnswerEditor, QuestionInput } from '../components';
@@ -215,14 +215,19 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
           setStatus(qa.status);
 
           // Set revision feedback if it exists
-          if (qa.metadata?.revision_feedback || qa.metadata?.revision_comments) {
-            setRevisionFeedback(qa.metadata?.revision_feedback || qa.metadata?.revision_comments);
-            
+          if (
+            qa.metadata?.revision_feedback ||
+            qa.metadata?.revision_comments
+          ) {
+            setRevisionFeedback(
+              qa.metadata?.revision_feedback || qa.metadata?.revision_comments
+            );
+
             // Set reviewer information if available
             if (qa.metadata?.revision_requested_by) {
               setRevisionRequestedBy(qa.metadata.revision_requested_by);
             }
-            
+
             if (qa.metadata?.revision_requested_at) {
               setRevisionRequestedAt(qa.metadata.revision_requested_at);
             }
@@ -273,26 +278,106 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
 
       // If we're editing an existing QA pair, preserve its metadata
       if (isEditMode && originalQA?.metadata) {
-        qaPairData.metadata = { ...originalQA.metadata };
+        // Deep clone and sanitize metadata to ensure JSON serialization
+        const sanitizeForJson = (obj: any): any => {
+          // Handle null and undefined
+          if (obj === null || obj === undefined) {
+            return obj;
+          }
+
+          // Handle Date objects
+          if (obj instanceof Date) {
+            return obj.toISOString();
+          }
+
+          // Handle arrays
+          if (Array.isArray(obj)) {
+            return obj.map(sanitizeForJson);
+          }
+
+          // Handle objects (but not Date instances, which are also objects)
+          if (typeof obj === 'object' && obj.constructor === Object) {
+            const sanitized: any = {};
+            for (const [key, value] of Object.entries(obj)) {
+              sanitized[key] = sanitizeForJson(value);
+            }
+            return sanitized;
+          }
+
+          // Handle functions (convert to null or remove)
+          if (typeof obj === 'function') {
+            return null;
+          }
+
+          // Handle undefined (convert to null)
+          if (obj === undefined) {
+            return null;
+          }
+
+          // Handle symbols (convert to string)
+          if (typeof obj === 'symbol') {
+            return obj.toString();
+          }
+
+          // Handle BigInt (convert to string)
+          if (typeof obj === 'bigint') {
+            return obj.toString();
+          }
+
+          // Return primitives as-is (string, number, boolean)
+          return obj;
+        };
+
+        qaPairData.metadata = sanitizeForJson(originalQA.metadata);
 
         // If the QA pair was previously in revision_requested status,
-        // change status to ready_for_review but preserve revision feedback in history
+        // mark it as ready for review and archive the revision feedback
         if (status === 'revision_requested' && qaPairData.metadata) {
-          // Store current revision feedback as revision history
-          qaPairData.metadata.previous_revision_feedback = qaPairData.metadata.revision_feedback || qaPairData.metadata.revision_comments;
-          qaPairData.metadata.revision_history = qaPairData.metadata.revision_history || [];
-          qaPairData.metadata.revision_history.push({
-            feedback: qaPairData.metadata.revision_feedback || qaPairData.metadata.revision_comments,
-            requested_by: qaPairData.metadata.revision_requested_by,
-            requested_at: qaPairData.metadata.revision_requested_at,
-            resolved_at: new Date().toISOString()
-          });
+          // Archive the revision feedback in history for backend knowledge mining
+          if (
+            qaPairData.metadata.revision_feedback ||
+            qaPairData.metadata.revision_comments
+          ) {
+            // Initialize revision history if it doesn't exist
+            if (!qaPairData.metadata.revision_history) {
+              qaPairData.metadata.revision_history = [];
+            }
+
+            qaPairData.metadata.revision_history.push({
+              revision_feedback:
+                qaPairData.metadata.revision_feedback ||
+                qaPairData.metadata.revision_comments,
+              revision_requested_by: qaPairData.metadata.revision_requested_by,
+              revision_requested_at: qaPairData.metadata.revision_requested_at,
+              resolved_by: 'user_edit',
+              resolved_at: new Date().toISOString(),
+              archive_reason: 'resolved_by_editing',
+            });
+          }
+
+          // Remove active revision fields since the revision is being resolved
+          delete qaPairData.metadata.revision_feedback;
+          delete qaPairData.metadata.revision_comments;
+          delete qaPairData.metadata.revision_requested_by;
+          delete qaPairData.metadata.revision_requested_at;
         }
       }
 
       let savedQA;
 
       if (isEditMode && qaId) {
+        // Log the exact data being sent for debugging
+        console.log('Sending update for QA pair:', qaId);
+        console.log(
+          'QA pair data being sent:',
+          JSON.stringify(qaPairData, null, 2)
+        );
+        console.log('Question:', question);
+        console.log('Answer:', answer);
+        console.log('Selected documents:', selectedDocuments);
+        console.log('Status:', status);
+        console.log('Metadata:', qaPairData.metadata);
+
         // Update existing QA pair
         savedQA = await CollectionsService.updateQAPair(qaId, qaPairData);
         // Navigate to the review page for edited QA pairs
@@ -391,6 +476,7 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
         </StatusLine>
       )}
 
+      {/* Show current revision feedback only if status is revision_requested */}
       {status === 'revision_requested' && revisionFeedback && (
         <RevisionFeedbackBox
           title="Revision Feedback"
@@ -402,16 +488,19 @@ const CreateQA: React.FC<CreateQAProps> = ({ isEditMode = false }) => {
 
       {error && <AlertMessage type="error">{error}</AlertMessage>}
 
-      {/* Show previous revision feedback if it exists and we're in edit mode */}
-      {isEditMode && originalQA?.metadata?.previous_revision_feedback && status !== 'revision_requested' && (
-        <RevisionFeedbackBox
-          title="Previous Revision Feedback"
-          feedback={originalQA.metadata.previous_revision_feedback}
-          requestedBy={originalQA.metadata?.revision_requested_by}
-          requestedAt={originalQA.metadata?.revision_requested_at}
-        />
-      )}
-      
+      {/* Show previous revision feedback only for non-approved QA pairs in edit mode */}
+      {isEditMode &&
+        originalQA?.metadata?.previous_revision_feedback &&
+        status !== 'revision_requested' &&
+        status !== 'approved' && (
+          <RevisionFeedbackBox
+            title="Previous Revision Feedback"
+            feedback={originalQA.metadata.previous_revision_feedback}
+            requestedBy={originalQA.metadata?.revision_requested_by}
+            requestedAt={originalQA.metadata?.revision_requested_at}
+          />
+        )}
+
       {/* Step 1: Define Question */}
       {currentStep === 1 && (
         <QuestionInput

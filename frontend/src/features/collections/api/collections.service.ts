@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 import { apiClient } from '../../../lib/api/client';
 import {
   Collection as CoreCollection,
@@ -143,13 +145,80 @@ const CollectionsService = {
       qaPair
     );
     try {
+      // Ensure all data is JSON serializable before sending
+      const sanitizeForJson = (obj: any): any => {
+        // Handle null and undefined
+        if (obj === null || obj === undefined) {
+          return obj;
+        }
+
+        // Handle Date objects
+        if (obj instanceof Date) {
+          return obj.toISOString();
+        }
+
+        // Handle arrays
+        if (Array.isArray(obj)) {
+          return obj.map(sanitizeForJson);
+        }
+
+        // Handle objects (but not Date instances, which are also objects)
+        if (typeof obj === 'object' && obj.constructor === Object) {
+          const sanitized: any = {};
+          for (const [key, value] of Object.entries(obj)) {
+            sanitized[key] = sanitizeForJson(value);
+          }
+          return sanitized;
+        }
+
+        // Handle functions (convert to null or remove)
+        if (typeof obj === 'function') {
+          return null;
+        }
+
+        // Handle undefined (convert to null)
+        if (obj === undefined) {
+          return null;
+        }
+
+        // Handle symbols (convert to string)
+        if (typeof obj === 'symbol') {
+          return obj.toString();
+        }
+
+        // Handle BigInt (convert to string)
+        if (typeof obj === 'bigint') {
+          return obj.toString();
+        }
+
+        // Return primitives as-is (string, number, boolean)
+        return obj;
+      };
+
+      const sanitizedQAPair = sanitizeForJson(qaPair);
+
+      // Test JSON serialization to catch any remaining issues
+      try {
+        JSON.stringify(sanitizedQAPair);
+        console.log('JSON serialization test passed for QA pair data');
+      } catch (jsonError) {
+        console.error('JSON serialization failed:', jsonError);
+        console.error('Problematic data:', sanitizedQAPair);
+        throw new Error(`Data is not JSON serializable: ${jsonError}`);
+      }
+
+      console.log(
+        'CollectionsService.updateQAPair sanitized data:',
+        JSON.stringify(sanitizedQAPair, null, 2)
+      );
+
       // Add timeout to prevent request hanging indefinitely
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
       const response = await apiClient.patch<QAPair>(
         `/collections/qa-pairs/${id}`,
-        qaPair,
+        sanitizedQAPair,
         { signal: controller.signal }
       );
 
@@ -159,6 +228,9 @@ const CollectionsService = {
       console.error('CollectionsService.updateQAPair error:', error);
       if (error instanceof Error) {
         console.error('Error details:', error.message);
+      }
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Server response:', error.response.data);
       }
       throw error;
     }
