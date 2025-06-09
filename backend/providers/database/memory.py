@@ -12,62 +12,394 @@ from typing import Any
 
 from providers.database.base import BaseDatabase
 
-# Import the existing database dictionary or create a new one
-try:
-    from providers.memory_db import _database
-except ImportError:
-    # Simple in-memory database for development
-    # This will be reset when the application restarts
-    _database: dict[str, list[dict[str, Any]]] = {
-        "collections": [
+_database: dict[str, list[dict[str, Any]]] = {
+    "collections": [
+    {
+        "id": "col1",
+        "name": "Equipment Manuals",
+        "description": "Technical manuals for equipment maintenance",
+        "tags": ["manuals", "maintenance", "technical"],
+        "document_count": 4,  # Updated to match actual count
+        "created_at": "2023-05-15T10:30:00Z",
+        "updated_at": "2023-06-20T15:45:00Z",
+    },
+    {
+        "id": "col2",
+        "name": "SAP Notifications",
+        "description": "Historical customer issues and resolutions",
+        "tags": ["sap", "notifications", "issues"],
+        "document_count": 2,  # Updated to match actual count
+        "created_at": "2023-04-10T09:15:00Z",
+        "updated_at": "2023-06-22T11:20:00Z",
+    },
+    {
+        "id": "col3",
+        "name": "Internal Wiki",
+        "description": "Knowledge base for common procedures",
+        "tags": ["wiki", "knowledge", "procedures"],
+        "document_count": 2,  # Updated to match actual count
+        "created_at": "2023-01-05T14:20:00Z",
+        "updated_at": "2023-06-15T08:30:00Z",
+    },
+],
+"qa_pairs": [
+    {
+        "id": "qa1",
+        "collection_id": "col1",
+        "question": "How do I reset the equipment?",
+        "answer": "To reset the equipment, power cycle the device and wait for 30 seconds before turning it back on.",
+        "documents": [
             {
-                "id": "col1",
-                "name": "Equipment Manuals",
-                "description": "Technical manuals for various equipment",
-                "type": "pdf",
-                "created_at": "2023-01-15T12:00:00+00:00",
-                "updated_at": "2023-01-15T12:00:00+00:00",
-                "qa_pair_count": 25,
-            },
-            {
-                "id": "col2",
-                "name": "Company Policies",
-                "description": "Internal company policies and procedures",
-                "type": "text",
-                "created_at": "2023-02-20T10:30:00+00:00",
-                "updated_at": "2023-02-20T10:30:00+00:00",
-                "qa_pair_count": 15,
-            },
-            {
-                "id": "col3",
-                "name": "Product Specifications",
-                "description": "Detailed specifications for product lineup",
-                "type": "excel",
-                "created_at": "2023-03-10T15:45:00+00:00",
-                "updated_at": "2023-03-10T15:45:00+00:00",
-                "qa_pair_count": 30,
-            },
-        ],
-        "qa_pairs": [
-            # QA pairs for Equipment Manuals (col1)
-            {
-                "id": "qa1",
-                "collection_id": "col1",
-                "question": "What is the maximum operating temperature for the Model X2000?",
-                "answer": "The maximum operating temperature for the Model X2000 is 95°C (203°F).",
-                "context": "The Model X2000 has been tested to operate in temperatures ranging from -10°C to 95°C...",
-                "confidence": 0.92,
-                "created_at": "2023-01-16T09:20:00+00:00",
-                "updated_at": "2023-01-16T09:20:00+00:00",
-                "metadata": {
-                    "page": 24,
-                    "source": "X2000_manual.pdf",
-                    "reviewed": True,
+                "id": "doc1",
+                "title": "Equipment Manual",
+                "content": "Section on troubleshooting steps for common issues. Power cycle procedures are outlined on page 42.",
+                "source": {
+                    "id": "tech_docs",
+                    "name": "Technical Documentation",
+                    "type": "manual",
                 },
-            },
-            # More QA pairs...
+                "url": "https://example.com/docs/equipment-manual.pdf",
+                "metadata": {
+                    "document_id": "EM-2023-042",
+                    "last_updated": "2023-03-15",
+                    "version": "2.4",
+                    "department": "Engineering",
+                    "page_number": 42,
+                },
+            }
         ],
-    }
+        "status": "approved",
+        "metadata": {"priority": "high"},
+        "created_at": "2023-06-01T10:00:00Z",
+        "updated_at": "2023-06-02T15:30:00Z",
+        "created_by": "demo_user",
+    },
+    {
+        "id": "qa2",
+        "collection_id": "col1",
+        "question": "What are the maintenance intervals?",
+        "answer": "Regular maintenance should be performed every 3 months, with a major service annually.",
+        "documents": [
+            {
+                "id": "doc2",
+                "title": "Maintenance Schedule",
+                "content": "Regular maintenance intervals are specified as quarterly (every 3 months) for basic service, with an annual comprehensive service that includes component replacement and calibration.",
+                "source": {
+                    "id": "tech_docs",
+                    "name": "Technical Documentation",
+                    "type": "schedule",
+                },
+                "url": "https://example.com/docs/maintenance-schedule.pdf",
+                "metadata": {
+                    "document_id": "MS-2023-015",
+                    "last_updated": "2023-02-10",
+                    "version": "1.2",
+                    "department": "Maintenance",
+                    "priority": "high",
+                },
+            }
+        ],
+        "status": "ready_for_review",
+        "metadata": {"priority": "medium"},
+        "created_at": "2023-06-05T09:45:00Z",
+        "updated_at": "2023-06-06T14:20:00Z",
+        "created_by": "demo_user",
+    },
+    {
+        "id": "qa3",
+        "collection_id": "col2",
+        "question": "How do I create a new SAP notification?",
+        "answer": "Navigate to the Notifications module, click 'Create New', fill in the required fields, and submit the form.",
+        "documents": [
+            {
+                "id": "doc3",
+                "title": "SAP User Guide",
+                "content": "To create a new notification in SAP, navigate to the Notifications module using the main menu. Click on the 'Create New' button in the top toolbar. Fill in all required fields marked with an asterisk (*), including notification type, priority, and description. Attach any relevant documents using the attachment feature. Review the information and click 'Submit' to create the notification.",
+                "source": {
+                    "id": "sap_docs",
+                    "name": "SAP Documentation",
+                    "type": "user_guide",
+                },
+                "url": "https://example.com/docs/sap-guide.pdf",
+                "metadata": {
+                    "document_id": "SAP-UG-2023-034",
+                    "last_updated": "2023-01-05",
+                    "version": "3.1",
+                    "department": "IT",
+                    "module": "Notifications",
+                },
+            }
+        ],
+        "status": "ready_for_review",
+        "metadata": {"priority": "low"},
+        "created_at": "2023-06-10T11:30:00Z",
+        "updated_at": "2023-06-10T11:30:00Z",
+        "created_by": "demo_user",
+    },
+    {
+        "id": "qa4",
+        "collection_id": "col3",
+        "question": "Where can I find the company holiday schedule?",
+        "answer": "The company holiday schedule is available on the HR page of the internal wiki, under 'Benefits and Time Off'.",
+        "documents": [
+            {
+                "id": "doc4",
+                "title": "HR Policies",
+                "content": "The company holiday schedule is published annually on the HR page of the internal wiki. Navigate to the 'Benefits and Time Off' section to find the current year's holiday calendar. This calendar includes all company-wide holidays, floating holidays, and early closure days. Employees should refer to this schedule when planning time off to avoid scheduling conflicts with company closures.",
+                "source": {
+                    "id": "internal_wiki",
+                    "name": "Internal Wiki",
+                    "type": "policy",
+                },
+                "url": "https://internal-wiki.example.com/hr/benefits/holidays",
+                "metadata": {
+                    "document_id": "HR-POL-2023-007",
+                    "last_updated": "2023-01-15",
+                    "version": "2023.1",
+                    "department": "Human Resources",
+                    "category": "Benefits",
+                },
+            }
+        ],
+        "status": "approved",
+        "metadata": {"priority": "medium"},
+        "created_at": "2023-05-20T13:15:00Z",
+        "updated_at": "2023-05-21T09:10:00Z",
+        "created_by": "demo_user",
+    },
+    {
+        "id": "qa5",
+        "collection_id": "col1",
+        "question": "How do I troubleshoot error code E-45?",
+        "answer": "Error code E-45 indicates a power supply issue. Check the power connections and voltage levels.",
+        "documents": [
+            {
+                "id": "doc1",
+                "title": "Equipment Manual",
+                "content": "Error code E-45 indicates a power supply issue. This is typically caused by voltage fluctuations, loose connections, or faulty power supply units. Check all power connections for secure fitting, verify the input voltage matches specifications (110-120V or 220-240V depending on your region), and inspect the power supply unit for visible damage. If the issue persists after checking connections, the power supply unit may need replacement.",
+                "source": {
+                    "id": "tech_docs",
+                    "name": "Technical Documentation",
+                    "type": "manual",
+                },
+                "url": "https://example.com/docs/equipment-manual.pdf",
+                "metadata": {
+                    "document_id": "EM-2023-042",
+                    "last_updated": "2023-03-15",
+                    "version": "2.4",
+                    "department": "Engineering",
+                    "page_number": 87,
+                    "section": "Error Codes",
+                },
+            }
+        ],
+        "status": "rejected",
+        "metadata": {"priority": "high"},
+        "created_at": "2023-06-08T14:20:00Z",
+        "updated_at": "2023-06-09T10:15:00Z",
+        "created_by": "demo_user",
+    },
+    {
+        "id": "qa6",
+        "collection_id": "col1",
+        "question": "What is the warranty period for replacement parts?",
+        "answer": "All replacement parts come with a 90-day warranty from the date of installation.",
+        "documents": [
+            {
+                "id": "doc5",
+                "title": "Warranty Information",
+                "content": "All replacement parts provided by the manufacturer come with a standard 90-day warranty from the date of installation. This warranty covers defects in materials and workmanship under normal use conditions. To claim warranty service, customers must provide proof of installation date and the original work order number. Extended warranty options are available for purchase at an additional cost, extending coverage to 1 year or 2 years from installation date.",
+                "source": {
+                    "id": "tech_docs",
+                    "name": "Technical Documentation",
+                    "type": "warranty",
+                },
+                "url": "https://example.com/docs/warranty-information.pdf",
+                "metadata": {
+                    "document_id": "WI-2023-018",
+                    "last_updated": "2023-02-28",
+                    "version": "1.3",
+                    "department": "Customer Service",
+                    "legal_approval": "Approved",
+                },
+            }
+        ],
+        "status": "revision_requested",
+        "metadata": {
+            "priority": "medium",
+            "revision_comments": "Please provide more details about the extended warranty options, including pricing and terms for the 1-year and 2-year options.",
+        },
+        "created_at": "2023-06-12T09:30:00Z",
+        "updated_at": "2023-06-12T09:30:00Z",
+        "created_by": "demo_user",
+    },
+    {
+        "id": "qa7",
+        "collection_id": "col2",
+        "question": "What information should be included in an SAP notification?",
+        "answer": "An SAP notification should include the equipment ID, problem description, and priority level.",
+        "documents": [
+            {
+                "id": "doc3",
+                "title": "SAP User Guide",
+                "content": "When creating a notification in SAP, certain information is required to ensure proper handling and resolution. The notification form includes fields for equipment identification, problem categorization, and priority assignment. Additional information can be added in the notes section and through file attachments.",
+                "source": {
+                    "id": "sap_docs",
+                    "name": "SAP Documentation",
+                    "type": "user_guide",
+                },
+                "url": "https://example.com/docs/sap-guide.pdf",
+                "metadata": {
+                    "document_id": "SAP-UG-2023-034",
+                    "last_updated": "2023-01-05",
+                    "version": "3.1",
+                    "department": "IT",
+                    "module": "Notifications",
+                },
+            }
+        ],
+        "status": "revision_requested",
+        "metadata": {
+            "priority": "high",
+            "revision_comments": "The answer is incomplete. Please include information about required vs. optional fields, and mention the attachment capabilities for photos and supporting documents.",
+        },
+        "created_at": "2023-05-30T14:15:00Z",
+        "updated_at": "2023-06-01T09:25:00Z",
+        "created_by": "demo_user",
+    },
+    {
+        "id": "qa8",
+        "collection_id": "col3",
+        "question": "How do I request access to restricted wiki sections?",
+        "answer": "To request access to restricted wiki sections, contact your department manager.",
+        "documents": [
+            {
+                "id": "doc4",
+                "title": "HR Policies",
+                "content": "Access to restricted sections of the internal wiki is managed by department managers. Employees needing access to additional content should submit a request through their direct supervisor.",
+                "source": {
+                    "id": "internal_wiki",
+                    "name": "Internal Wiki",
+                    "type": "policy",
+                },
+                "url": "https://internal-wiki.example.com/hr/policies/access",
+                "metadata": {
+                    "document_id": "HR-POL-2023-012",
+                    "last_updated": "2023-02-10",
+                    "version": "2023.1",
+                    "department": "Human Resources",
+                    "category": "Access Control",
+                },
+            }
+        ],
+        "status": "revision_requested",
+        "metadata": {
+            "priority": "low",
+            "revision_comments": "This answer needs to be expanded to include the formal process. Please specify that requests must be submitted through the IT portal with manager approval, and include the typical approval timeline.",
+        },
+        "created_at": "2023-06-05T11:30:00Z",
+        "updated_at": "2023-06-07T14:20:00Z",
+        "created_by": "demo_user",
+    },
+],
+"documents": [
+    {
+        "id": "doc1",
+        "title": "Equipment Manual",
+        "content": "Comprehensive guide for equipment operation, maintenance, and troubleshooting.",
+        "source": {
+            "id": "tech_docs",
+            "name": "Technical Documentation",
+            "type": "manual",
+        },
+        "url": "https://example.com/docs/equipment-manual.pdf",
+        "metadata": {
+            "document_id": "EM-2023-042",
+            "last_updated": "2023-03-15",
+            "version": "2.4",
+            "department": "Engineering",
+        },
+        "created_at": "2023-05-10T08:00:00Z",
+        "updated_at": "2023-05-10T08:00:00Z",
+    },
+    {
+        "id": "doc2",
+        "title": "Maintenance Schedule",
+        "content": "Detailed maintenance intervals and procedures for all equipment types.",
+        "source": {
+            "id": "tech_docs",
+            "name": "Technical Documentation",
+            "type": "schedule",
+        },
+        "url": "https://example.com/docs/maintenance-schedule.pdf",
+        "metadata": {
+            "document_id": "MS-2023-015",
+            "last_updated": "2023-02-10",
+            "version": "1.2",
+            "department": "Maintenance",
+        },
+        "created_at": "2023-05-12T10:30:00Z",
+        "updated_at": "2023-05-12T10:30:00Z",
+    },
+    {
+        "id": "doc3",
+        "title": "SAP User Guide",
+        "content": "Comprehensive guide for using the SAP system, including creating and managing notifications.",
+        "source": {
+            "id": "sap_docs",
+            "name": "SAP Documentation",
+            "type": "user_guide",
+        },
+        "url": "https://example.com/docs/sap-guide.pdf",
+        "metadata": {
+            "document_id": "SAP-UG-2023-034",
+            "last_updated": "2023-01-05",
+            "version": "3.1",
+            "department": "IT",
+        },
+        "created_at": "2023-04-05T14:45:00Z",
+        "updated_at": "2023-04-05T14:45:00Z",
+    },
+    {
+        "id": "doc4",
+        "title": "HR Policies",
+        "content": "Official company policies related to human resources, benefits, and workplace conduct.",
+        "source": {
+            "id": "internal_wiki",
+            "name": "Internal Wiki",
+            "type": "policy",
+        },
+        "url": "https://internal-wiki.example.com/hr/policies",
+        "metadata": {
+            "document_id": "HR-POL-2023-007",
+            "last_updated": "2023-01-15",
+            "version": "2023.1",
+            "department": "Human Resources",
+        },
+        "created_at": "2023-01-15T09:20:00Z",
+        "updated_at": "2023-01-15T09:20:00Z",
+    },
+    {
+        "id": "doc5",
+        "title": "Warranty Information",
+        "content": "Detailed warranty terms and conditions for all products and replacement parts.",
+        "source": {
+            "id": "tech_docs",
+            "name": "Technical Documentation",
+            "type": "warranty",
+        },
+        "url": "https://example.com/docs/warranty-information.pdf",
+        "metadata": {
+            "document_id": "WI-2023-018",
+            "last_updated": "2023-02-28",
+            "version": "1.3",
+            "department": "Customer Service",
+        },
+        "created_at": "2023-02-28T11:15:00Z",
+        "updated_at": "2023-02-28T11:15:00Z",
+    },
+],
+}
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

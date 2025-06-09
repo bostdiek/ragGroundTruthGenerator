@@ -1,0 +1,19 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle for better visibility on different backgrounds -->
+  <circle cx="96" cy="96" r="90" fill="white"/>
+  
+  <!-- Outer target ring -->
+  <circle cx="96" cy="96" r="85" fill="none" stroke="#2563eb" stroke-width="6"/>
+  
+  <!-- Middle target ring -->
+  <circle cx="96" cy="96" r="65" fill="none" stroke="#3b82f6" stroke-width="4"/>
+  
+  <!-- Inner target ring -->
+  <circle cx="96" cy="96" r="45" fill="none" stroke="#60a5fa" stroke-width="3"/>
+  
+  <!-- Center circle -->
+  <circle cx="96" cy="96" r="30" fill="#2563eb"/>
+  
+  <!-- Checkmark -->
+  <path d="M82 96 L90 104 L110 84" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

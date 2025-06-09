@@ -24,13 +24,10 @@ RUN pip install --no-cache-dir psutil==5.9.8
 # Install dependencies without installing the project itself
 # This creates a separate cache layer for dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked --no-install-project
+    uv pip install -e .
 
 # Copy the rest of the application
 COPY . .
-
-# Install the project
-RUN uv sync --locked
 
 # Create local storage directory
 RUN mkdir -p /app/data/storage
@@ -39,4 +36,4 @@ RUN mkdir -p /app/data/storage
 EXPOSE 8000
 
 # Command to run the application
-CMD ["uv", "run", "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -12,7 +12,7 @@ from fastapi import APIRouter, HTTPException, Request, status
 from pydantic import BaseModel
 
 # Import the database provider
-from providers.database import get_database
+from providers.factory import get_database
 
 # Create router
 router = APIRouter()
