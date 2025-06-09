@@ -405,8 +405,47 @@ const ReviewQA: React.FC = () => {
   };
 
   const handleRevisionSubmit = (feedback: string) => {
+    // Save the feedback first to ensure it's available in handleStatusUpdate
     setRevisionFeedback(feedback);
-    handleStatusUpdate('revision_requested');
+
+    // Don't call handleStatusUpdate directly - instead update with proper metadata
+    if (!qaPair) return;
+
+    setIsUpdatingStatus(true);
+
+    try {
+      const metadata = { ...(qaPair.metadata || {}) };
+      const currentUser = getCurrentUser();
+      const currentDate = new Date().toISOString();
+
+      // Add revision feedback to metadata
+      metadata.revision_feedback = feedback;
+      metadata.revision_comments = feedback; // For backward compatibility
+      metadata.revision_requested_by = currentUser;
+      metadata.revision_requested_at = currentDate;
+
+      const updateData = {
+        status: 'revision_requested' as const,
+        metadata,
+      };
+
+      CollectionsService.updateQAPair(qaPair.id, updateData)
+        .then(updatedQAPair => {
+          setQaPair(updatedQAPair);
+          setShowRevisionModal(false);
+          setRevisionFeedback('');
+          setIsUpdatingStatus(false);
+        })
+        .catch(err => {
+          console.error('Error updating QA pair status:', err);
+          setError('Failed to request revision. Please try again.');
+          setIsUpdatingStatus(false);
+        });
+    } catch (err) {
+      console.error('Error preparing revision request:', err);
+      setError('Failed to prepare revision request. Please try again.');
+      setIsUpdatingStatus(false);
+    }
   };
 
   const handleRevisionCancel = () => {
