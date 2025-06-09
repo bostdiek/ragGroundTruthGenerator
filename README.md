@@ -235,7 +235,7 @@ npm start
 
 ### Option 3: Production Deployment
 
-Deployment strategies will depend on your specific infrastructure and requirements. The Docker setup provides a foundation that can be adapted for cloud platforms like Azure, AWS, or on-premises deployments.
+Deployment strategies will depend on your specific infrastructure and requirements. The Docker setup provides a foundation that can be adapted for cloud platforms or on-premises deployments.
 
 ---
 
