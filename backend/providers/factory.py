@@ -11,6 +11,7 @@ from typing import Any
 # Get provider configuration from environment variables
 generation_provider = os.getenv("GENERATION_PROVIDER", "demo")
 retrieval_provider = os.getenv("RETRIEVAL_PROVIDER", "template")
+database_provider = os.getenv("DATABASE_PROVIDER", "memory")
 enabled_data_sources = os.getenv("ENABLED_DATA_SOURCES", "memory").split(",")
 
 
@@ -140,12 +141,30 @@ def get_auth_provider() -> Any:
     #     return get_oauth_provider()
     else:
         raise ValueError(f"Unsupported AUTH_PROVIDER: {auth_provider}")
-    providers = {}
-    for provider_id in enabled_data_sources:
-        try:
-            providers[provider_id] = get_data_source_provider(provider_id)
-        except ValueError:
-            # Skip unavailable providers
-            continue
 
-    return providers
+
+def get_database(collection_name: str) -> Any:
+    """
+    Get a database instance for the specified collection based on environment configuration.
+
+    Args:
+        collection_name: The name of the collection to operate on.
+
+    Returns:
+        Any: A database instance for the specified collection.
+
+    Raises:
+        ValueError: If the specified database provider is not supported.
+    """
+    if database_provider == "memory":
+        from providers.database.memory import get_memory_database
+        return get_memory_database(collection_name)
+    # TODO: Add other database providers
+    # elif database_provider == "mongodb":
+    #     from providers.database.mongodb import get_database as get_mongodb
+    #     return get_mongodb(collection_name)
+    # elif database_provider == "cosmosdb":
+    #     from providers.database.cosmosdb import get_database as get_cosmosdb
+    #     return get_cosmosdb(collection_name)
+    else:
+        raise ValueError(f"Unsupported DATABASE_PROVIDER: {database_provider}")
