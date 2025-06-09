@@ -1,0 +1,16 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer target ring -->
+  <circle cx="256" cy="256" r="240" fill="none" stroke="#2563eb" stroke-width="16"/>
+  
+  <!-- Middle target ring -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#3b82f6" stroke-width="12"/>
+  
+  <!-- Inner target ring -->
+  <circle cx="256" cy="256" r="120" fill="none" stroke="#60a5fa" stroke-width="8"/>
+  
+  <!-- Center circle -->
+  <circle cx="256" cy="256" r="80" fill="#2563eb"/>
+  
+  <!-- Checkmark -->
+  <path d="M220 256 L240 276 L292 224" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
