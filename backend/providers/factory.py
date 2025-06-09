@@ -10,7 +10,6 @@ from typing import Any
 
 # Get provider configuration from environment variables
 generation_provider = os.getenv("GENERATION_PROVIDER", "demo")
-retrieval_provider = os.getenv("RETRIEVAL_PROVIDER", "template")
 database_provider = os.getenv("DATABASE_PROVIDER", "memory")
 enabled_data_sources = os.getenv("ENABLED_DATA_SOURCES", "memory").split(",")
 
@@ -35,28 +34,6 @@ def get_generator() -> Any:
     #     return get_openai_generator()
     else:
         raise ValueError(f"Unsupported GENERATION_PROVIDER: {generation_provider}")
-
-
-def get_retriever() -> Any:
-    """
-    Get a retriever instance based on environment configuration.
-
-    Returns:
-        Any: A retriever instance.
-    """
-    if retrieval_provider == "template":
-        from providers.retrieval.template import get_retriever as get_template_retriever
-
-        return get_template_retriever()
-    # TODO: Add other retrieval providers
-    # elif retrieval_provider == "azure-search":
-    #     from providers.retrieval.azure_search import get_retriever as get_azure_search
-    #     return get_azure_search()
-    # elif retrieval_provider == "elasticsearch":
-    #     from providers.retrieval.elasticsearch import get_retriever as get_elasticsearch
-    #     return get_elasticsearch()
-    else:
-        raise ValueError(f"Unsupported RETRIEVAL_PROVIDER: {retrieval_provider}")
 
 
 def get_data_source_provider(provider_id: str) -> Any:
