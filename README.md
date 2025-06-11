@@ -103,7 +103,7 @@ graph LR
     end
     
     subgraph "🔌 Provider Layer"
-        C[🔐 Authentication<br/>Simple Demo Auth → Azure AD/OAuth]
+        C[🔐 Authentication<br/>Simple Demo Auth<br/>→ Extend for Production Auth]
         D[🗄️ Database<br/>In-Memory Storage → PostgreSQL/MongoDB]
         E[🔍 Data Sources<br/>Memory + Template Providers<br/>→ Azure Search/Elasticsearch/SharePoint]
         F[🤖 AI Models<br/>Demo Response Generator<br/>→ OpenAI/Azure OpenAI/Local Models]
@@ -123,14 +123,16 @@ graph LR
     style F fill:#f1f8e9
 ```
 
-### 🔧 Extensible Components
+### 🔧 Architecture: Built for Extension
 
-| Component | Demo Implementation | Your Implementation |
-|-----------|-------------------|-------------------|
-| **🔐 Authentication** | Simple demo auth | Azure AD B2C, Auth0, Custom |
-| **🗄️ Database** | In-memory storage | PostgreSQL, MongoDB, SQL Server |
-| **🔍 Data Sources** | Mock documents | Azure Search, Elasticsearch, SharePoint |
-| **🤖 AI Generation** | Template responses | Azure OpenAI, OpenAI, Local models |
+| Component | What's Included | Extension Examples |
+|-----------|----------------|-------------------|
+| **🔐 Authentication** | Simple demo auth (`demo`/`password`) | Azure AD B2C, Auth0, Custom LDAP |
+| **🗄️ Database** | In-memory storage (demo only) | PostgreSQL, MongoDB, SQL Server |
+| **🔍 Data Sources** | Mock documents (demo only) | Azure Search, Elasticsearch, SharePoint |
+| **🤖 AI Generation** | Template responses (demo only) | Azure OpenAI, OpenAI, Local models |
+
+> **⚠️ Important:** The demo includes basic implementations only. Production extensions require additional development following the provider pattern.
 
 ---
 
@@ -157,14 +159,14 @@ This creates the foundation for measuring both **retrieval metrics** (did we fin
 
 ---
 
-## 🛠️ Extend for Your Stack
+## 🛠️ Extension Architecture
 
-### Backend: Swap Any Component
+### Backend: Provider Pattern Ready
 
-The FastAPI backend uses a clean provider pattern. Change any component by implementing the interface:
+The FastAPI backend uses a clean provider pattern designed for easy extension. Each component implements a base interface:
 
 ```python
-# Your custom data source
+# Example: Your custom data source
 class SharePointProvider(BaseDataSourceProvider):
     async def retrieve_documents(self, query: str) -> List[Document]:
         # Your SharePoint integration
@@ -175,12 +177,14 @@ if RETRIEVAL_PROVIDER == "sharepoint":
     return SharePointProvider()
 ```
 
-**Supported Extensions:**
+**Extension Framework Supports:**
 
-- **Authentication:** Azure AD, OAuth, SAML, Custom backends
-- **Databases:** PostgreSQL, MongoDB, Cosmos DB, SQL Server
-- **Data Sources:** Azure Search, Elasticsearch, SharePoint, Custom APIs
-- **AI Models:** Azure OpenAI, OpenAI, Anthropic, Local models
+- **Authentication:** Any identity provider (base interface provided)
+- **Databases:** Any persistent storage (base interface provided)  
+- **Data Sources:** Any document/search system (base interface provided)
+- **AI Models:** Any text generation service (base interface provided)
+
+> **📝 Note:** Base interfaces and demo implementations are included. Production providers require implementation following the established patterns.
 
 ### Frontend: React + Provider Pattern
 
@@ -188,17 +192,40 @@ The React frontend mirrors the backend's extensibility:
 
 ```typescript
 // Your authentication provider
-export class AzureADProvider implements AuthService {
+export class CustomAuthProvider implements AuthService {
   async signIn(credentials: SignInRequest): Promise<AuthResult> {
-    // Your Azure AD integration
+    // Your custom authentication integration
   }
 }
 
 // Environment-driven configuration
-REACT_APP_AUTH_PROVIDER=azure-ad
+REACT_APP_AUTH_PROVIDER=custom
 ```
 
-**Or Use Your Own Stack:**
+### Backend: Use Your Framework
+
+While this template uses FastAPI/Python, the architecture translates to any backend framework:
+
+```typescript
+// Node.js/Express example
+interface IDataSourceProvider {
+  async retrieveDocuments(query: string): Promise<Document[]>
+}
+
+// Register providers based on config
+const dataSourceProvider = createProvider(process.env.DATA_SOURCE_PROVIDER)
+```
+
+**Framework Translation:**
+
+- **Node.js/Express** → Factory pattern with dependency injection
+- **.NET Core** → Built-in DI container with interface registration
+- **Java Spring** → Component scanning and autowiring
+- **Go** → Interface composition and factory functions
+
+Use the [API specification](/docs/backendAPIs.md) and [architecture patterns](/docs/backendArchitecture.md) as your implementation guide.
+
+### Frontend: Use Your Stack
 
 - **Vue.js/Nuxt** → Follow the same API patterns
 - **Angular** → Implement the service interfaces  
@@ -234,6 +261,15 @@ npm start
 ```
 
 ### Option 3: Production Deployment
+
+> **⚠️ Production Readiness:** This demo includes in-memory storage and mock providers only. For production deployment, you'll need to:
+>
+> - Implement persistent database providers (PostgreSQL, MongoDB, etc.)
+> - Add production authentication (Azure AD B2C, Auth0, etc.)
+> - Configure real data sources (Azure Search, Elasticsearch, etc.)
+> - Set up actual AI model providers (Azure OpenAI, OpenAI, etc.)
+>
+> The provider pattern architecture makes this straightforward - see the [Extension Guides](#-extension-guides) for implementation examples.
 
 Deployment strategies will depend on your specific infrastructure and requirements. The Docker setup provides a foundation that can be adapted for cloud platforms or on-premises deployments.
 
