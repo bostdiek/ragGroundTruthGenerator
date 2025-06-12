@@ -239,8 +239,8 @@ Use the [API specification](/docs/backendAPIs.md) and [architecture patterns](/d
 ### Option 1: Quick Demo (Recommended)
 
 ```bash
-git clone <repository-url>
-cd ise-ai-ground-truth-generator
+git clone git@github.com:bryanostdiek_microsoft/rag_ground_truth_generator.git
+cd rag_ground_truth_generator
 docker-compose up
 ```
 
