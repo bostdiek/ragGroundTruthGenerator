@@ -2,13 +2,15 @@
 
 Generate a complete backend implementation for the AI Ground Truth Generator using my preferred technology stack.
 There is a template FastAPI Python backend, but I want to translate this to another framework.
+It needs to be plug and play with the current frontend, so the endpoints must be the same.
 
 ## Interactive Setup
 
-Please start by asking me about my preferences:
+Please start by asking me about my preferences one at a time.
+After each answer, use a search tool to find the most up-to-date information about that choice to inform the next.
 
-1. **Backend Framework**: What framework would you like to use? (Express.js, .NET Core, Spring Boot, Go/Gin, Django, Rails, etc.)
 2. **Programming Language**: Which language? (TypeScript, C#, Java, Go, Python, Ruby, etc.)
+1. **Backend Framework**: What framework would you like to use? (Express.js, .NET Core, Spring Boot, Go/Gin, Django, Rails, etc.)
 3. **Database**: What database setup? (PostgreSQL, MongoDB, SQLite for demo, etc.)
 4. **Authentication**: Preferred auth approach? (JWT, OAuth, framework built-in, etc.)
 5. **Testing Framework**: What for testing? (Jest, xUnit, JUnit, pytest, etc.)
@@ -123,7 +125,12 @@ The generated backend should:
 - Be ready for production extension
 
 Begin by asking about my technology preferences.
-Then, make a `.github/copilot-instructions.md` file following #fetch https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot#enabling-and-using-prompt-files to add best practice standards within the repository.
-Then create a hierarchical step-by-step work plan with check boxes called `backend_development_plan.md`. This plan should contain all of the routes, endpoints, the factory, etc.
+Then, make a `.github/copilot-instructions.md` file following #fetch https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot#enabling-and-using-prompt-files to add best practice standards within the repository using context7 for documentation lookup and sequential thinking tool.
+Then create a hierarchical step-by-step work plan with check boxes called `backend_development_plan.md`.
+This plan should contain all of the routes, endpoints, the factory, etc.
 
-After creating that, iterate step by step through, reminding me to do commits after logical steps. When each step is complete, come back to the plan and check off the task.
+After creating that, iterate step by step through.
+Use the Sequential Thinking Tool to help with this.
+You always look up the latest documentation for the given framework, as you were trained in the past and to not know the most up to date best practices use Context7.
+When each step is complete, come back to the plan and check off the task.
+
